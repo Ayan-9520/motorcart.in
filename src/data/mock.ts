@@ -1,0 +1,69 @@
+import type { Vehicle, AuctionItem } from "@/types";
+
+export const featuredVehicles: Vehicle[] = [
+  {
+    id: "1", slug: "2023-hyundai-creta", title: "2023 Hyundai Creta SX(O) Diesel",
+    brand: "Hyundai", model: "Creta", year: 2023, price: 1485000, emi: 24500,
+    fuelType: "Diesel", transmission: "Automatic", kms: 18500, location: "Mumbai",
+    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80",
+    dealerName: "AutoMax Motors", isVerified: true, isFeatured: true, category: "used-cars", aiScore: 94,
+  },
+  {
+    id: "2", slug: "2024-tata-nexon-ev", title: "2024 Tata Nexon EV Max",
+    brand: "Tata", model: "Nexon EV", year: 2024, price: 1699000, emi: 28900,
+    fuelType: "Electric", transmission: "Automatic", kms: 8200, location: "Bangalore",
+    image: "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=600&q=80",
+    dealerName: "GreenDrive EV", isVerified: true, isFeatured: true, category: "ev", aiScore: 91,
+  },
+  {
+    id: "3", slug: "2024-royal-enfield", title: "2024 Royal Enfield Himalayan 450",
+    brand: "Royal Enfield", model: "Himalayan", year: 2024, price: 289000, emi: 5200,
+    fuelType: "Petrol", transmission: "Manual", kms: 3200, location: "Delhi",
+    image: "https://images.unsplash.com/photo-1558981403-c5f9899a1482?w=600&q=80",
+    dealerName: "BikeHub", isVerified: true, isFeatured: false, category: "bikes", aiScore: 88,
+  },
+  {
+    id: "4", slug: "2022-tata-407", title: "2022 Tata 407 Gold SFC",
+    brand: "Tata", model: "407", year: 2022, price: 1250000, emi: 22000,
+    fuelType: "Diesel", transmission: "Manual", kms: 45000, location: "Pune",
+    image: "https://images.unsplash.com/photo-1601584111127-372f204f45a6?w=600&q=80",
+    dealerName: "Commercial Motors", isVerified: true, isFeatured: true, category: "trucks", aiScore: 86,
+  },
+];
+
+export const liveAuctions: AuctionItem[] = [
+  {
+    id: "1", title: "2019 Honda City VX CVT",
+    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&q=80",
+    currentBid: 782000, startingBid: 650000, bidCount: 34,
+    endsAt: new Date(Date.now() + 3600000 * 4).toISOString(), location: "Mumbai", status: "live",
+  },
+  {
+    id: "2", title: "2020 Kia Seltos HTX Plus",
+    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80",
+    currentBid: 1085000, startingBid: 950000, bidCount: 28,
+    endsAt: new Date(Date.now() + 3600000 * 6).toISOString(), location: "Delhi", status: "live",
+  },
+];
+
+export const platformStats = [
+  { label: "Vehicles Listed", value: "2.4L+" },
+  { label: "Verified Dealers", value: "8,500+" },
+  { label: "Loans Processed", value: "₹12,000Cr+" },
+  { label: "Happy Customers", value: "5.2L+" },
+];
+
+export const testimonials = [
+  { name: "Arjun Patel", role: "Car Buyer, Mumbai", text: "Got my Creta with loan approved in 4 hours. AI search found the perfect match!", rating: 5 },
+  { name: "Sneha Reddy", role: "Dealer Partner", text: "Dealer CRM increased our conversion by 40%. Best platform for automotive business.", rating: 5 },
+  { name: "Vikram Singh", role: "DSA Agent", text: "FinanceBot automates eligibility. I process 3x more applications now.", rating: 5 },
+];
+
+export const aiAgents = [
+  { name: "LeadBot", desc: "AI lead qualification & scoring" },
+  { name: "FinanceBot", desc: "Loan eligibility & pipeline" },
+  { name: "AuctionBot", desc: "Live bidding & valuation" },
+  { name: "DealerBot", desc: "Inventory & operations" },
+  { name: "SocialBot", desc: "Social media automation" },
+  { name: "SupportBot", desc: "24/7 customer support" },
+];

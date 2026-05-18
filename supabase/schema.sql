@@ -1,0 +1,14 @@
+-- =============================================================================
+-- MOTORCART.IN — Database Schema (canonical reference)
+-- =============================================================================
+-- Run this file in Supabase SQL Editor (copy entire contents):
+--   supabase/migrations/00001_complete_backend.sql
+--
+-- 20 tables (single source of truth — no duplicates):
+--   users, dealers, vehicles, auctions, bids, finance_applications, banks,
+--   parts, services, bookings, leads, conversations, notifications, reviews,
+--   inventory_uploads, dsa_agents, dealer_documents, service_centers,
+--   insurance_partners, analytics
+--
+-- Legacy tables removed: profiles, loan_applications, auto_parts, auction_bids
+-- =============================================================================
