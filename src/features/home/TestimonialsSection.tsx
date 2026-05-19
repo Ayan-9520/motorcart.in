@@ -6,8 +6,8 @@ import { SectionHeader } from "./SectionHeader";
 
 export function TestimonialsSection() {
   return (
-    <section className="section-padding">
-      <motion.div className="container mx-auto space-y-10 px-4">
+    <section className="home-section">
+      <div className="container mx-auto space-y-10 px-4">
         <SectionHeader
           eyebrow="Testimonials"
           title="Trusted by Buyers & Partners"
@@ -24,7 +24,7 @@ export function TestimonialsSection() {
               transition={{ delay: index * 0.1 }}
             >
               <Card className="relative h-full overflow-hidden hover:shadow-card-hover">
-                <Quote className="absolute right-4 top-4 h-8 w-8 text-[#16a34a]/10" />
+                <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/10" />
                 <CardContent className="space-y-4 p-6">
                   <div className="flex gap-0.5">
                     {Array.from({ length: item.rating }).map((_, i) => (
@@ -33,13 +33,13 @@ export function TestimonialsSection() {
                   </div>
                   <p className="leading-relaxed text-muted-foreground">&ldquo;{item.text}&rdquo;</p>
                   <div className="flex items-center gap-3 pt-2">
-                    <motion.div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-[#16a34a] to-emerald-600 text-sm font-semibold text-white">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                       {item.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")
                         .slice(0, 2)}
-                    </motion.div>
+                    </div>
                     <div>
                       <p className="font-semibold">{item.name}</p>
                       <p className="text-sm text-muted-foreground">{item.role}</p>
@@ -50,7 +50,7 @@ export function TestimonialsSection() {
             </motion.div>
           ))}
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

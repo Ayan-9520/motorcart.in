@@ -1,24 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import type { DbVehicle } from "@/types/database";
+import { searchVehicles } from "@/services/vehicle.service";
+import type { VehicleListing } from "@/types/vehicle";
 
-export function useVehicles(filters?: { city?: string; status?: string; limit?: number }) {
-  const [vehicles, setVehicles] = useState<DbVehicle[]>([]);
+export function useVehicles(options?: { city?: string; limit?: number; featured?: boolean }) {
+  const [vehicles, setVehicles] = useState<VehicleListing[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchVehicles = useCallback(async () => {
     setLoading(true);
-    let q = supabase.from("vehicles").select("*").eq("status", filters?.status ?? "available");
-    if (filters?.city) q = q.eq("city", filters.city);
-    if (filters?.limit) q = q.limit(filters.limit);
-    q = q.order("created_at", { ascending: false });
-
-    const { data, error: err } = await q;
-    if (err) setError(err.message);
-    else setVehicles((data ?? []) as DbVehicle[]);
+    try {
+      const result = await searchVehicles({
+        filters: options?.city ? { city: options.city } : {},
+        sort: "newest",
+        page: 1,
+        pageSize: options?.limit ?? 24,
+      });
+      let list = result.vehicles;
+      if (options?.featured) list = list.filter((v) => v.isFeatured);
+      setVehicles(list);
+      setError(null);
+    } catch {
+      setError("Failed to load vehicles");
+    }
     setLoading(false);
-  }, [filters?.city, filters?.status, filters?.limit]);
+  }, [options?.city, options?.limit, options?.featured]);
 
   useEffect(() => {
     fetchVehicles();

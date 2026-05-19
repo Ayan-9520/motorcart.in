@@ -13,69 +13,57 @@ const perks = [
 
 export function DealerCTA() {
   return (
-    <section className="section-padding">
-      <motion.div className="container mx-auto px-4">
+    <section className="home-section">
+      <div className="container mx-auto px-4">
         <motion.div
-          className="relative overflow-hidden rounded-3xl bg-[#0f172a] px-8 py-12 text-white md:px-12 md:py-16"
+          className="home-cta-panel"
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <motion.div
-            className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-[#16a34a]/20 blur-3xl"
-            animate={{ scale: [1, 1.15, 1] }}
-            transition={{ duration: 6, repeat: Infinity }}
-          />
+          <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative grid items-center gap-10 lg:grid-cols-2">
-            <motion.div className="space-y-6">
-              <Badge className="bg-[#16a34a]/20 text-[#4ade80] border-[#16a34a]/40">
-                Partner program
-              </Badge>
-              <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
+            <div className="space-y-5">
+              <Badge className="border-primary/30 bg-primary/10 text-primary">Partner program</Badge>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
                 Become a Verified Dealer on Motorcart.in
               </h2>
-              <p className="max-w-lg text-slate-300">
-                Join India&apos;s fastest-growing automotive marketplace. Get AI-powered leads,
-                finance integrations, and enterprise tools to scale your dealership.
+              <p className="max-w-lg text-muted-foreground">
+                Join India&apos;s fastest-growing automotive marketplace with AI leads and enterprise tools.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button variant="gradient" size="lg" asChild>
-                  <Link to="/dealers/register">
+                <Button size="lg" className="rounded-xl" asChild>
+                  <Link to="/dashboard/dealer">
                     Apply as Dealer
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="border-white/20 bg-transparent text-white hover:bg-white/10"
-                  asChild
-                >
+                <Button size="lg" variant="outline" className="rounded-xl bg-card" asChild>
                   <Link to="/dealers">Learn more</Link>
                 </Button>
               </div>
-            </motion.div>
-            <motion.div className="grid grid-cols-2 gap-4">
+            </div>
+            <div className="grid grid-cols-2 gap-3">
               {perks.map((perk, index) => {
                 const Icon = perk.icon;
                 return (
                   <motion.div
                     key={perk.label}
-                    initial={{ opacity: 0, x: 16 }}
+                    initial={{ opacity: 0, x: 12 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.08 }}
-                    className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm"
+                    className="rounded-xl border border-border bg-muted/50 p-4 dark:bg-muted/30"
                   >
-                    <Icon className="mb-3 h-6 w-6 text-[#4ade80]" />
-                    <p className="text-sm font-medium">{perk.label}</p>
+                    <Icon className="mb-2 h-6 w-6 text-primary" />
+                    <p className="text-sm font-medium text-foreground">{perk.label}</p>
                   </motion.div>
                 );
               })}
-            </motion.div>
+            </div>
           </div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }

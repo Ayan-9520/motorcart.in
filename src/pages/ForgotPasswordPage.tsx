@@ -36,7 +36,7 @@ export function ForgotPasswordPage() {
               <Label>Email</Label>
               <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1" required />
             </div>
-            <Button type="submit" variant="gradient" className="w-full" disabled={loading}>
+            <Button type="submit" variant="default" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send Reset Link"}
             </Button>
           </form>

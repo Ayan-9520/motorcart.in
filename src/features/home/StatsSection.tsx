@@ -20,7 +20,7 @@ function parseStatValue(value: string): { numeric: number; suffix: string; prefi
 
 export function StatsSection() {
   return (
-    <section className="border-y border-slate-200 bg-[#f8fafc] py-12 dark:border-border dark:bg-muted/20">
+    <section className="border-y border-border bg-muted/40 py-12 dark:border-border dark:bg-muted/30">
       <motion.div className="container mx-auto px-4">
         <motion.div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
           {platformStats.map((stat, index) => {
@@ -37,11 +37,11 @@ export function StatsSection() {
                 transition={{ delay: index * 0.08 }}
                 className="flex flex-col items-center gap-3 text-center"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#16a34a] to-emerald-600 shadow-lg">
-                  <Icon className="h-6 w-6 text-white" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-[var(--shadow-primary)]">
+                  <Icon className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-[#16a34a] sm:text-3xl">
+                  <p className="text-2xl font-bold text-primary sm:text-3xl">
                     {useCounter ? (
                       <AnimatedCounter
                         value={Math.round(parsed.numeric)}

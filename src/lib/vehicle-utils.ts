@@ -1,4 +1,10 @@
-import type { VehicleCategory, VehicleFilters, VehicleListing, VehicleSortOption } from "@/types/vehicle";
+import type {
+  FairPriceLabel,
+  VehicleCategory,
+  VehicleFilters,
+  VehicleListing,
+  VehicleSortOption,
+} from "@/types/vehicle";
 
 const CATEGORY_MAP: Record<VehicleCategory, { condition?: string; fuel?: string; bodyTypes?: string[] }> = {
   "new-cars": { condition: "new" },
@@ -10,11 +16,34 @@ const CATEGORY_MAP: Record<VehicleCategory, { condition?: string; fuel?: string;
 };
 
 export function categoryToPath(category: VehicleCategory): string {
+  if (category === "new-cars") return "/new-cars/browse";
+  if (category === "used-cars") return "/used-cars/browse";
   return `/vehicles/${category}`;
 }
 
+export function newCarDetailPath(slug: string): string {
+  return `/new-cars/${slug}`;
+}
+
+export function preownedDetailPath(slug: string): string {
+  return `/used-cars/${slug}`;
+}
+
 export function vehicleDetailPath(vehicle: Pick<VehicleListing, "slug" | "category">): string {
+  if (vehicle.category === "new-cars") return newCarDetailPath(vehicle.slug);
+  if (vehicle.category === "used-cars") return preownedDetailPath(vehicle.slug);
   return `/vehicles/${vehicle.category}/${vehicle.slug}`;
+}
+
+export function getFairPriceLabel(vehicle: VehicleListing): FairPriceLabel | undefined {
+  return vehicle.metadata.fairPriceLabel;
+}
+
+export function deriveFairPriceLabel(vehicle: VehicleListing): FairPriceLabel {
+  const score = vehicle.aiPriceScore ?? 75;
+  if (score >= 90) return "great-deal";
+  if (score >= 78) return "fair-price";
+  return "high-price";
 }
 
 export function parseCategoryParam(param?: string): VehicleCategory | undefined {

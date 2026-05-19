@@ -38,11 +38,11 @@ export function SectionHeader({
         viewport={{ once: true }}
       >
         {eyebrow && (
-          <p className="text-sm font-semibold uppercase tracking-wider text-[#16a34a]">
+          <p className="text-sm font-semibold uppercase tracking-wider text-primary">
             {eyebrow}
           </p>
         )}
-        <h2 className="text-2xl font-bold tracking-tight text-[#0f172a] dark:text-foreground sm:text-3xl lg:text-4xl">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
           {title}
         </h2>
         {description && (
@@ -50,7 +50,7 @@ export function SectionHeader({
         )}
       </motion.div>
       {href && (
-        <Button variant="ghost" className="group shrink-0 text-[#16a34a]" asChild>
+        <Button variant="ghost" className="group shrink-0 text-primary" asChild>
           <Link to={href}>
             {linkLabel}
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

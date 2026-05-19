@@ -84,7 +84,7 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
             <Input id="password" type="password" className="mt-1" {...register("password")} />
             {errors.password && <p className="text-xs text-destructive mt-1">{errors.password.message}</p>}
           </div>
-          <Button type="submit" variant="gradient" className="w-full" disabled={submitting}>
+          <Button type="submit" variant="default" className="w-full" disabled={submitting}>
             {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
           </Button>
         </form>
@@ -105,7 +105,7 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
                 onChange={(e) => setPhone(e.target.value)}
               />
             </div>
-            <Button type="button" variant="gradient" className="w-full" onClick={onSendOtp} disabled={submitting || !phone}>
+            <Button type="button" variant="default" className="w-full" onClick={onSendOtp} disabled={submitting || !phone}>
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send OTP"}
             </Button>
           </>
@@ -115,7 +115,7 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
               <Label>Enter OTP</Label>
               <Input className="mt-1" placeholder="6-digit code" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
             </div>
-            <Button type="button" variant="gradient" className="w-full" onClick={onVerifyOtp} disabled={submitting || otp.length < 4}>
+            <Button type="button" variant="default" className="w-full" onClick={onVerifyOtp} disabled={submitting || otp.length < 4}>
               {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Sign In"}
             </Button>
             <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => setOtpSent(false)}>

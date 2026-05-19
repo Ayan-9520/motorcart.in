@@ -71,7 +71,7 @@ export function ProfilePage() {
                 <Input name="state" defaultValue={user.state ?? ""} className="mt-1" />
               </div>
             </div>
-            <Button type="submit" variant="gradient" disabled={loading}>
+            <Button type="submit" variant="default" disabled={loading}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Changes"}
             </Button>
           </form>

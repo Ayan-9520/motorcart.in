@@ -47,7 +47,7 @@ const serviceCards = [
 
 export function ServicesSection() {
   return (
-    <section className="section-padding bg-[#f8fafc] dark:bg-muted/20">
+    <section className="section-padding bg-muted/40 dark:bg-muted/30">
       <motion.div className="container mx-auto space-y-10 px-4">
         <SectionHeader
           eyebrow="After-sales"
@@ -74,14 +74,14 @@ export function ServicesSection() {
                       alt={service.title}
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
-                    <motion.div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-[#16a34a] text-white">
+                    <motion.div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
                       <Icon className="h-5 w-5" />
                     </motion.div>
                   </div>
                   <CardContent className="space-y-3 p-5">
                     <h3 className="font-semibold">{service.title}</h3>
                     <p className="text-sm text-muted-foreground">{service.description}</p>
-                    <p className="text-sm font-medium text-[#16a34a]">
+                    <p className="text-sm font-medium text-primary">
                       From {formatCurrency(service.priceFrom)}
                     </p>
                     <Button variant="outline" size="sm" className="w-full" asChild>

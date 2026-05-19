@@ -64,6 +64,12 @@ export const aiAgents = [
   { name: "FinanceBot", desc: "Loan eligibility & pipeline" },
   { name: "AuctionBot", desc: "Live bidding & valuation" },
   { name: "DealerBot", desc: "Inventory & operations" },
-  { name: "SocialBot", desc: "Social media automation" },
   { name: "SupportBot", desc: "24/7 customer support" },
+  { name: "SocialBot", desc: "Social media automation" },
+  { name: "InventoryBot", desc: "Listings & pricing optimization" },
+  { name: "AnalyticsBot", desc: "KPIs & daily reports" },
+  { name: "RecommendationBot", desc: "Personalized picks" },
+  { name: "NotificationBot", desc: "Multi-channel alerts" },
+  { name: "DsaBot", desc: "DSA routing & follow-ups" },
+  { name: "CommunityBot", desc: "Moderation & trends" },
 ];

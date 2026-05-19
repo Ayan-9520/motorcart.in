@@ -1,0 +1,230 @@
+import { supabase } from "@/integrations/supabase/client";
+import type { DbVehicle, DbDealer } from "@/types/database";
+import type { VehicleListing, VehicleFilters, VehicleEnquiry, TestDriveBooking } from "@/types/vehicle";
+import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
+import { filterVehicles, sortVehicles, paginateVehicles, slugify } from "@/lib/vehicle-utils";
+import type { VehicleSortOption } from "@/types/vehicle";
+
+export function mapDbToListing(v: DbVehicle, dealer?: DbDealer | null): VehicleListing {
+  const meta = (v.metadata ?? {}) as VehicleListing["metadata"];
+  const category = (v.category as VehicleListing["category"]) || "used-cars";
+  return {
+    id: v.id,
+    slug: v.slug,
+    title: v.title,
+    brand: v.brand,
+    model: v.model,
+    variant: v.variant ?? undefined,
+    year: v.year,
+    price: Number(v.price),
+    originalPrice: v.original_price ? Number(v.original_price) : undefined,
+    fuelType: v.fuel_type,
+    transmission: v.transmission,
+    bodyType: v.body_type,
+    category,
+    kmsDriven: v.kms_driven,
+    owners: v.owners,
+    color: v.color ?? undefined,
+    city: v.city,
+    state: v.state,
+    location: v.location ?? `${v.city}, ${v.state}`,
+    images: v.images?.length ? v.images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80"],
+    features: v.features ?? [],
+    description: v.description ?? undefined,
+    isCertified: v.is_certified,
+    isFeatured: v.is_featured,
+    condition: v.condition as "new" | "used",
+    status: v.status,
+    aiPriceScore: v.ai_price_score ?? undefined,
+    dealerId: v.dealer_id ?? undefined,
+    dealerName: dealer?.name ?? "Motorcart Dealer",
+    dealerSlug: dealer?.slug,
+    dealerPhone: dealer?.phone ?? undefined,
+    dealerRating: dealer ? Number(dealer.rating) : undefined,
+    dealerVerified: dealer?.is_verified,
+    metadata: meta,
+    createdAt: v.created_at,
+  };
+}
+
+export async function fetchVehiclesFromDb(limit = 100): Promise<VehicleListing[]> {
+  const { data, error } = await supabase
+    .from("vehicles")
+    .select("*, dealers(name, slug, phone, rating, is_verified)")
+    .eq("status", "available")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+
+  if (error || !data?.length) return [];
+
+  return data.map((row) => {
+    const dealer = (row as { dealers?: DbDealer | null }).dealers;
+    const { dealers: _, ...vehicle } = row as DbVehicle & { dealers?: DbDealer };
+    return mapDbToListing(vehicle, dealer);
+  });
+}
+
+export async function fetchVehicleBySlug(slug: string): Promise<VehicleListing | null> {
+  const { data, error } = await supabase
+    .from("vehicles")
+    .select("*, dealers(name, slug, phone, rating, is_verified, address, city, state, email, website)")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (!error && data) {
+    const dealer = (data as { dealers?: DbDealer }).dealers;
+    const { dealers: _, ...vehicle } = data as DbVehicle & { dealers?: DbDealer };
+    return mapDbToListing(vehicle, dealer);
+  }
+
+  return MOCK_VEHICLES.find((v) => v.slug === slug) ?? null;
+}
+
+export async function searchVehicles(options: {
+  filters: VehicleFilters;
+  sort: VehicleSortOption;
+  page: number;
+  pageSize: number;
+}): Promise<{ vehicles: VehicleListing[]; total: number; page: number; totalPages: number }> {
+  let pool = MOCK_VEHICLES.filter((v) => v.status === "available");
+
+  const dbVehicles = await fetchVehiclesFromDb();
+  if (dbVehicles.length) {
+    const slugs = new Set(dbVehicles.map((v) => v.slug));
+    pool = [...dbVehicles, ...MOCK_VEHICLES.filter((v) => !slugs.has(v.slug))];
+  }
+
+  const filtered = filterVehicles(pool, options.filters);
+  const sorted = sortVehicles(filtered, options.sort);
+  const { items, total, page, totalPages } = paginateVehicles(sorted, options.page, options.pageSize);
+
+  return { vehicles: items, total, page, totalPages };
+}
+
+export async function submitVehicleEnquiry(enquiry: VehicleEnquiry): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("leads").insert({
+    dealer_id: enquiry.dealerId,
+    name: enquiry.name,
+    phone: enquiry.phone,
+    email: enquiry.email,
+    vehicle_id: enquiry.vehicleId,
+    source: "website",
+    notes: enquiry.message,
+    metadata: { type: "enquiry" },
+  });
+  if (error) return { error: error.message };
+  void import("@/ai/workflows/engine").then(({ runWorkflow }) =>
+    runWorkflow("new_lead", {
+      payload: {
+        lead: {
+          name: enquiry.name,
+          phone: enquiry.phone,
+          vehicle_interest: enquiry.vehicleId,
+          source: "website",
+        },
+        title: "New enquiry",
+        message: `${enquiry.name} submitted an enquiry`,
+        templateId: "lead_ack_customer",
+        phone: enquiry.phone,
+        vars: { name: enquiry.name, vehicle: "your vehicle" },
+      },
+    })
+  );
+  return { error: null };
+}
+
+export async function submitTestDrive(booking: TestDriveBooking & { dealerId: string }): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("leads").insert({
+    dealer_id: booking.dealerId,
+    name: booking.name,
+    phone: booking.phone,
+    email: booking.email,
+    vehicle_id: booking.vehicleId,
+    source: "test_drive",
+    notes: `${booking.preferredDate} ${booking.preferredTime}. ${booking.message ?? ""}`,
+    metadata: { type: "test_drive", preferredDate: booking.preferredDate, preferredTime: booking.preferredTime },
+  });
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export type VehicleFormData = {
+  title: string;
+  brand: string;
+  model: string;
+  variant?: string;
+  year: number;
+  price: number;
+  originalPrice?: number;
+  fuelType: string;
+  transmission: string;
+  bodyType: string;
+  category: string;
+  kmsDriven: number;
+  owners: number;
+  color?: string;
+  city: string;
+  state: string;
+  description?: string;
+  features?: string[];
+  images?: string[];
+  condition: "new" | "used";
+  metadata?: VehicleListing["metadata"];
+};
+
+export async function createVehicle(data: VehicleFormData, sellerId: string, dealerId?: string) {
+  const slug = slugify(`${data.year}-${data.brand}-${data.model}-${data.city}-${Date.now()}`);
+  return supabase.from("vehicles").insert({
+    slug,
+    title: data.title,
+    brand: data.brand,
+    model: data.model,
+    variant: data.variant,
+    year: data.year,
+    price: data.price,
+    original_price: data.originalPrice,
+    fuel_type: data.fuelType,
+    transmission: data.transmission,
+    body_type: data.bodyType,
+    category: data.category,
+    kms_driven: data.kmsDriven,
+    owners: data.owners,
+    color: data.color,
+    city: data.city,
+    state: data.state,
+    description: data.description,
+    features: data.features ?? [],
+    images: data.images ?? [],
+    condition: data.condition,
+    seller_id: sellerId,
+    dealer_id: dealerId,
+    metadata: data.metadata ?? {},
+    status: "available",
+  }).select().single();
+}
+
+export async function updateVehicle(id: string, data: Partial<VehicleFormData> & { status?: string; is_featured?: boolean }) {
+  const payload: Record<string, unknown> = { ...data };
+  if (data.fuelType) payload.fuel_type = data.fuelType;
+  if (data.bodyType) payload.body_type = data.bodyType;
+  if (data.kmsDriven != null) payload.kms_driven = data.kmsDriven;
+  if (data.originalPrice != null) payload.original_price = data.originalPrice;
+  delete payload.fuelType;
+  delete payload.bodyType;
+  delete payload.kmsDriven;
+  delete payload.originalPrice;
+  return supabase.from("vehicles").update(payload).eq("id", id).select().single();
+}
+
+export async function deleteVehicle(id: string) {
+  return supabase.from("vehicles").delete().eq("id", id);
+}
+
+export async function fetchDealerVehicles(sellerId: string) {
+  const { data } = await supabase
+    .from("vehicles")
+    .select("*")
+    .or(`seller_id.eq.${sellerId}`)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((v) => mapDbToListing(v as DbVehicle));
+}

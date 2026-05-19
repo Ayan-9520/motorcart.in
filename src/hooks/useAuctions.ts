@@ -33,8 +33,13 @@ export function useAuctions(status: "live" | "upcoming" | "ended" = "live") {
     };
   }, [fetchAuctions, status]);
 
-  const placeBid = useCallback(async (auctionId: string, amount: number, bidderId: string) => {
-    return supabase.from("bids").insert({ auction_id: auctionId, amount, bidder_id: bidderId });
+  const placeBid = useCallback(async (auctionId: string, amount: number) => {
+    const { data, error } = await supabase.rpc("place_auction_bid", {
+      p_auction_id: auctionId,
+      p_amount: amount,
+      p_is_auto_bid: false,
+    });
+    return { data, error };
   }, []);
 
   return { auctions, loading, refetch: fetchAuctions, placeBid };

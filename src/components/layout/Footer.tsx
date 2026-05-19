@@ -1,40 +1,68 @@
 ﻿import { Link } from "react-router-dom";
-import { Car, Mail, MapPin, Phone, MessageCircle } from "lucide-react";
+import { Car, Mail, MapPin, Phone } from "lucide-react";
 import { SITE_NAME, SITE_TAGLINE } from "@/lib/constants";
-
-const columns = [
-  { title: "Marketplace", links: [{ label: "Buy Vehicles", to: "/vehicles" }, { label: "Sell", to: "/sell" }, { label: "Auctions", to: "/auctions" }, { label: "Parts", to: "/parts" }] },
-  { title: "Finance", links: [{ label: "Loans", to: "/finance" }, { label: "Insurance", to: "/insurance" }] },
-  { title: "Business", links: [{ label: "Dealers", to: "/dashboard/dealer" }, { label: "DSA", to: "/dashboard/dsa" }, { label: "Pricing", to: "/pricing" }] },
-  { title: "Company", links: [{ label: "About", to: "/about" }, { label: "Contact", to: "/contact" }, { label: "FAQs", to: "/faqs" }] },
-];
+import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/features/home/data/homepage-data";
 
 export function Footer() {
   return (
-    <footer className="border-t bg-brand-navy text-white">
+    <footer className="border-t border-border bg-secondary text-foreground">
       <div className="container mx-auto px-4 py-16">
         <div className="grid gap-12 lg:grid-cols-12">
-          <div className="lg:col-span-4 space-y-4">
+          <div className="space-y-5 lg:col-span-4">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary"><Car className="h-5 w-5 text-white" /></span>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground">
+                <Car className="h-5 w-5" />
+              </span>
               {SITE_NAME}
             </Link>
-            <p className="text-sm text-white/70">{SITE_TAGLINE}</p>
+            <p className="text-sm leading-relaxed text-muted-foreground">{SITE_TAGLINE}</p>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-primary" /> support@motorcart.in
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-primary" /> 1800-XXX-XXXX
+              </li>
+              <li className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" /> Mumbai, India
+              </li>
+            </ul>
+            <div className="flex flex-wrap gap-2">
+              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-card transition-colors hover:border-primary hover:text-primary"
+                >
+                  <Icon className="h-4 w-4" />
+                </a>
+              ))}
+            </div>
           </div>
-          <div className="lg:col-span-8 grid grid-cols-2 sm:grid-cols-4 gap-8">
-            {columns.map((col) => (
+          <div className="grid grid-cols-2 gap-8 sm:grid-cols-3 lg:col-span-8 lg:grid-cols-3 xl:grid-cols-6">
+            {FOOTER_COLUMNS.map((col) => (
               <div key={col.title}>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-primary">{col.title}</h3>
                 <ul className="space-y-2">
                   {col.links.map((link) => (
-                    <li key={link.to}><Link to={link.to} className="text-sm text-white/70 hover:text-white">{link.label}</Link></li>
+                    <li key={link.href + link.label}>
+                      <Link
+                        to={link.href}
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
                   ))}
                 </ul>
               </div>
             ))}
           </div>
         </div>
-        <p className="mt-12 border-t border-white/10 pt-8 text-center text-sm text-white/60">© {new Date().getFullYear()} {SITE_NAME}</p>
+        <p className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+          © {new Date().getFullYear()} {SITE_NAME}. All rights reserved. · Privacy · Terms
+        </p>
       </div>
     </footer>
   );

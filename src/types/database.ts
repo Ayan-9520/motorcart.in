@@ -13,6 +13,7 @@ export type AppRole =
   | "dsa_agent"
   | "bank_nbfc"
   | "service_center"
+  | "service_technician"
   | "parts_seller"
   | "admin"
   | "auction_partner";
@@ -117,8 +118,92 @@ export interface DbAuction {
   ends_at: string;
   status: AuctionStatus;
   winner_id: string | null;
+  slug?: string | null;
+  location?: string | null;
+  is_featured?: boolean;
+  viewer_count?: number;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
+}
+
+export interface DbVehicleImage {
+  id: string;
+  vehicle_id: string;
+  image_url: string;
+  is_primary: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface DbVehicleSpec {
+  id: string;
+  vehicle_id: string;
+  engine: string | null;
+  mileage: string | null;
+  power: string | null;
+  torque: string | null;
+  seating_capacity: number | null;
+  airbags: number | null;
+  abs: boolean | null;
+  infotainment: string | null;
+  boot_space: string | null;
+  extras: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbLeadCall {
+  id: string;
+  lead_id: string;
+  dealer_id: string;
+  called_by: string | null;
+  direction: string;
+  duration_seconds: number | null;
+  outcome: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface DbCrmTask {
+  id: string;
+  dealer_id: string;
+  lead_id: string | null;
+  assigned_to: string | null;
+  title: string;
+  description: string | null;
+  due_at: string | null;
+  status: string;
+  priority: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbAnalytics {
+  id: string;
+  user_id: string | null;
+  dealer_id: string | null;
+  event_type: string;
+  entity_type: string | null;
+  entity_id: string | null;
+  payload: Record<string, unknown>;
+  session_id: string | null;
+  created_at: string;
+}
+
+export interface DbInventoryUpload {
+  id: string;
+  dealer_id: string;
+  uploaded_by: string;
+  file_url: string;
+  file_name: string | null;
+  status: string;
+  total_rows: number;
+  success_rows: number;
+  failed_rows: number;
+  error_log: unknown[];
+  created_at: string;
+  completed_at: string | null;
 }
 
 export interface DbBid {
@@ -144,6 +229,9 @@ export interface DbBank {
   features: string[];
   is_active: boolean;
   is_featured: boolean;
+  ranking_score?: number;
+  min_cibil?: number;
+  short_code?: string;
   created_at: string;
   updated_at: string;
 }
@@ -160,6 +248,12 @@ export interface DbFinanceApplication {
   emi_amount: number | null;
   status: FinanceStatus;
   ai_eligibility_score: number | null;
+  approval_probability?: number | null;
+  cibil_score?: number | null;
+  monthly_income?: number | null;
+  employment_type?: string | null;
+  application_type?: string;
+  applicant_metadata?: Record<string, unknown>;
   documents: unknown[];
   notes: string | null;
   created_at: string;
@@ -182,6 +276,37 @@ export interface DbPart {
   compatibility: string[];
   is_featured: boolean;
   is_active: boolean;
+  description?: string | null;
+  sku?: string | null;
+  gst_rate?: number;
+  wholesale_price?: number | null;
+  bulk_min_qty?: number;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DbServiceCenter {
+  id: string;
+  owner_id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  address: string | null;
+  city: string;
+  state: string;
+  pincode: string | null;
+  phone: string | null;
+  rating: number;
+  review_count: number;
+  services_offered: string[];
+  is_verified: boolean;
+  images: string[];
+  is_active?: boolean;
+  lat?: number | null;
+  lng?: number | null;
+  pickup_drop_available?: boolean;
+  slot_interval_minutes?: number;
   created_at: string;
   updated_at: string;
 }
@@ -214,6 +339,15 @@ export interface DbBooking {
   total_amount: number | null;
   otp_verified: boolean;
   notes: string | null;
+  mechanic_id?: string | null;
+  pickup_address?: string | null;
+  drop_address?: string | null;
+  payment_status?: string;
+  payment_amount?: number | null;
+  tracking_step?: string;
+  otp_code?: string | null;
+  otp_expires_at?: string | null;
+  metadata?: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }
@@ -284,17 +418,42 @@ export interface Database {
       users: { Row: DbUser; Insert: Partial<DbUser> & { id: string }; Update: Partial<DbUser> };
       dealers: { Row: DbDealer; Insert: Partial<DbDealer>; Update: Partial<DbDealer> };
       vehicles: { Row: DbVehicle; Insert: Partial<DbVehicle>; Update: Partial<DbVehicle> };
+      vehicle_images: { Row: DbVehicleImage; Insert: Partial<DbVehicleImage>; Update: Partial<DbVehicleImage> };
+      vehicle_specs: { Row: DbVehicleSpec; Insert: Partial<DbVehicleSpec>; Update: Partial<DbVehicleSpec> };
       auctions: { Row: DbAuction; Insert: Partial<DbAuction>; Update: Partial<DbAuction> };
       bids: { Row: DbBid; Insert: Partial<DbBid>; Update: Partial<DbBid> };
       banks: { Row: DbBank; Insert: Partial<DbBank>; Update: Partial<DbBank> };
       finance_applications: { Row: DbFinanceApplication; Insert: Partial<DbFinanceApplication>; Update: Partial<DbFinanceApplication> };
       parts: { Row: DbPart; Insert: Partial<DbPart>; Update: Partial<DbPart> };
+      service_centers: { Row: DbServiceCenter; Insert: Partial<DbServiceCenter>; Update: Partial<DbServiceCenter> };
       services: { Row: DbService; Insert: Partial<DbService>; Update: Partial<DbService> };
       bookings: { Row: DbBooking; Insert: Partial<DbBooking>; Update: Partial<DbBooking> };
       leads: { Row: DbLead; Insert: Partial<DbLead>; Update: Partial<DbLead> };
+      lead_calls: { Row: DbLeadCall; Insert: Partial<DbLeadCall>; Update: Partial<DbLeadCall> };
+      crm_tasks: { Row: DbCrmTask; Insert: Partial<DbCrmTask>; Update: Partial<DbCrmTask> };
       conversations: { Row: DbConversation; Insert: Partial<DbConversation>; Update: Partial<DbConversation> };
       notifications: { Row: DbNotification; Insert: Partial<DbNotification>; Update: Partial<DbNotification> };
       reviews: { Row: DbReview; Insert: Partial<DbReview>; Update: Partial<DbReview> };
+      analytics: { Row: DbAnalytics; Insert: Partial<DbAnalytics>; Update: Partial<DbAnalytics> };
+      inventory_uploads: { Row: DbInventoryUpload; Insert: Partial<DbInventoryUpload>; Update: Partial<DbInventoryUpload> };
+    };
+    Functions: {
+      place_auction_bid: {
+        Args: { p_auction_id: string; p_amount: number; p_is_auto_bid?: boolean };
+        Returns: Record<string, unknown>;
+      };
+      submit_finance_application: {
+        Args: Record<string, unknown>;
+        Returns: Record<string, unknown>;
+      };
+      create_part_order: {
+        Args: Record<string, unknown>;
+        Returns: Record<string, unknown>;
+      };
+      verify_booking_otp: {
+        Args: { p_booking_id: string; p_otp: string };
+        Returns: Record<string, unknown>;
+      };
     };
   };
 }

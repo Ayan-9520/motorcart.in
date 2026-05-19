@@ -28,6 +28,8 @@ export interface VehicleSpecs {
   [key: string]: string | string[] | undefined;
 }
 
+export type FairPriceLabel = "great-deal" | "fair-price" | "high-price";
+
 export interface VehicleMetadata {
   videos?: string[];
   viewer360?: string[];
@@ -37,6 +39,27 @@ export interface VehicleMetadata {
   registrationYear?: number;
   insuranceValid?: string;
   rto?: string;
+  /** New car */
+  onRoadPrice?: number;
+  exShowroomPrice?: number;
+  waitingPeriod?: string;
+  rating?: number;
+  has360?: boolean;
+  brochureUrl?: string;
+  offerTag?: string;
+  isUpcoming?: boolean;
+  isLatestLaunch?: boolean;
+  /** Pre-owned */
+  inspectionScore?: number;
+  fairPriceLabel?: FairPriceLabel;
+  certificationProgram?: string;
+  trustBadges?: string[];
+  warrantyIncluded?: boolean;
+  returnPolicyDays?: number;
+  serviceHistoryAvailable?: boolean;
+  rcVerified?: boolean;
+  insuranceActive?: boolean;
+  loanPreApproved?: boolean;
 }
 
 export interface VehicleListing {

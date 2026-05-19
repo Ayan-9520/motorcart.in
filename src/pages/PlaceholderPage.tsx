@@ -32,7 +32,7 @@ export function PlaceholderPage({ title, description }: PlaceholderPageProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-sm text-muted-foreground">Route: {location.pathname}</p>
-          <Button variant="gradient" asChild>
+          <Button variant="default" asChild>
             <Link to="/">Back to Home</Link>
           </Button>
         </CardContent>

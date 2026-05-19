@@ -23,7 +23,7 @@ export function Sidebar() {
   return (
     <aside
       className={cn(
-        "hidden lg:flex flex-col border-r bg-card transition-all duration-300 shrink-0",
+        "sidebar-shell hidden shrink-0 flex-col transition-all duration-300 lg:flex",
         sidebarOpen ? "w-64" : "w-[72px]"
       )}
     >
@@ -42,8 +42,8 @@ export function Sidebar() {
               cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "sidebar-link-active"
+                  : "sidebar-link"
               )
             }
           >

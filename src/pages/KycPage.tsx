@@ -44,7 +44,7 @@ export function KycPage() {
               <Upload className="mx-auto h-8 w-8 mb-2 opacity-50" />
               Documents upload to Supabase Storage (dealer-documents bucket)
             </div>
-            <Button type="submit" variant="gradient" className="w-full" disabled={loading || user.kycStatus === "verified"}>
+            <Button type="submit" variant="default" className="w-full" disabled={loading || user.kycStatus === "verified"}>
               {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit for Verification"}
             </Button>
             <Button type="button" variant="ghost" className="w-full" asChild>

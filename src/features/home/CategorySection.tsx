@@ -15,7 +15,7 @@ const iconMap = {
 
 export function CategorySection() {
   return (
-    <section className="section-padding bg-[#f8fafc] dark:bg-background">
+    <section className="home-section">
       <div className="container mx-auto space-y-10 px-4">
         <SectionHeader
           eyebrow="Browse by type"
@@ -37,15 +37,15 @@ export function CategorySection() {
               >
                 <Link
                   to={cat.href}
-                  className="group flex flex-col items-center gap-3 rounded-2xl border border-slate-200 bg-white p-5 text-center shadow-card transition-all hover:border-[#16a34a]/40 hover:shadow-card-hover dark:border-border dark:bg-card"
+                  className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center shadow-card transition-all hover:border-primary/40 hover:shadow-card-hover dark:border-border dark:bg-card"
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#16a34a]/10 transition-colors group-hover:bg-[#16a34a]">
-                    <Icon className="h-7 w-7 text-[#16a34a] transition-colors group-hover:text-white" />
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary">
+                    <Icon className="h-7 w-7 text-primary transition-colors group-hover:text-primary-foreground" />
                   </div>
-                  <motion.div>
-                    <p className="font-semibold text-[#0f172a] dark:text-foreground">{cat.label}</p>
+                  <div>
+                    <p className="font-semibold text-foreground">{cat.label}</p>
                     <p className="text-sm text-muted-foreground">{cat.count} listings</p>
-                  </motion.div>
+                  </div>
                 </Link>
               </motion.div>
             );

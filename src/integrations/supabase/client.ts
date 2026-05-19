@@ -9,8 +9,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-/** Supabase client — Phase 2 will wire full auth + RLS */
+/** Supabase client — session + RLS; see src/types/database.ts for Row types */
 export const supabase = createClient(
   supabaseUrl ?? "https://placeholder.supabase.co",
-  supabaseAnonKey ?? "placeholder-key"
+  supabaseAnonKey ?? "placeholder-key",
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: true,
+    },
+  }
 );

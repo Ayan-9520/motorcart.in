@@ -37,7 +37,7 @@ export function PartsSection() {
                     alt={part.name}
                     className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <Badge className="absolute left-3 top-3 bg-[#0f172a]/80 text-white">
+                  <Badge className="absolute left-3 top-3 bg-secondary/80 text-white">
                     {part.category}
                   </Badge>
                 </div>
@@ -48,7 +48,7 @@ export function PartsSection() {
                     {part.rating} ({part.reviewCount.toLocaleString("en-IN")})
                   </div>
                   <motion.div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-[#16a34a]">{formatCurrency(part.price)}</span>
+                    <span className="text-lg font-bold text-primary">{formatCurrency(part.price)}</span>
                     {part.originalPrice != null && (
                       <span className="text-sm text-muted-foreground line-through">
                         {formatCurrency(part.originalPrice)}

@@ -25,8 +25,8 @@ export function FinanceSection() {
   const emi = useMemo(() => calcEmi(amount, 9.5, tenure), [amount, tenure]);
 
   return (
-    <section className="section-padding">
-      <motion.div className="container mx-auto space-y-10 px-4">
+    <section className="home-section-card">
+      <div className="container mx-auto space-y-10 px-4">
         <SectionHeader
           eyebrow="Smart finance"
           title="Instant Auto Loans"
@@ -41,11 +41,11 @@ export function FinanceSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
         >
-          <Card className="border-[#16a34a]/20 bg-[#f8fafc] dark:bg-card">
+          <Card className="border-primary/20 bg-muted/40 dark:bg-card">
             <CardContent className="space-y-5 p-6">
-              <div className="flex items-center gap-2 text-[#16a34a]">
+              <div className="flex items-center gap-2 text-primary">
                 <Calculator className="h-5 w-5" />
-                <h3 className="font-semibold text-[#0f172a] dark:text-foreground">EMI Preview</h3>
+                <h3 className="font-semibold text-foreground dark:text-foreground">EMI Preview</h3>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="loan-amount">Loan amount (₹)</Label>
@@ -58,7 +58,7 @@ export function FinanceSection() {
                   step={50000}
                 />
               </div>
-              <motion.div className="space-y-2">
+              <div className="space-y-2">
                 <Label htmlFor="tenure">Tenure (months)</Label>
                 <Input
                   id="tenure"
@@ -68,12 +68,12 @@ export function FinanceSection() {
                   min={12}
                   max={84}
                 />
-              </motion.div>
-              <div className="rounded-xl border border-[#16a34a]/30 bg-[#16a34a]/5 p-4">
-                <p className="text-sm text-muted-foreground">Estimated EMI @ 9.5% p.a.</p>
-                <p className="text-3xl font-bold text-[#16a34a]">{formatCurrency(Math.round(emi))}/mo</p>
               </div>
-              <Button variant="gradient" className="w-full" asChild>
+              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+                <p className="text-sm text-muted-foreground">Estimated EMI @ 9.5% p.a.</p>
+                <p className="text-3xl font-bold text-primary">{formatCurrency(Math.round(emi))}/mo</p>
+              </div>
+              <Button variant="default" className="w-full" asChild>
                 <Link to="/finance/apply">
                   Check Eligibility
                   <ArrowRight className="h-4 w-4" />
@@ -93,13 +93,13 @@ export function FinanceSection() {
               >
                 <Card className="relative h-full hover:shadow-card-hover">
                   {loan.is_featured && (
-                    <Badge className="absolute right-4 top-4 border-0 gradient-brand text-white">
+                    <Badge className="absolute right-4 top-4 border-0 bg-primary text-primary-foreground">
                       Popular
                     </Badge>
                   )}
                   <CardContent className="space-y-4 p-5">
                     <motion.div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#0f172a] text-sm font-bold text-white">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
                         {loan.bank_name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
@@ -111,19 +111,19 @@ export function FinanceSection() {
                       </div>
                     </motion.div>
                     <div className="grid grid-cols-2 gap-2 text-sm">
-                      <motion.div className="rounded-lg bg-muted/60 p-2">
+                      <div className="rounded-lg bg-muted/60 p-2 dark:bg-muted/40">
                         <p className="text-xs text-muted-foreground">Max loan</p>
                         <p className="font-semibold">{formatCurrency(loan.max_loan_amount)}</p>
-                      </motion.div>
-                      <motion.div className="rounded-lg bg-muted/60 p-2">
+                      </div>
+                      <div className="rounded-lg bg-muted/60 p-2 dark:bg-muted/40">
                         <p className="text-xs text-muted-foreground">Tenure</p>
                         <p className="font-semibold">Up to {loan.tenure_max_months} mo</p>
-                      </motion.div>
+                      </div>
                     </div>
                     <ul className="space-y-1.5">
                       {loan.features.slice(0, 2).map((feature: string) => (
                         <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-[#16a34a]" />
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
                           {feature}
                         </li>
                       ))}
@@ -134,7 +134,7 @@ export function FinanceSection() {
             ))}
           </motion.div>
         </motion.div>
-      </motion.div>
+      </div>
     </section>
   );
 }
