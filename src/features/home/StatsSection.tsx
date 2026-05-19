@@ -20,9 +20,9 @@ function parseStatValue(value: string): { numeric: number; suffix: string; prefi
 
 export function StatsSection() {
   return (
-    <section className="border-y border-border bg-muted/40 py-12 dark:border-border dark:bg-muted/30">
-      <motion.div className="container mx-auto px-4">
-        <motion.div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+    <section className="border-y border-border bg-muted/40 py-7 dark:border-border dark:bg-muted/30 md:py-9">
+      <div className="container">
+        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
           {platformStats.map((stat, index) => {
             const Icon = statIcons[index] ?? Car;
             const parsed = parseStatValue(stat.value);
@@ -35,13 +35,13 @@ export function StatsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
-                className="flex flex-col items-center gap-3 text-center"
+                className="flex flex-col items-center gap-2 text-center"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary shadow-[var(--shadow-primary)]">
-                  <Icon className="h-6 w-6 text-primary-foreground" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary shadow-[var(--shadow-primary)]">
+                  <Icon className="h-5 w-5 text-primary-foreground" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-primary sm:text-3xl">
+                  <p className="text-lg font-bold text-primary sm:text-xl">
                     {useCounter ? (
                       <AnimatedCounter
                         value={Math.round(parsed.numeric)}
@@ -52,13 +52,13 @@ export function StatsSection() {
                       stat.value
                     )}
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">{stat.label}</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">{stat.label}</p>
                 </div>
               </motion.div>
             );
           })}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

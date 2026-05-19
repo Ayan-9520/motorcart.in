@@ -16,7 +16,7 @@ const iconMap = {
 export function CategorySection() {
   return (
     <section className="home-section">
-      <div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Browse by type"
           title="Vehicle Categories"
@@ -24,7 +24,7 @@ export function CategorySection() {
           href="/vehicles"
           linkLabel="View all"
         />
-        <motion.div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" initial={false}>
+        <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
           {VEHICLE_CATEGORIES.map((cat, index) => {
             const Icon = iconMap[cat.icon as keyof typeof iconMap] ?? Car;
             return (
@@ -37,20 +37,20 @@ export function CategorySection() {
               >
                 <Link
                   to={cat.href}
-                  className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-5 text-center shadow-card transition-all hover:border-primary/40 hover:shadow-card-hover dark:border-border dark:bg-card"
+                  className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-center shadow-card transition-all hover:border-primary/40 hover:shadow-card-hover dark:border-border dark:bg-card"
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 transition-colors group-hover:bg-primary">
-                    <Icon className="h-7 w-7 text-primary transition-colors group-hover:text-primary-foreground" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary">
+                    <Icon className="h-5 w-5 text-primary transition-colors group-hover:text-primary-foreground" />
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{cat.label}</p>
-                    <p className="text-sm text-muted-foreground">{cat.count} listings</p>
+                    <p className="text-xs font-semibold text-foreground sm:text-sm">{cat.label}</p>
+                    <p className="text-[10px] text-muted-foreground sm:text-xs">{cat.count} listings</p>
                   </div>
                 </Link>
               </motion.div>
             );
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

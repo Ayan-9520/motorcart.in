@@ -1,6 +1,7 @@
 import { formatCurrency } from "@/lib/utils";
 import type { LoanOffer } from "../types";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 interface LoanComparisonTableProps {
   offers: LoanOffer[];
@@ -41,7 +42,16 @@ export function LoanComparisonTable({ offers, selectedSlugs = [], onToggle }: Lo
                 </td>
               )}
               <td className="p-3 font-medium">#{o.rank}</td>
-              <td className="p-3 font-medium">{o.name}</td>
+              <td className="p-3">
+                <span className="flex items-center gap-2.5 font-medium">
+                  {o.logoUrl ? (
+                    <span className="partner-logo-slot shrink-0">
+                      <BrandLogo src={o.logoUrl} alt={o.name} size="sm" />
+                    </span>
+                  ) : null}
+                  {o.name}
+                </span>
+              </td>
               <td className="p-3">{o.effectiveRate.toFixed(2)}%</td>
               <td className="p-3">{formatCurrency(o.emi)}</td>
               <td className="p-3">{formatCurrency(o.totalInterest)}</td>

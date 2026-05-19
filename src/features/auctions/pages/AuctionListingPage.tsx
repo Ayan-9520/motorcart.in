@@ -1,13 +1,15 @@
-import { useEffect } from "react";
-import { motion } from "framer-motion";
-import { Radio, Calendar, Archive } from "lucide-react";
+import { useEffect, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowLeft, Radio, Calendar, Archive, Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { setPageMeta } from "@/utils/seo";
 import { useAuctionList } from "../hooks/useAuctionList";
 import { AuctionCard } from "../components/AuctionCard";
 import { AuctionHeroBanner } from "../components/AuctionHeroBanner";
 import { CategoryTabs } from "../components/CategoryTabs";
+import { MOCK_AUCTION_EVENTS } from "../data/auction-hub-data";
 
 const STATUS_TABS = [
   { id: "live", label: "Live now", icon: Radio },
@@ -16,31 +18,95 @@ const STATUS_TABS = [
 ] as const;
 
 export function AuctionListingPage() {
+  const [params, setParams] = useSearchParams();
   const { featured, live, upcoming, ended, loading, status, type, setStatus, setType } = useAuctionList();
 
-  const heroAuction = featured[0] ?? live[0];
-  const activeList =
+  const q = (params.get("q") ?? "").toLowerCase();
+  const state = params.get("state");
+  const eventSlug = params.get("event");
+
+  const filterBySearch = (list: typeof live) => {
+    let result = list;
+    if (q) {
+      result = result.filter(
+        (a) =>
+          a.title.toLowerCase().includes(q) ||
+          a.location.toLowerCase().includes(q) ||
+          a.auctionType.includes(q)
+      );
+    }
+    if (state && state !== "All States") {
+      result = result.filter((a) => a.location.toLowerCase().includes(state.toLowerCase().split(" ")[0]!));
+    }
+    if (eventSlug) {
+      const ev = MOCK_AUCTION_EVENTS.find((e) => e.slug === eventSlug);
+      if (ev) {
+        result = result.filter(
+          (a) =>
+            a.location.toLowerCase().includes(ev.city.toLowerCase()) ||
+            (ev.featuredAuctionSlug && a.slug === ev.featuredAuctionSlug)
+        );
+      }
+    }
+    return result;
+  };
+
+  const activeListRaw =
     status === "upcoming" ? upcoming : status === "ended" ? ended : live;
+  const activeList = useMemo(() => filterBySearch(activeListRaw), [activeListRaw, q, state, eventSlug]);
+
+  const heroAuction = featured[0] ?? live[0];
 
   useEffect(() => {
     setPageMeta({
-      title: "Live Auctions — Motorcart.in",
-      description: "Bid in real time on bank repo, dealer & government vehicle auctions across India.",
+      title: "Browse Auction Inventory — Motorcart",
+      description: "Search and bid on bank repo, dealer & government vehicle auctions.",
     });
   }, []);
 
-  return (
-    <motion.div className="wa-pattern min-h-screen">
-      <div className="container mx-auto space-y-10 px-4 py-8">
-        <header>
-          <p className="text-sm font-medium text-primary uppercase tracking-widest">Premium live bidding</p>
-          <h1 className="mt-1 text-3xl font-bold md:text-4xl">Live Auctions</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Bank repo, dealer & government auctions with real-time bids, auto-bid, and transparent reserve pricing.
-          </p>
-        </header>
+  const eventMeta = eventSlug ? MOCK_AUCTION_EVENTS.find((e) => e.slug === eventSlug) : null;
 
-        {heroAuction && status === "live" && (
+  return (
+    <div className="auction-browse-page min-h-screen pb-14">
+      <div className="auction-browse-hero border-b border-border/80">
+        <div className="container py-6">
+          <Link
+            to="/auctions"
+            className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Auction hub
+          </Link>
+          <h1 className="text-2xl font-bold md:text-3xl">
+            {eventMeta ? `${eventMeta.city} — auction lots` : "Browse auction inventory"}
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {eventMeta
+              ? `${eventMeta.vehicleCount} vehicles · ${eventMeta.mode} bidding`
+              : "Filter by status, type & location"}
+          </p>
+          <div className="relative mt-4 max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              defaultValue={params.get("q") ?? ""}
+              placeholder="Search lots…"
+              className="pl-9 rounded-xl"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const next = new URLSearchParams(params);
+                  const v = (e.target as HTMLInputElement).value.trim();
+                  if (v) next.set("q", v);
+                  else next.delete("q");
+                  setParams(next);
+                }
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="container space-y-8 py-8">
+        {heroAuction && status === "live" && !eventSlug && (
           <AuctionHeroBanner auction={heroAuction} viewerCount={heroAuction.viewerCount} />
         )}
 
@@ -51,8 +117,10 @@ export function AuctionListingPage() {
               type="button"
               onClick={() => setStatus(id)}
               className={cn(
-                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all",
-                status === id ? "bg-primary text-primary-foreground text-white shadow-wa" : "border bg-card hover:border-primary/40"
+                "flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all",
+                status === id
+                  ? "bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
+                  : "border border-border bg-card hover:border-primary/40"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -63,30 +131,25 @@ export function AuctionListingPage() {
 
         <CategoryTabs activeType={type} onTypeChange={setType} />
 
-        {featured.length > 0 && status === "live" && (
-          <section className="space-y-4">
-            <h2 className="text-xl font-semibold">Featured auctions</h2>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.slice(0, 3).map((a, i) => (
-                <AuctionCard key={a.id} auction={a} index={i} />
-              ))}
-            </div>
-          </section>
-        )}
-
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold">
-            {status === "live" ? "All live auctions" : status === "upcoming" ? "Starting soon" : "Auction history"}
+          <h2 className="text-lg font-bold">
+            {status === "live" ? "Live lots" : status === "upcoming" ? "Starting soon" : "Closed auctions"}
+            <span className="ml-2 text-sm font-normal text-muted-foreground">({activeList.length})</span>
           </h2>
 
           {loading ? (
-            <motion.div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <Skeleton key={i} className="aspect-[16/10] w-full rounded-xl" />
               ))}
-            </motion.div>
+            </div>
           ) : activeList.length === 0 ? (
-            <p className="py-16 text-center text-muted-foreground">No auctions in this category right now.</p>
+            <p className="py-16 text-center text-muted-foreground">
+              No lots match your filters.{" "}
+              <Link to="/auctions" className="font-medium text-primary hover:underline">
+                Back to hub
+              </Link>
+            </p>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {activeList.map((a, i) => (
@@ -96,6 +159,6 @@ export function AuctionListingPage() {
           )}
         </section>
       </div>
-    </motion.div>
+    </div>
   );
 }

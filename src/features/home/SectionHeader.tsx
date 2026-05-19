@@ -24,40 +24,39 @@ export function SectionHeader({
   className,
 }: SectionHeaderProps) {
   return (
-    <div
+    <motion.div
       className={cn(
-        "flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between",
+        "flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between",
         align === "center" && "items-center text-center sm:flex-col sm:items-center",
         className
       )}
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
     >
-      <motion.div
-        className={cn("space-y-2", align === "center" && "max-w-2xl")}
-        initial={{ opacity: 0, y: 12 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
+      <div className={cn("space-y-1", align === "center" && "max-w-xl")}>
         {eyebrow && (
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary sm:text-xs">
             {eyebrow}
           </p>
         )}
-        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl lg:text-4xl">
+        <h2 className="text-lg font-bold tracking-tight text-foreground sm:text-xl">
           {title}
         </h2>
         {description && (
-          <p className="max-w-2xl text-muted-foreground sm:text-lg">{description}</p>
+          <p className="max-w-xl text-xs leading-relaxed text-muted-foreground sm:text-sm">
+            {description}
+          </p>
         )}
-      </motion.div>
+      </div>
       {href && (
-        <Button variant="ghost" className="group shrink-0 text-primary" asChild>
+        <Button variant="ghost" size="sm" className="group h-8 shrink-0 px-2 text-xs text-primary" asChild>
           <Link to={href}>
             {linkLabel}
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </Button>
       )}
-    </div>
+    </motion.div>
   );
 }
-

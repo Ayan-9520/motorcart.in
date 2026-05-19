@@ -1,21 +1,33 @@
-import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-export function AdvancedSearchBar({ onToggleFilters }: { onToggleFilters?: () => void }) {
-  const [params] = useSearchParams();
-  const navigate = useNavigate();
-  const [q, setQ] = useState(params.get("q") ?? "");
+interface AdvancedSearchBarProps {
+  onToggleFilters?: () => void;
+}
+
+export function AdvancedSearchBar({ onToggleFilters }: AdvancedSearchBarProps) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [q, setQ] = useState(searchParams.get("q") ?? "");
+
+  useEffect(() => {
+    setQ(searchParams.get("q") ?? "");
+  }, [searchParams]);
+
+  const applySearch = (query: string) => {
+    const next = new URLSearchParams(searchParams);
+    const trimmed = query.trim();
+    if (trimmed) next.set("q", trimmed);
+    else next.delete("q");
+    next.delete("page");
+    setSearchParams(next, { replace: true });
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    const next = new URLSearchParams(params);
-    if (q.trim()) next.set("q", q.trim());
-    else next.delete("q");
-    next.delete("page");
-    navigate({ search: next.toString() });
+    applySearch(q);
   };
 
   return (
@@ -29,7 +41,9 @@ export function AdvancedSearchBar({ onToggleFilters }: { onToggleFilters?: () =>
           className="h-11 pl-10"
         />
       </div>
-      <Button type="submit" variant="default" className="h-11 px-6">Search</Button>
+      <Button type="submit" variant="default" className="h-11 px-6">
+        Search
+      </Button>
       {onToggleFilters && (
         <Button type="button" variant="outline" className="h-11 lg:hidden" onClick={onToggleFilters}>
           <SlidersHorizontal className="h-4 w-4" />

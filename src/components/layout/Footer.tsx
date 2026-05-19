@@ -6,7 +6,7 @@ import { FOOTER_COLUMNS, SOCIAL_LINKS } from "@/features/home/data/homepage-data
 export function Footer() {
   return (
     <footer className="border-t border-border bg-secondary text-foreground">
-      <div className="container mx-auto px-4 py-16">
+      <div className="container py-16">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-4">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold">

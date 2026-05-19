@@ -26,7 +26,7 @@ export function FinanceSection() {
 
   return (
     <section className="home-section-card">
-      <div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Smart finance"
           title="Instant Auto Loans"
@@ -35,95 +35,96 @@ export function FinanceSection() {
           linkLabel="Compare all loans"
         />
 
-        <motion.div
-          className="grid gap-8 lg:grid-cols-[1fr_1.2fr]"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-        >
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,280px)_1fr]">
           <Card className="border-primary/20 bg-muted/40 dark:bg-card">
-            <CardContent className="space-y-5 p-6">
+            <CardContent className="space-y-3 p-4">
               <div className="flex items-center gap-2 text-primary">
-                <Calculator className="h-5 w-5" />
-                <h3 className="font-semibold text-foreground dark:text-foreground">EMI Preview</h3>
+                <Calculator className="h-4 w-4" />
+                <h3 className="text-sm font-semibold text-foreground">EMI Preview</h3>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="loan-amount">Loan amount (₹)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="loan-amount" className="text-xs">
+                  Loan amount (₹)
+                </Label>
                 <Input
                   id="loan-amount"
                   type="number"
+                  className="h-9"
                   value={amount}
                   onChange={(e) => setAmount(Number(e.target.value) || 0)}
                   min={100000}
                   step={50000}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="tenure">Tenure (months)</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="tenure" className="text-xs">
+                  Tenure (months)
+                </Label>
                 <Input
                   id="tenure"
                   type="number"
+                  className="h-9"
                   value={tenure}
                   onChange={(e) => setTenure(Number(e.target.value) || 12)}
                   min={12}
                   max={84}
                 />
               </div>
-              <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-                <p className="text-sm text-muted-foreground">Estimated EMI @ 9.5% p.a.</p>
-                <p className="text-3xl font-bold text-primary">{formatCurrency(Math.round(emi))}/mo</p>
+              <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">
+                <p className="text-[10px] text-muted-foreground">Estimated EMI @ 9.5% p.a.</p>
+                <p className="text-xl font-bold text-primary">{formatCurrency(Math.round(emi))}/mo</p>
               </div>
-              <Button variant="default" className="w-full" asChild>
+              <Button variant="default" size="sm" className="h-9 w-full text-xs" asChild>
                 <Link to="/finance/apply">
                   Check Eligibility
-                  <ArrowRight className="h-4 w-4" />
+                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </Button>
             </CardContent>
           </Card>
 
-          <motion.div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {featured.map((loan, index) => (
               <motion.div
                 key={loan.id}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
+                transition={{ delay: index * 0.06 }}
               >
                 <Card className="relative h-full hover:shadow-card-hover">
                   {loan.is_featured && (
-                    <Badge className="absolute right-4 top-4 border-0 bg-primary text-primary-foreground">
+                    <Badge className="absolute right-2 top-2 border-0 bg-primary px-1.5 py-0 text-[10px] text-primary-foreground">
                       Popular
                     </Badge>
                   )}
-                  <CardContent className="space-y-4 p-5">
-                    <motion.div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-sm font-bold text-primary">
+                  <CardContent className="space-y-3 p-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-[10px] font-bold text-primary">
                         {loan.bank_name.slice(0, 2).toUpperCase()}
                       </div>
-                      <div>
-                        <h4 className="font-semibold">{loan.bank_name}</h4>
-                        <p className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Percent className="h-3.5 w-3.5" />
+                      <div className="min-w-0">
+                        <h4 className="truncate text-sm font-semibold">{loan.bank_name}</h4>
+                        <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                          <Percent className="h-3 w-3" />
                           {loan.interest_rate_min}% – {loan.interest_rate_max}% p.a.
                         </p>
                       </div>
-                    </motion.div>
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="rounded-lg bg-muted/60 p-2 dark:bg-muted/40">
-                        <p className="text-xs text-muted-foreground">Max loan</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1.5 text-xs">
+                      <div className="rounded-md bg-muted/60 p-2 dark:bg-muted/40">
+                        <p className="text-[10px] text-muted-foreground">Max loan</p>
                         <p className="font-semibold">{formatCurrency(loan.max_loan_amount)}</p>
                       </div>
-                      <div className="rounded-lg bg-muted/60 p-2 dark:bg-muted/40">
-                        <p className="text-xs text-muted-foreground">Tenure</p>
+                      <div className="rounded-md bg-muted/60 p-2 dark:bg-muted/40">
+                        <p className="text-[10px] text-muted-foreground">Tenure</p>
                         <p className="font-semibold">Up to {loan.tenure_max_months} mo</p>
                       </div>
                     </div>
-                    <ul className="space-y-1.5">
+                    <ul className="space-y-1">
                       {loan.features.slice(0, 2).map((feature: string) => (
-                        <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <CheckCircle2 className="h-4 w-4 shrink-0 text-primary" />
+                        <li key={feature} className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                           {feature}
                         </li>
                       ))}
@@ -132,8 +133,8 @@ export function FinanceSection() {
                 </Card>
               </motion.div>
             ))}
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
     </section>
   );

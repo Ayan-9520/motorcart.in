@@ -102,6 +102,9 @@ export interface VehicleListing {
 
 export interface VehicleFilters {
   category?: VehicleCategory;
+  /** Hub slug for auto / equipment (not in VehicleCategory enum) */
+  hubCategory?: "auto" | "equipment";
+  condition?: "new" | "used";
   brand?: string;
   model?: string;
   fuel?: string;

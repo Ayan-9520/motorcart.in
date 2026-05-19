@@ -1,31 +1,76 @@
+import type { ComponentType, MouseEvent } from "react";
 import { Link } from "react-router-dom";
-import { Heart, MapPin, ShieldCheck, Sparkles, GitCompare, Gauge, Fuel, MessageCircle } from "lucide-react";
+import {
+  Calendar,
+  Fuel,
+  Gauge,
+  GitCompare,
+  Heart,
+  MapPin,
+  MessageCircle,
+  Settings2,
+  Share2,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Users,
+} from "lucide-react";
 import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { vehicleDetailPath, getDiscountedPrice, getVehicleEmi } from "@/lib/vehicle-utils";
+import {
+  deriveFairPriceLabel,
+  getDiscountedPrice,
+  getVehicleEmi,
+  vehicleDetailPath,
+  whatsAppVehicleUrl,
+} from "@/lib/vehicle-utils";
 import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
-import type { VehicleListing } from "@/types/vehicle";
+import type { FairPriceLabel, VehicleListing } from "@/types/vehicle";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
+import { VehicleImage, vehicleImageSrc } from "./VehicleImage";
 
 interface VehicleCardProps {
   vehicle: VehicleListing;
   index?: number;
   layout?: "grid" | "list";
+  /** Compact premium card for listing grids (2–3 per row) */
+  compact?: boolean;
 }
 
-export function VehicleCard({ vehicle, index = 0, layout = "grid" }: VehicleCardProps) {
-  const { toggleWishlist, isWishlisted, addCompare, isInCompare, removeCompare } = useVehicleMarketStore();
+const FAIR_PRICE_STYLES: Record<FairPriceLabel, string> = {
+  "great-deal": "bg-primary/15 text-primary border-primary/30",
+  "fair-price": "bg-muted text-foreground border-border",
+  "high-price": "bg-destructive/10 text-destructive border-destructive/30",
+};
+
+const FAIR_PRICE_LABELS: Record<FairPriceLabel, string> = {
+  "great-deal": "Great Deal",
+  "fair-price": "Fair Price",
+  "high-price": "High Price",
+};
+
+export function VehicleCard({ vehicle, index = 0, layout = "grid", compact = true }: VehicleCardProps) {
+  const toggleWishlist = useVehicleMarketStore((s) => s.toggleWishlist);
+  const wishlisted = useVehicleMarketStore((s) => s.wishlist.includes(vehicle.id));
+  const addCompare = useVehicleMarketStore((s) => s.addCompare);
+  const removeCompare = useVehicleMarketStore((s) => s.removeCompare);
+  const inCompare = useVehicleMarketStore((s) => s.compare.includes(vehicle.id));
   const price = getDiscountedPrice(vehicle);
   const emi = getVehicleEmi(vehicle);
-  const wishlisted = isWishlisted(vehicle.id);
-  const inCompare = isInCompare(vehicle.id);
   const discount = vehicle.metadata.discountPercent;
+  const detailPath = vehicleDetailPath(vehicle);
+  const isNew =
+    vehicle.condition === "new" || vehicle.category === "new-cars";
+  const fair =
+    vehicle.metadata.fairPriceLabel ?? deriveFairPriceLabel(vehicle);
+  const onRoad = vehicle.metadata.onRoadPrice ?? Math.round(price * 1.12);
+  const rating = vehicle.metadata.rating ?? vehicle.dealerRating ?? 4.2;
 
-  const handleCompare = (e: React.MouseEvent) => {
+  const handleCompare = (e: MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (inCompare) {
@@ -37,55 +82,83 @@ export function VehicleCard({ vehicle, index = 0, layout = "grid" }: VehicleCard
     else toast.success("Added to compare");
   };
 
+  const handleWishlist = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const wasSaved = wishlisted;
+    toggleWishlist(vehicle.id);
+    toast.success(wasSaved ? "Removed from wishlist" : "Saved to wishlist");
+  };
+
+  const handleShare = async (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${window.location.origin}${detailPath}`;
+    if (navigator.share) {
+      await navigator.share({ title: vehicle.title, url });
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.success("Link copied");
+    }
+  };
+
   if (layout === "list") {
     return (
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.04 }}>
-        <Card className="overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.03 }}
+        className="min-w-0"
+      >
+        <Card className="premium-vehicle-card overflow-hidden">
           <div className="flex flex-col sm:flex-row">
             <Link
-              to={vehicleDetailPath(vehicle)}
-              className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-secondary sm:w-72"
+              to={detailPath}
+              className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-muted sm:w-56 md:w-64"
             >
-              <img
-                src={vehicle.images[0]}
+              <VehicleImage
+                src={vehicleImageSrc(vehicle.images)}
                 alt={vehicle.title}
-                className="h-full w-full object-cover transition-transform duration-500 hover:scale-[1.02]"
+                className="relative h-full w-full object-cover"
               />
-              {discount ? <Badge className="absolute left-3 top-3 bg-[#ef4444] text-white">{discount}% OFF</Badge> : null}
+              {discount ? (
+                <Badge className="absolute left-2 top-2 bg-destructive text-[10px] text-destructive-foreground">
+                  {discount}% OFF
+                </Badge>
+              ) : null}
             </Link>
-            <CardContent className="flex flex-1 flex-col justify-between p-5">
+            <CardContent className="flex flex-1 flex-col justify-between p-4">
               <div>
-                <Link to={vehicleDetailPath(vehicle)} className="line-clamp-2 text-lg font-semibold text-foreground hover:text-primary">
-                  {vehicle.title}
-                </Link>
-                <p className="mt-1 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Gauge className="h-3.5 w-3.5" />
-                    {vehicle.kmsDriven.toLocaleString()} km
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Fuel className="h-3.5 w-3.5" />
-                    {vehicle.fuelType}
-                  </span>
-                  <span>{vehicle.transmission}</span>
-                </p>
-                <p className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-                  <MapPin className="h-3 w-3" />
-                  {vehicle.location} · {vehicle.dealerName}
+                <div className="flex items-start justify-between gap-2">
+                  <Link to={detailPath} className="line-clamp-2 text-sm font-semibold hover:text-primary">
+                    {vehicle.title}
+                  </Link>
+                  <CardIconActions
+                    wishlisted={wishlisted}
+                    onWishlist={() => {
+                      const wasSaved = wishlisted;
+                      toggleWishlist(vehicle.id);
+                      toast.success(wasSaved ? "Removed from wishlist" : "Saved to wishlist");
+                    }}
+                    onShare={handleShare}
+                  />
+                </div>
+                <SpecRow vehicle={vehicle} isNew={isNew} />
+                <p className="mt-1.5 flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  {vehicle.city} · {vehicle.dealerName}
                 </p>
               </div>
-              <div className="mt-4 flex items-end justify-between">
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{formatCurrency(price)}</p>
-                  <p className="text-sm text-muted-foreground">EMI from {formatCurrency(emi)}/mo</p>
+              <div className="mt-3 flex items-end justify-between gap-3">
+                <PriceBlock price={price} emi={emi} isNew={isNew} onRoad={onRoad} original={vehicle.originalPrice} />
+                <div className="flex gap-1">
+                  <Button type="button" size="sm" variant="outline" className="h-8" onClick={handleCompare}>
+                    <GitCompare className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button size="sm" className="h-8" asChild>
+                    <Link to={detailPath}>View</Link>
+                  </Button>
                 </div>
-                <CardActions
-                  wishlisted={wishlisted}
-                  inCompare={inCompare}
-                  onWishlist={() => toggleWishlist(vehicle.id)}
-                  onCompare={handleCompare}
-                  detailPath={vehicleDetailPath(vehicle)}
-                />
               </div>
             </CardContent>
           </div>
@@ -95,72 +168,133 @@ export function VehicleCard({ vehicle, index = 0, layout = "grid" }: VehicleCard
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}>
-      <Card className="group overflow-hidden">
-        <Link to={vehicleDetailPath(vehicle)} className="block">
-          <div className="relative aspect-[16/10] overflow-hidden bg-secondary">
-            <img
-              src={vehicle.images[0]}
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      className="min-w-0"
+    >
+      <Card className={cn("premium-vehicle-card group overflow-hidden p-0", compact && "rounded-xl")}>
+        <Link to={detailPath} className="block">
+          <div className={cn("relative overflow-hidden bg-muted", compact ? "aspect-[16/10]" : "aspect-[16/11]")}>
+            <VehicleImage
+              src={vehicleImageSrc(vehicle.images)}
               alt={vehicle.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-black/50" />
-            <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/55 to-transparent px-2 pb-2 pt-8">
+              <p className="text-[10px] font-medium text-primary-foreground/90">
+                {isNew ? "Dealer verified · Test drive available" : "12+ buyers viewed this week"}
+              </p>
+            </div>
+            <div className="absolute left-2 top-2 flex flex-wrap gap-1">
               {vehicle.isCertified && (
-                <Badge className="gap-1 border-0 bg-primary text-primary-foreground">
-                  <ShieldCheck className="h-3 w-3" />
+                <Badge className="gap-0.5 border-0 bg-primary px-1.5 py-0 text-[9px] text-primary-foreground">
+                  <ShieldCheck className="h-2.5 w-2.5" />
                   Verified
                 </Badge>
               )}
-              {vehicle.aiPriceScore != null && (
-                <Badge variant="outline" className="border-border bg-secondary/90 text-white">
-                  <Sparkles className="h-3 w-3" />
-                  {vehicle.aiPriceScore}%
+              {!isNew && vehicle.aiPriceScore != null && (
+                <Badge
+                  variant="outline"
+                  className={cn("px-1.5 py-0 text-[9px] font-semibold", FAIR_PRICE_STYLES[fair])}
+                >
+                  <Sparkles className="mr-0.5 h-2.5 w-2.5" />
+                  {FAIR_PRICE_LABELS[fair]}
                 </Badge>
               )}
-              {discount ? <Badge className="bg-[#ef4444] text-white">{discount}% OFF</Badge> : null}
+              {isNew && vehicle.metadata.offerTag && (
+                <Badge className="border-0 bg-primary px-1.5 py-0 text-[9px] text-primary-foreground">
+                  {vehicle.metadata.offerTag}
+                </Badge>
+              )}
+              {discount ? (
+                <Badge className="border-0 bg-destructive px-1.5 py-0 text-[9px] text-destructive-foreground">
+                  {discount}% OFF
+                </Badge>
+              ) : null}
+            </div>
+            <div className="absolute right-2 top-2 flex gap-1" onClick={(e) => e.preventDefault()}>
+              <button
+                type="button"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary"
+                onClick={handleWishlist}
+                aria-label="Wishlist"
+              >
+                <Heart className={cn("h-3.5 w-3.5", wishlisted && "fill-destructive text-destructive")} />
+              </button>
+              <button
+                type="button"
+                className="flex h-7 w-7 items-center justify-center rounded-full bg-card/90 text-muted-foreground shadow-sm backdrop-blur hover:text-primary"
+                onClick={handleShare}
+                aria-label="Share"
+              >
+                <Share2 className="h-3.5 w-3.5" />
+              </button>
             </div>
           </div>
-          <CardContent className="space-y-3 p-4">
-            <h3 className="line-clamp-2 font-semibold leading-snug text-white group-hover:text-primary">{vehicle.title}</h3>
-            <p className="text-xl font-bold text-foreground">{formatCurrency(price)}</p>
-            {vehicle.originalPrice && vehicle.originalPrice > price && (
-              <p className="text-sm text-muted-foreground line-through">{formatCurrency(vehicle.originalPrice)}</p>
-            )}
-            <p className="text-sm text-muted-foreground">
-              EMI from {formatCurrency(emi)}/mo · {vehicle.year}
-            </p>
-            <p className="flex items-center gap-1 text-xs text-muted-foreground">
-              <MapPin className="h-3 w-3 shrink-0" />
+
+          <CardContent className={cn("space-y-2", compact ? "p-3" : "p-4")}>
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary">
+                {vehicle.title}
+              </h3>
+              <span className="flex shrink-0 items-center gap-0.5 rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary">
+                <Star className="h-2.5 w-2.5 fill-primary" />
+                {rating.toFixed(1)}
+              </span>
+            </div>
+
+            <p className="flex items-center gap-1 text-[11px] text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0 text-primary" />
               <span className="line-clamp-1">
-                {vehicle.city} · {vehicle.dealerName}
+                {vehicle.city}
+                {vehicle.dealerName ? ` · ${vehicle.dealerName}` : ""}
               </span>
             </p>
-            <div className="flex flex-wrap gap-1 pt-1">
-              <Badge variant="outline" className="text-[10px]">
-                {vehicle.fuelType}
+
+            <SpecRow vehicle={vehicle} isNew={isNew} />
+
+            <div className="flex items-end justify-between gap-2 border-t border-border/60 pt-2">
+              <PriceBlock
+                price={price}
+                emi={emi}
+                isNew={isNew}
+                onRoad={onRoad}
+                original={vehicle.originalPrice}
+                compact={compact}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <Badge variant="outline" className="text-[10px] font-medium">
+                {vehicle.dealerName?.includes("Motors") ? "Dealer" : "Owner"}
               </Badge>
-              <Badge variant="outline" className="text-[10px]">
-                {vehicle.transmission}
-              </Badge>
-              <Badge variant="outline" className="text-[10px]">
-                {vehicle.kmsDriven.toLocaleString()} km
-              </Badge>
+              {!isNew && (
+                <span className="text-[10px] text-muted-foreground">
+                  Inspection {vehicle.metadata.inspectionScore ?? 85}/100
+                </span>
+              )}
             </div>
           </CardContent>
         </Link>
-        <div className="flex gap-2 border-t border-border p-3">
-          <Button variant="outline" size="sm" className="flex-1 gap-1 border-primary/40 text-primary" asChild>
-            <a href={`https://wa.me/919876543210?text=${encodeURIComponent(vehicle.title)}`} target="_blank" rel="noreferrer">
-              <MessageCircle className="h-4 w-4" />
-              WhatsApp
+
+        <div className={cn("grid grid-cols-2 gap-1.5 border-t border-border", compact ? "p-2" : "p-3")}>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            className="h-8 rounded-md text-[11px]"
+            onClick={handleCompare}
+          >
+            <GitCompare className="mr-1 h-3.5 w-3.5" />
+            Compare
+          </Button>
+          <Button size="sm" className="h-8 rounded-md text-[11px]" asChild>
+            <a href={whatsAppVehicleUrl(vehicle)} target="_blank" rel="noreferrer">
+              <MessageCircle className="mr-1 h-3.5 w-3.5" />
+              Contact
             </a>
-          </Button>
-          <Button size="sm" className="flex-1" asChild>
-            <Link to={vehicleDetailPath(vehicle)}>View</Link>
-          </Button>
-          <Button variant="secondary" size="sm" onClick={handleCompare}>
-            <GitCompare className="h-4 w-4" />
           </Button>
         </div>
       </Card>
@@ -168,40 +302,99 @@ export function VehicleCard({ vehicle, index = 0, layout = "grid" }: VehicleCard
   );
 }
 
-function CardActions({
-  wishlisted,
-  inCompare,
-  onWishlist,
-  onCompare,
-  detailPath,
+function SpecRow({ vehicle, isNew }: { vehicle: VehicleListing; isNew: boolean }) {
+  if (isNew) {
+    return (
+      <div className="grid grid-cols-3 gap-1.5 text-[10px] text-muted-foreground">
+        <SpecCell icon={Fuel} label={vehicle.fuelType} />
+        <SpecCell icon={Settings2} label={vehicle.transmission} />
+        <SpecCell icon={Calendar} label={String(vehicle.year)} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-[10px] text-muted-foreground sm:grid-cols-3">
+      <SpecCell icon={Gauge} label={`${vehicle.kmsDriven.toLocaleString()} km`} />
+      <SpecCell icon={Users} label={`${vehicle.owners} owner${vehicle.owners > 1 ? "s" : ""}`} />
+      <SpecCell icon={Settings2} label={vehicle.transmission} />
+      <SpecCell icon={Fuel} label={vehicle.fuelType} />
+      <SpecCell icon={Calendar} label={String(vehicle.year)} />
+    </div>
+  );
+}
+
+function SpecCell({ icon: Icon, label }: { icon: ComponentType<{ className?: string }>; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1 truncate rounded border border-border/80 bg-muted/40 px-1.5 py-1">
+      <Icon className="h-2.5 w-2.5 shrink-0 text-primary" />
+      <span className="truncate">{label}</span>
+    </span>
+  );
+}
+
+function PriceBlock({
+  price,
+  emi,
+  isNew,
+  onRoad,
+  original,
+  compact,
 }: {
-  wishlisted: boolean;
-  inCompare: boolean;
-  onWishlist: () => void;
-  onCompare: (e: React.MouseEvent) => void;
-  detailPath: string;
+  price: number;
+  emi: number;
+  isNew: boolean;
+  onRoad: number;
+  original?: number;
+  compact?: boolean;
 }) {
   return (
-    <div className="flex gap-1">
+    <div className="min-w-0 flex-1">
+      {isNew ? (
+        <p className="text-[10px] text-muted-foreground">Ex-showroom from</p>
+      ) : null}
+      <p className={cn("font-bold text-foreground", compact ? "text-base" : "text-lg")}>
+        {formatCurrency(price)}
+        {!isNew && <span className="text-[10px] font-normal text-muted-foreground">*</span>}
+      </p>
+      {original && original > price ? (
+        <p className="text-[10px] text-muted-foreground line-through">{formatCurrency(original)}</p>
+      ) : null}
+      {isNew ? (
+        <p className="text-[10px] text-muted-foreground">On-road ~{formatCurrency(onRoad)}</p>
+      ) : null}
+      <div className="mt-1 inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+        EMI {formatCurrency(emi)}/mo
+      </div>
+    </div>
+  );
+}
+
+function CardIconActions({
+  wishlisted,
+  onWishlist,
+  onShare,
+}: {
+  wishlisted: boolean;
+  onWishlist: () => void;
+  onShare: (e: MouseEvent) => void;
+}) {
+  return (
+    <div className="flex shrink-0 gap-1">
       <Button
         type="button"
         size="icon"
-        variant="secondary"
-        className={cn("h-8 w-8", wishlisted && "text-[#ef4444]")}
+        variant="ghost"
+        className={cn("h-7 w-7", wishlisted && "text-destructive")}
         onClick={(e) => {
           e.preventDefault();
-          e.stopPropagation();
           onWishlist();
         }}
-        aria-label="Wishlist"
       >
-        <Heart className={cn("h-4 w-4", wishlisted && "fill-current")} />
+        <Heart className={cn("h-3.5 w-3.5", wishlisted && "fill-current")} />
       </Button>
-      <Button type="button" size="icon" variant="secondary" className={cn("h-8 w-8", inCompare && "text-primary")} onClick={onCompare} aria-label="Compare">
-        <GitCompare className="h-4 w-4" />
-      </Button>
-      <Button size="sm" asChild>
-        <Link to={detailPath}>View</Link>
+      <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={onShare}>
+        <Share2 className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

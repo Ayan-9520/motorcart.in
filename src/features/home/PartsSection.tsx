@@ -13,7 +13,7 @@ const featuredParts = autoParts.slice(0, 4);
 export function PartsSection() {
   return (
     <section className="section-padding">
-      <motion.div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Auto parts"
           title="Genuine Parts Marketplace"
@@ -21,7 +21,7 @@ export function PartsSection() {
           href="/parts"
           linkLabel="Shop all parts"
         />
-        <motion.div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {featuredParts.map((part, index) => (
             <motion.div
               key={part.id}
@@ -41,14 +41,14 @@ export function PartsSection() {
                     {part.category}
                   </Badge>
                 </div>
-                <CardContent className="space-y-3 p-5">
+                <CardContent className="space-y-2 p-3">
                   <h3 className="line-clamp-2 text-sm font-semibold leading-snug">{part.name}</h3>
                   <div className="flex items-center gap-1 text-xs text-amber-600">
                     <Star className="h-3.5 w-3.5 fill-current" />
                     {part.rating} ({part.reviewCount.toLocaleString("en-IN")})
                   </div>
                   <motion.div className="flex items-baseline gap-2">
-                    <span className="text-lg font-bold text-primary">{formatCurrency(part.price)}</span>
+                    <span className="text-base font-bold text-primary">{formatCurrency(part.price)}</span>
                     {part.originalPrice != null && (
                       <span className="text-sm text-muted-foreground line-through">
                         {formatCurrency(part.originalPrice)}
@@ -56,17 +56,17 @@ export function PartsSection() {
                     )}
                   </motion.div>
                   <Button variant="outline" size="sm" className="w-full gap-2" asChild>
-                    <Link to={`/parts/${part.slug}`}>
+                    <Link to="/parts/browse">
                       <ShoppingCart className="h-4 w-4" />
-                      Add to cart
+                      Shop parts
                     </Link>
                   </Button>
                 </CardContent>
               </Card>
             </motion.div>
           ))}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

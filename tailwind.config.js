@@ -3,6 +3,21 @@ export default {
   darkMode: ["class"],
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
+    container: {
+      center: true,
+      padding: {
+        DEFAULT: "1.25rem",
+        sm: "1.5rem",
+        lg: "2rem",
+      },
+      screens: {
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1140px",
+        "2xl": "1140px",
+      },
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",

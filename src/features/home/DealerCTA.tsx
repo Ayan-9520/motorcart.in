@@ -14,7 +14,7 @@ const perks = [
 export function DealerCTA() {
   return (
     <section className="home-section">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <motion.div
           className="home-cta-panel"
           initial={{ opacity: 0, y: 24 }}
@@ -22,23 +22,23 @@ export function DealerCTA() {
           viewport={{ once: true }}
         >
           <div className="absolute -right-16 -top-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-          <div className="relative grid items-center gap-10 lg:grid-cols-2">
-            <div className="space-y-5">
-              <Badge className="border-primary/30 bg-primary/10 text-primary">Partner program</Badge>
-              <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          <div className="relative grid items-center gap-6 lg:grid-cols-2">
+            <div className="space-y-3">
+              <Badge className="border-primary/30 bg-primary/10 text-[10px] text-primary">Partner program</Badge>
+              <h2 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
                 Become a Verified Dealer on Motorcart.in
               </h2>
-              <p className="max-w-lg text-muted-foreground">
+              <p className="max-w-lg text-sm text-muted-foreground">
                 Join India&apos;s fastest-growing automotive marketplace with AI leads and enterprise tools.
               </p>
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="rounded-xl" asChild>
+                <Button size="sm" className="home-section-cta rounded-lg" asChild>
                   <Link to="/dashboard/dealer">
                     Apply as Dealer
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-xl bg-card" asChild>
+                <Button size="sm" variant="outline" className="home-section-cta rounded-lg bg-card" asChild>
                   <Link to="/dealers">Learn more</Link>
                 </Button>
               </div>
@@ -53,10 +53,10 @@ export function DealerCTA() {
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.08 }}
-                    className="rounded-xl border border-border bg-muted/50 p-4 dark:bg-muted/30"
+                    className="rounded-lg border border-border bg-muted/50 p-3 dark:bg-muted/30"
                   >
-                    <Icon className="mb-2 h-6 w-6 text-primary" />
-                    <p className="text-sm font-medium text-foreground">{perk.label}</p>
+                    <Icon className="mb-1.5 h-5 w-5 text-primary" />
+                    <p className="text-xs font-medium text-foreground">{perk.label}</p>
                   </motion.div>
                 );
               })}

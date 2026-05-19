@@ -53,7 +53,7 @@ export const DASHBOARD_ROUTES: Partial<Record<UserRole, string>> = {
 };
 
 export const NAV_LINKS = [
-  { label: "Buy", href: "/vehicles" },
+  { label: "Buy", href: "/buy" },
   { label: "Sell", href: "/sell" },
   { label: "Auctions", href: "/auctions" },
   { label: "Finance", href: "/finance" },

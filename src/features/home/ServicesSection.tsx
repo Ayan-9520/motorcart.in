@@ -47,8 +47,8 @@ const serviceCards = [
 
 export function ServicesSection() {
   return (
-    <section className="section-padding bg-muted/40 dark:bg-muted/30">
-      <motion.div className="container mx-auto space-y-10 px-4">
+    <section className="home-section-alt">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="After-sales"
           title="Automotive Services"
@@ -56,44 +56,44 @@ export function ServicesSection() {
           href="/services"
           linkLabel="All services"
         />
-        <motion.div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {serviceCards.map((service, index) => {
             const Icon = service.icon;
             return (
               <motion.div
                 key={service.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.08 }}
+                transition={{ delay: index * 0.06 }}
               >
                 <Card className="group h-full overflow-hidden hover:shadow-card-hover">
-                  <div className="relative aspect-[4/3] overflow-hidden">
+                  <div className="relative aspect-[5/3] overflow-hidden">
                     <img
                       src={service.image}
                       alt={service.title}
-                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     />
-                    <motion.div className="absolute left-3 top-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-white">
-                      <Icon className="h-5 w-5" />
-                    </motion.div>
+                    <div className="absolute left-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
+                      <Icon className="h-4 w-4" />
+                    </div>
                   </div>
-                  <CardContent className="space-y-3 p-5">
-                    <h3 className="font-semibold">{service.title}</h3>
-                    <p className="text-sm text-muted-foreground">{service.description}</p>
-                    <p className="text-sm font-medium text-primary">
+                  <CardContent className="space-y-2 p-3">
+                    <h3 className="text-sm font-semibold">{service.title}</h3>
+                    <p className="line-clamp-2 text-xs text-muted-foreground">{service.description}</p>
+                    <p className="text-xs font-medium text-primary">
                       From {formatCurrency(service.priceFrom)}
                     </p>
-                    <Button variant="outline" size="sm" className="w-full" asChild>
-                      <Link to={`/services?type=${service.type}`}>Book now</Link>
+                    <Button variant="outline" size="sm" className="h-8 w-full text-xs" asChild>
+                      <Link to="/services/browse">Book now</Link>
                     </Button>
                   </CardContent>
                 </Card>
               </motion.div>
             );
           })}
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

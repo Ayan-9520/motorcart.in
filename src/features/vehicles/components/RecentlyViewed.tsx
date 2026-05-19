@@ -9,14 +9,19 @@ export function RecentlyViewed({ pool = MOCK_VEHICLES }: { pool?: VehicleListing
     .map((id) => pool.find((v) => v.id === id))
     .filter(Boolean) as VehicleListing[];
 
-  if (items.length < 2) return null;
+  if (items.length < 1) return null;
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-xl font-bold">Recently Viewed</h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {items.slice(0, 4).map((v, i) => (
-          <VehicleCard key={v.id} vehicle={v} index={i} />
+    <section className="premium-section-block space-y-4 border-t border-border pt-8">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-foreground md:text-xl">Recently viewed</h2>
+          <p className="text-xs text-muted-foreground">Pick up where you left off</p>
+        </div>
+      </div>
+      <div className="vehicle-listing-grid vehicle-listing-grid-relaxed">
+        {items.slice(0, 3).map((v, i) => (
+          <VehicleCard key={v.id} vehicle={v} index={i} compact />
         ))}
       </div>
     </section>

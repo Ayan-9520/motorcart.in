@@ -1,22 +1,29 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import { setPageMeta } from "@/utils/seo";
 import { useFinanceMarketplace } from "../hooks/useFinanceMarketplace";
 import { LoanComparisonTable } from "../components/LoanComparisonTable";
 import { AiRecommendationPanel } from "../components/AiRecommendationPanel";
+import { FinanceSubpageShell } from "../components/FinanceSubpageShell";
+import { FinanceSubpageQuickLinks } from "../components/FinanceSubpageQuickLinks";
+import { financeCategoryLabel, parseFinanceType } from "../lib/finance-hub-routes";
 
 export function LoanComparePage() {
-  const { offers, recommendations, loanAmount, tenureMonths, setLoanAmount, setTenureMonths } = useFinanceMarketplace();
+  const [params] = useSearchParams();
+  const loanType = parseFinanceType(params.get("type"));
+  const { offers, recommendations, loanAmount, tenureMonths, setLoanAmount, setTenureMonths } =
+    useFinanceMarketplace();
   const [selected, setSelected] = useState<string[]>([]);
 
   useEffect(() => {
-    setPageMeta({ title: "Compare Auto Loans — Motorcart.in" });
-  }, []);
+    const label = loanType ? financeCategoryLabel(loanType) : "Auto Loan";
+    setPageMeta({ title: `Compare ${label} — Motorcart.in` });
+  }, [loanType]);
 
   const toggle = (slug: string) => {
     setSelected((prev) =>
@@ -25,32 +32,61 @@ export function LoanComparePage() {
   };
 
   const compared = offers.filter((o) => selected.length === 0 || selected.includes(o.slug));
+  const applyHref = loanType ? `/finance/apply?type=${loanType}` : "/finance/apply";
 
   return (
-    <div className="container mx-auto space-y-8 px-4 py-8">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to="/finance"><ArrowLeft className="h-4 w-4 mr-1" /> Finance home</Link>
-      </Button>
-      <h1 className="text-3xl font-bold">Loan comparison</h1>
-      <p className="text-muted-foreground">Select up to 4 lenders to compare side-by-side.</p>
+    <FinanceSubpageShell
+      title="Compare lenders"
+      subtitle="Select up to 4 banks side-by-side. Adjust loan amount and tenure — EMI updates instantly across all offers."
+      loanType={loanType}
+    >
+      <FinanceSubpageQuickLinks active="compare" loanType={loanType} />
 
-      <div className="grid gap-4 sm:grid-cols-2 max-w-xl">
-        <div>
-          <Label>Loan amount (₹)</Label>
-          <Input type="number" value={loanAmount} onChange={(e) => setLoanAmount(Number(e.target.value))} />
-        </div>
-        <div>
-          <Label>Tenure (months)</Label>
-          <Input type="number" value={tenureMonths} onChange={(e) => setTenureMonths(Number(e.target.value))} />
+      <Card className="finance-compare-params premium-vehicle-card mb-6 overflow-hidden">
+        <CardContent className="grid gap-4 p-4 sm:grid-cols-2 md:p-5">
+          <div>
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Loan amount (₹)
+            </Label>
+            <Input
+              type="number"
+              className="mt-1.5"
+              value={loanAmount}
+              onChange={(e) => setLoanAmount(Number(e.target.value))}
+            />
+          </div>
+          <div>
+            <Label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Tenure (months)
+            </Label>
+            <Input
+              type="number"
+              className="mt-1.5"
+              value={tenureMonths}
+              onChange={(e) => setTenureMonths(Number(e.target.value))}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="mb-6 grid gap-6 lg:grid-cols-3">
+        <aside className="lg:col-span-1">
+          <AiRecommendationPanel recommendations={recommendations} />
+        </aside>
+        <div className="lg:col-span-2">
+          <LoanComparisonTable offers={compared} selectedSlugs={selected} onToggle={toggle} />
         </div>
       </div>
 
-      <AiRecommendationPanel recommendations={recommendations} />
-      <LoanComparisonTable offers={compared} selectedSlugs={selected} onToggle={toggle} />
-
-      <Button variant="default" asChild>
-        <Link to="/finance/apply">Apply with best offer</Link>
+      <Button
+        variant="default"
+        className="h-12 rounded-xl px-8 text-base font-semibold shadow-[var(--shadow-primary)]"
+        asChild
+      >
+        <Link to={applyHref}>
+          Apply with best offer <ArrowRight className="ml-2 h-4 w-4" />
+        </Link>
       </Button>
-    </div>
+    </FinanceSubpageShell>
   );
 }

@@ -115,6 +115,26 @@ export function filterVehicles(
 ): VehicleListing[] {
   let result = [...vehicles];
 
+  if (filters.condition) {
+    result = result.filter((v) => v.condition === filters.condition);
+  }
+
+  if (filters.hubCategory === "auto") {
+    result = result.filter((v) =>
+      ["auto", "rickshaw", "three-wheeler", "three wheeler"].some((t) =>
+        v.bodyType.toLowerCase().includes(t)
+      )
+    );
+  }
+
+  if (filters.hubCategory === "equipment") {
+    result = result.filter((v) =>
+      ["equipment", "tractor", "excavator", "loader", "crane", "forklift", "harvester"].some((t) =>
+        v.bodyType.toLowerCase().includes(t)
+      )
+    );
+  }
+
   if (filters.category) {
     const rule = CATEGORY_MAP[filters.category];
     if (rule.condition) result = result.filter((v) => v.condition === rule.condition);
@@ -151,7 +171,10 @@ export function filterVehicles(
         v.title.toLowerCase().includes(q) ||
         v.brand.toLowerCase().includes(q) ||
         v.model.toLowerCase().includes(q) ||
-        v.city.toLowerCase().includes(q)
+        v.city.toLowerCase().includes(q) ||
+        (v.location?.toLowerCase().includes(q) ?? false) ||
+        (v.dealerName?.toLowerCase().includes(q) ?? false) ||
+        (v.description?.toLowerCase().includes(q) ?? false)
     );
   }
 
@@ -236,8 +259,13 @@ export function getAIRecommendations(
 }
 
 export function filtersFromSearchParams(params: URLSearchParams): VehicleFilters {
+  const hub = params.get("hub") as VehicleFilters["hubCategory"] | null;
+  const condition = params.get("condition") as VehicleFilters["condition"] | null;
+
   return {
     category: parseCategoryParam(params.get("type") ?? params.get("category") ?? undefined),
+    hubCategory: hub === "auto" || hub === "equipment" ? hub : undefined,
+    condition: condition === "new" || condition === "used" ? condition : undefined,
     brand: params.get("brand") ?? undefined,
     model: params.get("model") ?? undefined,
     fuel: params.get("fuel") ?? undefined,

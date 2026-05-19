@@ -44,6 +44,18 @@ export const liveAuctions: AuctionItem[] = [
     currentBid: 1085000, startingBid: 950000, bidCount: 28,
     endsAt: new Date(Date.now() + 3600000 * 6).toISOString(), location: "Delhi", status: "live",
   },
+  {
+    id: "3", title: "2018 Maruti Swift ZXI",
+    image: "https://images.unsplash.com/photo-1494976388531-d1058498ceb8?w=600&q=80",
+    currentBid: 485000, startingBid: 420000, bidCount: 19,
+    endsAt: new Date(Date.now() + 3600000 * 3).toISOString(), location: "Bangalore", status: "live",
+  },
+  {
+    id: "4", title: "2021 Hyundai Creta SX",
+    image: "https://images.unsplash.com/photo-1619767886554-ef1d35eaa7f2?w=600&q=80",
+    currentBid: 1240000, startingBid: 1100000, bidCount: 41,
+    endsAt: new Date(Date.now() + 3600000 * 5).toISOString(), location: "Pune", status: "live",
+  },
 ];
 
 export const platformStats = [

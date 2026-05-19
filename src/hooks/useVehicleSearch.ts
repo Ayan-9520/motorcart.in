@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchVehicles } from "@/services/vehicle.service";
 import { filtersFromSearchParams } from "@/lib/vehicle-utils";
@@ -18,10 +18,13 @@ export function useVehicleSearch(categoryParam?: string) {
   const sort = (searchParams.get("sort") as VehicleSortOption) || "newest";
   const page = Number(searchParams.get("page") || "1");
 
-  const filters: VehicleFilters = {
-    ...filtersFromSearchParams(searchParams),
-    category: category ?? filtersFromSearchParams(searchParams).category,
-  };
+  const filters: VehicleFilters = useMemo(() => {
+    const fromUrl = filtersFromSearchParams(searchParams);
+    return {
+      ...fromUrl,
+      category: category ?? fromUrl.category,
+    };
+  }, [searchParams, category]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -30,7 +33,7 @@ export function useVehicleSearch(categoryParam?: string) {
     setTotal(result.total);
     setTotalPages(result.totalPages);
     setLoading(false);
-  }, [JSON.stringify(filters), sort, page]);
+  }, [filters, sort, page]);
 
   useEffect(() => {
     load();

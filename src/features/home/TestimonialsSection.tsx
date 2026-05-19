@@ -7,14 +7,14 @@ import { SectionHeader } from "./SectionHeader";
 export function TestimonialsSection() {
   return (
     <section className="home-section">
-      <div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Testimonials"
           title="Trusted by Buyers & Partners"
           description="Real stories from customers, dealers, and finance partners across India."
           align="center"
         />
-        <motion.div className="grid gap-6 md:grid-cols-3">
+        <motion.div className="grid gap-3 md:grid-cols-3">
           {testimonials.map((item, index) => (
             <motion.div
               key={item.name}
@@ -25,7 +25,7 @@ export function TestimonialsSection() {
             >
               <Card className="relative h-full overflow-hidden hover:shadow-card-hover">
                 <Quote className="absolute right-4 top-4 h-8 w-8 text-primary/10" />
-                <CardContent className="space-y-4 p-6">
+                <CardContent className="space-y-3 p-4">
                   <div className="flex gap-0.5">
                     {Array.from({ length: item.rating }).map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />

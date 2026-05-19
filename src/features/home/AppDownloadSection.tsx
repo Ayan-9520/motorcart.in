@@ -5,22 +5,22 @@ import { SectionHeader } from "./SectionHeader";
 export function AppDownloadSection() {
   return (
     <section className="section-padding border-t border-border">
-      <div className="container mx-auto px-4">
+      <div className="container">
         <div className="mc-card overflow-hidden">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div className="space-y-6 p-8 md:p-12">
+          <div className="grid items-center gap-6 lg:grid-cols-2">
+            <div className="space-y-4 p-5 md:p-8">
               <SectionHeader
                 eyebrow="Mobile app"
                 title="Motorcart in your pocket"
                 description="Search, bid, apply for loans, and manage your dealership from anywhere. Available on iOS and Android."
               />
               <div className="flex flex-wrap gap-3">
-                <Button size="lg" className="rounded-xl" asChild>
+                <Button size="sm" className="home-section-cta rounded-lg" asChild>
                   <a href="https://play.google.com" target="_blank" rel="noreferrer">
                     Google Play
                   </a>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-xl" asChild>
+                <Button size="sm" variant="outline" className="home-section-cta rounded-lg" asChild>
                   <a href="https://apps.apple.com" target="_blank" rel="noreferrer">
                     App Store
                   </a>
@@ -34,12 +34,12 @@ export function AppDownloadSection() {
                 </div>
               </div>
             </div>
-            <div className="relative flex items-center justify-center bg-secondary p-8 lg:p-12">
+            <div className="relative flex items-center justify-center bg-secondary p-5 lg:p-8">
               <div className="relative">
-                <div className="flex h-[320px] w-[160px] items-center justify-center rounded-[2rem] border-4 border-border bg-card shadow-[var(--shadow-card-hover)]">
-                  <Smartphone className="h-16 w-16 text-primary" />
+                <div className="flex h-[220px] w-[110px] items-center justify-center rounded-[1.5rem] border-[3px] border-border bg-card shadow-[var(--shadow-card-hover)]">
+                  <Smartphone className="h-12 w-12 text-primary" />
                 </div>
-                <div className="absolute -right-8 top-12 hidden h-[280px] w-[140px] items-center justify-center rounded-[1.75rem] border-4 border-primary/30 bg-card/80 shadow-lg md:flex">
+                <div className="absolute -right-6 top-8 hidden h-[190px] w-[100px] items-center justify-center rounded-[1.25rem] border-[3px] border-primary/30 bg-card/80 shadow-lg md:flex">
                   <div className="text-center text-xs text-muted-foreground">
                     <p className="font-semibold text-primary">Live</p>
                     <p>Auctions</p>

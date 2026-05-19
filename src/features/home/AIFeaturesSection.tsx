@@ -32,7 +32,7 @@ export function AIFeaturesSection() {
 
   return (
     <section className="home-section-alt relative overflow-hidden">
-      <motion.div className="container relative mx-auto space-y-10 px-4">
+      <div className="container relative mx-auto home-stack px-4">
         <SectionHeader
           eyebrow="AI automation"
           title="9 AI Agents Powering Motorcart"
@@ -40,7 +40,7 @@ export function AIFeaturesSection() {
           href="/ai"
           linkLabel="Explore AI"
         />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
           {agents.map((agent, index) => {
             const Icon = agentIcons[index % agentIcons.length];
             return (
@@ -53,11 +53,11 @@ export function AIFeaturesSection() {
                 whileHover={{ y: -4 }}
                 className="home-ai-card"
               >
-                <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-[var(--shadow-primary)]">
-                  <Icon className="h-5 w-5" />
+                <div className="mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[var(--shadow-primary)]">
+                  <Icon className="h-4 w-4" />
                 </div>
-                <h3 className="text-lg font-semibold text-foreground">{agent.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{agent.desc}</p>
+                <h3 className="text-sm font-semibold text-foreground">{agent.name}</h3>
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{agent.desc}</p>
                 <span className="mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-primary">
                   <span className="ai-pulse" /> Active
                 </span>
@@ -66,11 +66,11 @@ export function AIFeaturesSection() {
           })}
         </div>
         <div className="text-center">
-          <Button size="lg" className="rounded-xl px-8" asChild>
+          <Button size="sm" className="home-section-cta rounded-lg" asChild>
             <Link to="/ai">See AI in Action</Link>
           </Button>
         </div>
-      </motion.div>
+      </div>
     </section>
   );
 }

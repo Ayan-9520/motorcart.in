@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { HeroSection } from "@/features/home/HeroSection";
 import { QuickAccessSection } from "@/features/home/QuickAccessSection";
+import { HomeTrustBand } from "@/features/home/HomeTrustBand";
 import { CategorySection } from "@/features/home/CategorySection";
 import { VehicleEcosystemSection } from "@/features/home/VehicleEcosystemSection";
 import { NewCarsHomeSection } from "@/features/home/NewCarsHomeSection";
@@ -31,6 +32,7 @@ export function HomePage() {
     <div className="home-page bg-background">
       <HeroSection />
       <QuickAccessSection />
+      <HomeTrustBand />
       <VehicleEcosystemSection />
       <NewCarsHomeSection />
       <PreownedCarsHomeSection />

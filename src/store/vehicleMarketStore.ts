@@ -10,6 +10,7 @@ interface VehicleMarketState {
   recentlyViewed: string[];
   addWishlist: (id: string) => void;
   removeWishlist: (id: string) => void;
+  clearWishlist: () => void;
   toggleWishlist: (id: string) => void;
   isWishlisted: (id: string) => boolean;
   addCompare: (id: string) => boolean;
@@ -27,8 +28,23 @@ export const useVehicleMarketStore = create<VehicleMarketState>()(
       recentlyViewed: [],
 
       addWishlist: (id) =>
-        set((s) => ({ wishlist: s.wishlist.includes(id) ? s.wishlist : [...s.wishlist, id] })),
-      removeWishlist: (id) => set((s) => ({ wishlist: s.wishlist.filter((x) => x !== id) })),
+        set((s) => {
+          if (s.wishlist.includes(id)) return s;
+          const wishlist = [...s.wishlist, id];
+          void import("@/services/notification-guest").then(({ syncGuestWishlistNotification }) =>
+            syncGuestWishlistNotification(wishlist.length)
+          );
+          return { wishlist };
+        }),
+      removeWishlist: (id) =>
+        set((s) => {
+          const wishlist = s.wishlist.filter((x) => x !== id);
+          void import("@/services/notification-guest").then(({ syncGuestWishlistNotification }) =>
+            syncGuestWishlistNotification(wishlist.length)
+          );
+          return { wishlist };
+        }),
+      clearWishlist: () => set({ wishlist: [] }),
       toggleWishlist: (id) => {
         const { wishlist } = get();
         if (wishlist.includes(id)) get().removeWishlist(id);

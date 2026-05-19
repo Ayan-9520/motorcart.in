@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import type { LoanOffer } from "../types";
 import { cn } from "@/lib/utils";
+import { BrandLogo } from "@/components/ui/BrandLogo";
 
 interface BankOfferCardProps {
   offer: LoanOffer;
@@ -23,9 +24,11 @@ export function BankOfferCard({ offer, onApply }: BankOfferCardProps) {
       <CardContent className="space-y-4 p-5 pt-6">
         <div className="flex items-center gap-3">
           {offer.logoUrl ? (
-            <img src={offer.logoUrl} alt="" className="h-12 w-12 rounded-xl object-cover" />
+            <span className="partner-logo-slot partner-logo-slot-lg shrink-0">
+              <BrandLogo src={offer.logoUrl} alt={offer.name} size="lg" />
+            </span>
           ) : (
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#075E54] text-sm font-bold text-foreground">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/50 text-sm font-bold text-foreground">
               {offer.shortCode}
             </div>
           )}

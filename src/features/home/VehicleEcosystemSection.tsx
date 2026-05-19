@@ -25,18 +25,18 @@ const ICONS = {
 
 export function VehicleEcosystemSection() {
   return (
-    <section className="border-b border-border bg-card py-12 md:py-16">
-      <div className="container mx-auto space-y-8 px-4">
+    <section className="border-b border-border bg-card py-7 md:py-9">
+      <div className="container home-stack">
         <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-wider text-primary">Marketplace</p>
-          <h2 className="mt-2 text-2xl font-bold tracking-tight sm:text-3xl">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary sm:text-xs">Marketplace</p>
+          <h2 className="mt-1.5 text-lg font-bold tracking-tight sm:text-xl">
             New + certified pre-owned, one ecosystem
           </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-muted-foreground">
+          <p className="mx-auto mt-1.5 max-w-xl text-xs text-muted-foreground sm:text-sm">
             India&apos;s AI-powered automotive marketplace — split by trust layer, unified by Motorcart.
           </p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {VEHICLE_ECOSYSTEM.map((item, i) => {
             const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Car;
             return (
@@ -49,15 +49,15 @@ export function VehicleEcosystemSection() {
               >
                 <Link
                   to={item.href}
-                  className="group flex h-full flex-col rounded-2xl border border-border bg-background p-5 transition-all hover:border-primary/50 hover:shadow-[var(--shadow-card-hover)]"
+                  className="group flex h-full flex-col rounded-xl border border-border bg-background p-3.5 transition-all hover:border-primary/50 hover:shadow-[var(--shadow-card-hover)]"
                 >
-                  <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="h-6 w-6" />
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon className="h-4 w-4" />
                   </span>
-                  <h3 className="mt-4 font-semibold text-foreground">{item.label}</h3>
-                  <p className="mt-1 flex-1 text-sm text-muted-foreground">{item.description}</p>
-                  <p className="mt-3 text-lg font-bold text-primary">{item.stat}</p>
-                  <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-primary">
+                  <h3 className="mt-2.5 text-sm font-semibold text-foreground">{item.label}</h3>
+                  <p className="mt-0.5 flex-1 text-xs text-muted-foreground">{item.description}</p>
+                  <p className="mt-2 text-sm font-bold text-primary">{item.stat}</p>
+                  <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary">
                     Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
                   </span>
                   {"highlight" in item && item.highlight ? (

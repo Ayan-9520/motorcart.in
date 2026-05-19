@@ -9,6 +9,7 @@ export function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
+      className="nav-icon-btn"
       aria-label={resolved === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       onClick={toggle}
     >

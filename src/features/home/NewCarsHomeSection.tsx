@@ -11,7 +11,7 @@ export function NewCarsHomeSection() {
 
   return (
     <section className="home-section">
-      <div className="container mx-auto space-y-8 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="New cars"
           title="Latest models & launch offers"
@@ -26,13 +26,13 @@ export function NewCarsHomeSection() {
             </Link>
           ))}
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="vehicle-card-grid">
           {featured.map((v, i) => (
-            <NewCarCard key={v.id} vehicle={v} index={i} />
+            <NewCarCard key={v.id} vehicle={v} index={i} compact />
           ))}
         </div>
         <div className="text-center">
-          <Button size="lg" className="rounded-xl" asChild>
+          <Button size="sm" className="home-section-cta rounded-lg" asChild>
             <Link to="/new-cars/browse">
               Browse all new cars <ArrowRight className="h-4 w-4" />
             </Link>

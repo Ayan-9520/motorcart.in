@@ -29,7 +29,7 @@ export function AuctionsSection() {
 
   return (
     <section className="home-section-alt">
-      <div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Live now"
           title="Live Auctions"
@@ -37,57 +37,57 @@ export function AuctionsSection() {
           href="/auctions"
           linkLabel="All auctions"
         />
-        <motion.div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {liveAuctions.map((auction, index) => (
             <motion.div
               key={auction.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ delay: index * 0.06 }}
             >
               <Card className="group overflow-hidden hover:shadow-card-hover">
-                <div className="relative aspect-[16/10] bg-muted">
+                <div className="relative aspect-[16/11] bg-muted">
                   <img
                     src={auction.image}
                     alt={auction.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                   />
-                  <Badge className="absolute left-3 top-3 gap-1 border-0 bg-red-600 text-white">
-                    <span className="h-2 w-2 animate-pulse rounded-full bg-white" />
+                  <Badge className="absolute left-2 top-2 gap-1 border-0 bg-red-600 px-1.5 py-0 text-[10px] text-white">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-white" />
                     LIVE
                   </Badge>
-                  <div className="absolute bottom-3 right-3 flex items-center gap-1 rounded-lg border border-white/20 bg-secondary/80 px-2 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                  <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md border border-white/20 bg-secondary/80 px-1.5 py-0.5 text-[10px] font-medium text-white backdrop-blur-sm">
                     <Clock className="h-3 w-3 text-primary" />
                     {formatTimeLeft(auction.endsAt)}
                   </div>
                 </div>
-                <CardContent className="space-y-4 p-5">
-                  <h3 className="line-clamp-1 font-semibold">{auction.title}</h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <CardContent className="space-y-2 p-3">
+                  <h3 className="line-clamp-1 text-sm font-semibold">{auction.title}</h3>
+                  <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
                     <span className="flex items-center gap-1">
-                      <MapPin className="h-3.5 w-3.5" />
+                      <MapPin className="h-3 w-3" />
                       {auction.location}
                     </span>
                     <span className="flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5" />
+                      <Users className="h-3 w-3" />
                       {auction.bidCount} bids
                     </span>
                   </div>
-                  <div className="flex items-end justify-between">
+                  <div className="flex items-end justify-between gap-2">
                     <div>
-                      <p className="text-xs text-muted-foreground">Current bid</p>
-                      <p className="text-xl font-bold text-primary">
+                      <p className="text-[10px] text-muted-foreground">Current bid</p>
+                      <p className="text-base font-bold text-primary">
                         {formatCurrency(auction.currentBid)}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        Starting {formatCurrency(auction.startingBid)}
+                      <p className="text-[10px] text-muted-foreground">
+                        Start {formatCurrency(auction.startingBid)}
                       </p>
                     </div>
-                    <Button variant="default" size="sm" asChild>
-                      <Link to={`/auctions/${auction.id}`}>
-                        <Gavel className="h-4 w-4" />
-                        Place Bid
+                    <Button variant="default" size="sm" className="h-8 shrink-0 px-2.5 text-xs" asChild>
+                      <Link to="/auctions">
+                        <Gavel className="h-3.5 w-3.5" />
+                        Bid
                       </Link>
                     </Button>
                   </div>
@@ -95,7 +95,7 @@ export function AuctionsSection() {
               </Card>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   );

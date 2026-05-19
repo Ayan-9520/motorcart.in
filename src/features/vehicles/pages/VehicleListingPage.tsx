@@ -78,9 +78,9 @@ export function VehicleListingPage() {
             <VehicleSortBar sort={sort} total={total} layout={layout} onSort={setSort} onLayout={setLayout} />
 
             {loading ? (
-              <div className={layout === "grid" ? "grid gap-6 sm:grid-cols-2 xl:grid-cols-3" : "space-y-4"}>
+              <div className={layout === "grid" ? "vehicle-listing-grid marketplace-results-grid" : "space-y-3"}>
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <Skeleton key={i} className={layout === "grid" ? "aspect-[4/3] w-full rounded-xl" : "h-40 w-full rounded-xl"} />
+                  <Skeleton key={i} className={layout === "grid" ? "h-72 w-full rounded-xl" : "h-40 w-full rounded-xl"} />
                 ))}
               </div>
             ) : vehicles.length === 0 ? (
@@ -89,7 +89,7 @@ export function VehicleListingPage() {
                 <p className="mt-1 text-sm text-muted-foreground">Try adjusting your filters</p>
               </div>
             ) : (
-              <div className={layout === "grid" ? "grid gap-6 sm:grid-cols-2 xl:grid-cols-3" : "space-y-4"}>
+              <div className={layout === "grid" ? "vehicle-listing-grid marketplace-results-grid" : "space-y-3"}>
                 {vehicles.map((v, i) => (
                   <VehicleCard key={v.id} vehicle={v} index={i} layout={layout} />
                 ))}

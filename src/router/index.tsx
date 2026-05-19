@@ -14,8 +14,14 @@ import { PlaceholderPage } from "@/pages/PlaceholderPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { DashboardHome } from "@/pages/dashboard/DashboardHome";
 import { VehicleListingPage } from "@/features/vehicles/pages/VehicleListingPage";
+import { BuyHubPage } from "@/features/marketplace/pages/BuyHubPage";
+import { SellHubPage } from "@/features/marketplace/pages/SellHubPage";
+import { SellListingPage } from "@/features/marketplace/pages/SellListingPage";
+import { BuyCategoryListingPage } from "@/features/marketplace/pages/BuyCategoryListingPage";
 import { VehicleDetailPage } from "@/features/vehicles/pages/VehicleDetailPage";
 import { VehicleComparePage } from "@/features/vehicles/pages/VehicleComparePage";
+import { WishlistPage } from "@/features/vehicles/pages/WishlistPage";
+import { SearchResultsPage } from "@/features/search/pages/SearchResultsPage";
 import { NewCarsHubPage } from "@/features/new-cars/pages/NewCarsHubPage";
 import { NewCarsListingPage } from "@/features/new-cars/pages/NewCarsListingPage";
 import { PreownedCarsHubPage } from "@/features/preowned-cars/pages/PreownedCarsHubPage";
@@ -29,9 +35,11 @@ import { DealerAnalyticsPage } from "@/features/dealer-crm/pages/DealerAnalytics
 import { DealerWhatsAppPage } from "@/features/dealer-crm/pages/DealerWhatsAppPage";
 import { DealerTeamPage } from "@/features/dealer-crm/pages/DealerTeamPage";
 import { DealerCallsPage } from "@/features/dealer-crm/pages/DealerCallsPage";
+import { AuctionHubPage } from "@/features/auctions/pages/AuctionHubPage";
 import { AuctionListingPage } from "@/features/auctions/pages/AuctionListingPage";
 import { AuctionRoomPage } from "@/features/auctions/pages/AuctionRoomPage";
 import { AuctionAdminPage } from "@/features/auctions/pages/AuctionAdminPage";
+import { FinanceHubPage } from "@/features/finance/pages/FinanceHubPage";
 import { FinanceMarketplacePage } from "@/features/finance/pages/FinanceMarketplacePage";
 import { LoanComparePage } from "@/features/finance/pages/LoanComparePage";
 import { LoanApplyPage } from "@/features/finance/pages/LoanApplyPage";
@@ -42,6 +50,7 @@ import { DsaApplicationsPage } from "@/features/finance/pages/DsaApplicationsPag
 import { LenderDashboardPage } from "@/features/finance/pages/LenderDashboardPage";
 import { LenderApplicationsPage } from "@/features/finance/pages/LenderApplicationsPage";
 import { FinanceDashboardLayout } from "@/layouts/FinanceDashboardLayout";
+import { PartsHubPage } from "@/features/parts/pages/PartsHubPage";
 import { PartsListingPage } from "@/features/parts/pages/PartsListingPage";
 import { PartDetailPage } from "@/features/parts/pages/PartDetailPage";
 import { PartsCartPage } from "@/features/parts/pages/PartsCartPage";
@@ -54,6 +63,7 @@ import { PartsSupplierOverviewPage } from "@/features/parts/pages/PartsSupplierO
 import { PartsSupplierInventoryPage } from "@/features/parts/pages/PartsSupplierInventoryPage";
 import { PartsSupplierOrdersPage } from "@/features/parts/pages/PartsSupplierOrdersPage";
 import { PartsSupplierUploadPage } from "@/features/parts/pages/PartsSupplierUploadPage";
+import { ServicesHubPage } from "@/features/service-booking/pages/ServicesHubPage";
 import { ServiceMarketplacePage } from "@/features/service-booking/pages/ServiceMarketplacePage";
 import { ServiceCenterDetailPage } from "@/features/service-booking/pages/ServiceCenterDetailPage";
 import { ServiceBookingFlowPage } from "@/features/service-booking/pages/ServiceBookingFlowPage";
@@ -74,6 +84,9 @@ import { CommunityDealerPage } from "@/features/community/pages/CommunityDealerP
 import { CommunityInfluencerPage } from "@/features/community/pages/CommunityInfluencerPage";
 import { CommunityModerationPage } from "@/features/community/pages/CommunityModerationPage";
 import { AIControlCenterPage } from "@/ai/pages/AIControlCenterPage";
+import { DealersHubPage } from "@/features/dealer-network/pages/DealersHubPage";
+import { DealersBrowsePage } from "@/features/dealer-network/pages/DealersBrowsePage";
+import { DealerProfilePage } from "@/features/dealer-network/pages/DealerProfilePage";
 
 const ph = (title: string, desc?: string) => (
   <PlaceholderPage title={title} description={desc} />
@@ -90,18 +103,26 @@ export const router = createBrowserRouter([
       { path: "used-cars", element: <PreownedCarsHubPage /> },
       { path: "used-cars/browse", element: <PreownedCarsListingPage /> },
       { path: "used-cars/:slug", element: <VehicleDetailPage /> },
-      { path: "vehicles", element: <VehicleListingPage /> },
+      { path: "buy", element: <BuyHubPage /> },
+      { path: "buy/:category/:condition", element: <BuyCategoryListingPage /> },
+      { path: "vehicles", element: <Navigate to="/buy" replace /> },
+      { path: "wishlist", element: <WishlistPage /> },
+      { path: "search", element: <SearchResultsPage /> },
       { path: "vehicles/compare", element: <VehicleComparePage /> },
       { path: "vehicles/:category", element: <VehicleListingPage /> },
       { path: "vehicles/:category/:slug", element: <VehicleDetailPage /> },
-      { path: "sell", element: ph("Sell Your Vehicle", "List your vehicle to millions of buyers") },
-      { path: "auctions", element: <AuctionListingPage /> },
+      { path: "sell", element: <SellHubPage /> },
+      { path: "sell/:category", element: <SellListingPage /> },
+      { path: "auctions", element: <AuctionHubPage /> },
+      { path: "auctions/browse", element: <AuctionListingPage /> },
       { path: "auctions/:status/:slug", element: <AuctionRoomPage /> },
-      { path: "finance", element: <FinanceMarketplacePage /> },
+      { path: "finance", element: <FinanceHubPage /> },
+      { path: "finance/offers", element: <FinanceMarketplacePage /> },
       { path: "finance/compare", element: <LoanComparePage /> },
       { path: "finance/apply", element: <LoanApplyPage /> },
       { path: "insurance", element: ph("Insurance", "Compare and buy car insurance") },
-      { path: "parts", element: <PartsListingPage /> },
+      { path: "parts", element: <PartsHubPage /> },
+      { path: "parts/browse", element: <PartsListingPage /> },
       { path: "parts/:category", element: <PartsListingPage /> },
       { path: "parts/:category/:slug", element: <PartDetailPage /> },
       { path: "cart", element: <PartsCartPage /> },
@@ -137,7 +158,8 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      { path: "services", element: <ServiceMarketplacePage /> },
+      { path: "services", element: <ServicesHubPage /> },
+      { path: "services/browse", element: <ServiceMarketplacePage /> },
       { path: "services/centers/:slug", element: <ServiceCenterDetailPage /> },
       {
         path: "services/book/:serviceId",
@@ -169,7 +191,9 @@ export const router = createBrowserRouter([
       { path: "community/groups/:slug", element: <CommunityGroupPage /> },
       { path: "community/dealers/:slug", element: <CommunityDealerPage /> },
       { path: "community/u/:userId", element: <CommunityInfluencerPage /> },
-      { path: "dealers", element: ph("Dealer Network", "8,500+ verified dealers") },
+      { path: "dealers", element: <DealersHubPage /> },
+      { path: "dealers/browse", element: <DealersBrowsePage /> },
+      { path: "dealers/:slug", element: <DealerProfilePage /> },
       { path: "pricing", element: ph("Pricing", "Dealer SaaS plans") },
       { path: "ai", element: <AIControlCenterPage /> },
       { path: "about", element: ph("About Us") },

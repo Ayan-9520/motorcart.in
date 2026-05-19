@@ -86,7 +86,7 @@ export function PartDetailPage() {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <p className="text-muted-foreground">Product not found</p>
-        <Button variant="link" asChild><Link to="/parts">Back to parts</Link></Button>
+        <Button variant="link" asChild><Link to="/parts">Back to parts hub</Link></Button>
       </div>
     );
   }
@@ -96,9 +96,13 @@ export function PartDetailPage() {
 
   return (
     <div className="container mx-auto max-w-6xl space-y-10 px-4 py-8">
-      <Button variant="ghost" size="sm" asChild>
-        <Link to={`/parts/${part.categorySlug}`}>← {part.categorySlug.replace(/-/g, " ")}</Link>
-      </Button>
+      <nav className="mb-4 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+        <Link to="/parts" className="hover:text-primary">Parts</Link>
+        <span>/</span>
+        <Link to={`/parts/${part.categorySlug}`} className="hover:text-primary capitalize">
+          {part.categorySlug.replace(/-/g, " ")}
+        </Link>
+      </nav>
 
       <div className="grid gap-10 lg:grid-cols-2">
         <div className="space-y-4">

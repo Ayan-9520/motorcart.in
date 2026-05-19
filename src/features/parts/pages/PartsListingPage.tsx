@@ -1,78 +1,137 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Search } from "lucide-react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import { Filter, Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { setPageMeta } from "@/utils/seo";
 import { usePartsList } from "../hooks/usePartsList";
 import { PartCategoryNav } from "../components/PartCategoryNav";
 import { PartCard } from "../components/PartCard";
 import { PartsAiRecommendations } from "../components/PartsAiRecommendations";
+import { PartsCatalogShell } from "../components/PartsCatalogShell";
 import { recommendParts } from "../lib/ai-parts";
 import { MOCK_PARTS_CATALOG } from "../data/mock-parts-catalog";
 import { parseCategoryParam } from "../lib/part-utils";
-import { useAuth } from "@/hooks/useAuth";
+import { PART_CATEGORIES } from "../types";
+import { usePartsCartStore } from "@/store/partsCartStore";
 
 export function PartsListingPage() {
   const { category: catParam } = useParams<{ category?: string }>();
+  const [params, setParams] = useSearchParams();
   const category = parseCategoryParam(catParam);
-  const [q, setQ] = useState("");
-  const { user } = useAuth();
+  const vehicle = params.get("vehicle") ?? "";
+  const [q, setQ] = useState(params.get("q") ?? "");
   const { parts, loading } = usePartsList(category, q);
+  const cartCount = usePartsCartStore((s) => s.itemCount());
+
+  const filtered = useMemo(() => {
+    if (!vehicle) return parts;
+    const v = vehicle.toLowerCase();
+    return parts.filter(
+      (p) =>
+        p.name.toLowerCase().includes(v) ||
+        p.compatibility.some((c) => c.toLowerCase().includes(v))
+    );
+  }, [parts, vehicle]);
 
   const aiPicks = useMemo(
-    () => recommendParts(MOCK_PARTS_CATALOG, { category: category ?? undefined }, 6),
-    [category]
+    () =>
+      recommendParts(MOCK_PARTS_CATALOG, {
+        category: category ?? undefined,
+        vehicle: vehicle || undefined,
+      }, 6),
+    [category, vehicle]
   );
+
+  const catMeta = category ? PART_CATEGORIES.find((c) => c.slug === category) : null;
 
   useEffect(() => {
     setPageMeta({
-      title: category ? `${category.replace(/-/g, " ")} — Parts` : "Auto Parts Marketplace",
-      description: "Genuine OEM & aftermarket parts with dealer wholesale, COD & fast delivery.",
+      title: catMeta ? `${catMeta.label} — Parts | Motorcart` : "Parts Catalogue — Motorcart",
+      description: "Genuine OEM & aftermarket parts with GST invoices, wholesale & COD.",
     });
-  }, [category]);
+  }, [catMeta]);
+
+  const applySearch = () => {
+    const next = new URLSearchParams(params);
+    if (q.trim()) next.set("q", q.trim());
+    else next.delete("q");
+    setParams(next);
+  };
 
   return (
-    <div className="wa-pattern min-h-screen">
-      <div className="container mx-auto space-y-8 px-4 py-8">
-        <header className="space-y-2">
-          <p className="text-sm font-medium text-primary uppercase tracking-widest">Premium parts store</p>
-          <h1 className="text-3xl font-bold md:text-4xl">Auto Parts Marketplace</h1>
-          <p className="max-w-2xl text-muted-foreground">
-            Engine, battery, tyres, brakes, accessories & more — bulk ordering, GST invoices & WhatsApp checkout.
-          </p>
-        </header>
-
-        <PartCategoryNav active={category ?? "all"} />
-
-        <div className="relative max-w-md">
+    <PartsCatalogShell
+      title={catMeta ? catMeta.label : "Full parts catalogue"}
+      subtitle={
+        catMeta
+          ? catMeta.description
+          : "50,000+ SKUs · filter by category, vehicle fitment & brand"
+      }
+      category={category}
+    >
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <div className="relative min-w-[12rem] flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Search by name, brand, vehicle..." className="pl-9" value={q} onChange={(e) => setQ(e.target.value)} />
+          <Input
+            placeholder="Search parts…"
+            className="rounded-xl pl-9"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && applySearch()}
+          />
         </div>
+        <Button className="rounded-xl" onClick={applySearch}>
+          Search
+        </Button>
+        {cartCount > 0 && (
+          <Button variant="outline" className="rounded-xl gap-2" asChild>
+            <Link to="/cart">
+              <ShoppingCart className="h-4 w-4" />
+              Cart ({cartCount})
+            </Link>
+          </Button>
+        )}
+        {vehicle ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
+            <Filter className="h-3 w-3" />
+            {vehicle}
+          </span>
+        ) : null}
+      </div>
 
-        <PartsAiRecommendations parts={aiPicks} />
+      <PartCategoryNav active={category ?? "all"} basePath="/parts" />
+
+      <div className="mt-6">
+        <PartsAiRecommendations parts={aiPicks} title="PartsBot recommendations" />
+      </div>
+
+      <section className="mt-8">
+        <p className="mb-4 text-sm text-muted-foreground">
+          Showing <strong className="text-foreground">{filtered.length}</strong> products
+        </p>
 
         {loading ? (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="parts-product-grid">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-[3/4] rounded-xl" />
+              <Skeleton key={i} className="aspect-[3/4] w-full rounded-2xl" />
             ))}
           </div>
+        ) : filtered.length === 0 ? (
+          <p className="py-16 text-center text-muted-foreground">
+            No products match.{" "}
+            <Link to="/parts" className="font-medium text-primary hover:underline">
+              Back to parts hub
+            </Link>
+          </p>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {parts.map((part, i) => (
-              <motion.div key={part.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.04 }}>
-                <PartCard part={part} role={user?.role} />
-              </motion.div>
+          <div className="parts-product-grid">
+            {filtered.map((part, i) => (
+              <PartCard key={part.id} part={part} index={i} />
             ))}
           </div>
         )}
-
-        {!loading && parts.length === 0 && (
-          <p className="py-16 text-center text-muted-foreground">No products match your search.</p>
-        )}
-      </div>
-    </div>
+      </section>
+    </PartsCatalogShell>
   );
 }

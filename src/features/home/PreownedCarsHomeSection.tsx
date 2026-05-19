@@ -11,7 +11,7 @@ export function PreownedCarsHomeSection() {
 
   return (
     <section className="home-section-alt">
-      <div className="container mx-auto space-y-8 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Certified used"
           title="Inspected pre-owned you can trust"
@@ -19,23 +19,23 @@ export function PreownedCarsHomeSection() {
           href="/used-cars"
           linkLabel="Used cars hub"
         />
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-1.5">
           {TRUST_BADGES.map((b) => (
             <span
               key={b.id}
-              className="rounded-full border border-border bg-card px-3 py-1 text-xs font-semibold text-foreground"
+              className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold text-foreground"
             >
               {b.label}
             </span>
           ))}
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="vehicle-card-grid">
           {featured.map((v, i) => (
-            <PreownedCarCard key={v.id} vehicle={v} index={i} />
+            <PreownedCarCard key={v.id} vehicle={v} index={i} compact />
           ))}
         </div>
         <div className="text-center">
-          <Button size="lg" className="rounded-xl" asChild>
+          <Button size="sm" className="home-section-cta rounded-lg" asChild>
             <Link to="/used-cars/browse">
               Browse certified used <ArrowRight className="h-4 w-4" />
             </Link>

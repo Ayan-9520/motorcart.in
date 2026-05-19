@@ -8,7 +8,7 @@ import { SectionHeader } from "./SectionHeader";
 export function CommunitySection() {
   return (
     <section className="home-section-alt">
-      <div className="container mx-auto space-y-10 px-4">
+      <div className="container home-stack">
         <SectionHeader
           eyebrow="Community"
           title="Trending discussions and social"
@@ -16,8 +16,8 @@ export function CommunitySection() {
           href="/community"
           linkLabel="Join community"
         />
-        <div className="grid gap-8 lg:grid-cols-3">
-          <div className="space-y-4 lg:col-span-2">
+        <div className="grid gap-4 lg:grid-cols-3">
+          <div className="space-y-2.5 lg:col-span-2">
             {COMMUNITY_POSTS.map((post, i) => (
               <motion.div
                 key={post.title}
@@ -26,7 +26,7 @@ export function CommunitySection() {
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.06 }}
               >
-                <Link to="/community" className="mc-card-interactive flex items-start gap-4 p-5">
+                <Link to="/community" className="mc-card-interactive flex items-start gap-3 p-3.5">
                   <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
                     <MessageCircle className="h-5 w-5" />
                   </span>

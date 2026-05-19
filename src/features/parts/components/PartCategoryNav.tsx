@@ -11,10 +11,12 @@ export function PartCategoryNav({ active = "all", basePath = "/parts" }: PartCat
   return (
     <nav className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
       <Link
-        to={basePath}
+        to="/parts/browse"
         className={cn(
-          "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all",
-          active === "all" ? "bg-primary text-primary-foreground text-white shadow-wa" : "border bg-card hover:border-primary/40"
+          "shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition-all",
+          active === "all"
+            ? "bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
+            : "border border-border bg-card hover:border-primary/40"
         )}
       >
         All
@@ -24,8 +26,10 @@ export function PartCategoryNav({ active = "all", basePath = "/parts" }: PartCat
           key={c.slug}
           to={`${basePath}/${c.slug}`}
           className={cn(
-            "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all whitespace-nowrap",
-            active === c.slug ? "bg-primary text-primary-foreground text-white shadow-wa" : "border bg-card hover:border-primary/40"
+            "shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition-all",
+            active === c.slug
+              ? "bg-primary text-primary-foreground shadow-[var(--shadow-primary)]"
+              : "border border-border bg-card hover:border-primary/40"
           )}
         >
           {c.label}

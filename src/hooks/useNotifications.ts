@@ -6,6 +6,11 @@ import {
   markNotificationRead,
   subscribeNotifications,
 } from "@/services/notification.service";
+import {
+  loadGuestNotifications,
+  markAllGuestNotificationsRead,
+  markGuestNotificationRead,
+} from "@/services/notification-guest";
 import type { DbNotification } from "@/types/database";
 
 export function useNotifications() {
@@ -15,14 +20,16 @@ export function useNotifications() {
 
   const load = useCallback(async () => {
     if (!user?.id) {
-      setItems([]);
+      setItems(loadGuestNotifications());
       setLoading(false);
       return;
     }
     setLoading(true);
     try {
       const rows = await fetchNotifications(user.id);
-      setItems(rows);
+      setItems(rows.length > 0 ? rows : loadGuestNotifications());
+    } catch {
+      setItems(loadGuestNotifications());
     } finally {
       setLoading(false);
     }
@@ -36,12 +43,43 @@ export function useNotifications() {
 
   const unreadCount = items.filter((n) => !n.is_read).length;
 
+  const markRead = useCallback(
+    async (id: string) => {
+      if (!user?.id) {
+        markGuestNotificationRead(id);
+        setItems(loadGuestNotifications());
+        return;
+      }
+      try {
+        await markNotificationRead(id);
+        await load();
+      } catch {
+        setItems((prev) => prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)));
+      }
+    },
+    [user?.id, load]
+  );
+
+  const markAllRead = useCallback(async () => {
+    if (!user?.id) {
+      markAllGuestNotificationsRead();
+      setItems(loadGuestNotifications());
+      return;
+    }
+    try {
+      await markAllNotificationsRead(user.id);
+      await load();
+    } catch {
+      setItems((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    }
+  }, [user?.id, load]);
+
   return {
     notifications: items,
     unreadCount,
     loading,
-    markRead: markNotificationRead,
-    markAllRead: () => user?.id && markAllNotificationsRead(user.id).then(load),
+    markRead,
+    markAllRead,
     refetch: load,
   };
 }

@@ -38,9 +38,10 @@ const FAIR_PRICE_LABELS: Record<FairPriceLabel, string> = {
 interface PreownedCarCardProps {
   vehicle: PreownedCarListing;
   index?: number;
+  compact?: boolean;
 }
 
-export function PreownedCarCard({ vehicle, index = 0 }: PreownedCarCardProps) {
+export function PreownedCarCard({ vehicle, index = 0, compact = false }: PreownedCarCardProps) {
   const price = getDiscountedPrice(vehicle);
   const emi = getVehicleEmi(vehicle);
   const fair = vehicle.metadata.fairPriceLabel ?? deriveFairPriceLabel(vehicle);
@@ -49,88 +50,104 @@ export function PreownedCarCard({ vehicle, index = 0 }: PreownedCarCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      transition={{ delay: index * 0.05 }}
+      transition={{ delay: index * 0.04 }}
+      className="min-w-0"
     >
-      <Card className="premium-card group overflow-hidden border-border p-0">
+      <Card
+        className={cn(
+          "premium-card group overflow-hidden border-border p-0",
+          compact && "rounded-xl"
+        )}
+      >
         <Link to={path} className="block">
-          <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+          <div
+            className={cn(
+              "relative overflow-hidden bg-muted",
+              compact ? "aspect-[16/10]" : "aspect-[16/11]"
+            )}
+          >
             <img
               src={vehicle.images[0]}
               alt={vehicle.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
             />
-            <div className="vehicle-card-overlay" />
-            <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
+            <div className="vehicle-card-overlay opacity-70" aria-hidden />
+            <div className="absolute left-2 top-2 flex flex-wrap gap-1">
               {vehicle.isCertified && (
-                <Badge className="gap-1 border-0 bg-primary text-primary-foreground">
-                  <ShieldCheck className="h-3 w-3" />
+                <Badge className="gap-0.5 border-0 bg-primary px-1.5 py-0 text-[9px] text-primary-foreground">
+                  <ShieldCheck className="h-2.5 w-2.5" />
                   Certified
                 </Badge>
               )}
               {vehicle.metadata.warrantyIncluded && (
-                <Badge variant="outline" className="border-primary-foreground/30 bg-foreground/50 text-primary-foreground backdrop-blur-sm">
+                <Badge
+                  variant="outline"
+                  className="border-primary-foreground/30 bg-foreground/50 px-1.5 py-0 text-[9px] text-primary-foreground backdrop-blur-sm"
+                >
                   Warranty
                 </Badge>
               )}
             </div>
             <Badge
               className={cn(
-                "absolute right-3 top-3 border text-[10px] font-semibold",
+                "absolute right-2 top-2 border px-1.5 py-0 text-[9px] font-semibold",
                 FAIR_PRICE_STYLES[fair]
               )}
             >
-              <Sparkles className="mr-1 h-3 w-3" />
+              <Sparkles className="mr-0.5 h-2.5 w-2.5" />
               {FAIR_PRICE_LABELS[fair]}
             </Badge>
           </div>
-          <CardContent className="space-y-2.5 p-4">
-            <h3 className="line-clamp-2 font-semibold leading-snug text-foreground group-hover:text-primary">
+          <CardContent className={cn("space-y-1.5", compact ? "p-3" : "p-4")}>
+            <h3 className="line-clamp-2 text-sm font-semibold leading-snug text-foreground group-hover:text-primary">
               {vehicle.title}
             </h3>
-            <p className="text-xl font-bold text-primary">{formatCurrency(price)}</p>
-            <p className="text-sm text-muted-foreground">EMI from {formatCurrency(emi)}/mo</p>
-            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="inline-flex items-center gap-1">
-                <Gauge className="h-3.5 w-3.5 text-primary" />
+            <p className={cn("font-bold text-primary", compact ? "text-base" : "text-lg")}>
+              {formatCurrency(price)}
+            </p>
+            <p className="text-xs text-muted-foreground">EMI from {formatCurrency(emi)}/mo</p>
+            <div className="flex flex-wrap gap-1.5 text-[10px] text-muted-foreground">
+              <span className="inline-flex items-center gap-0.5">
+                <Gauge className="h-3 w-3 text-primary" />
                 {vehicle.kmsDriven.toLocaleString()} km
               </span>
-              <span className="inline-flex items-center gap-1">
-                <Users className="h-3.5 w-3.5 text-primary" />
+              <span className="inline-flex items-center gap-0.5">
+                <Users className="h-3 w-3 text-primary" />
                 {vehicle.owners} owner{vehicle.owners > 1 ? "s" : ""}
               </span>
-              <span className="inline-flex items-center gap-1">
-                <ClipboardCheck className="h-3.5 w-3.5 text-primary" />
+              <span className="inline-flex items-center gap-0.5">
+                <ClipboardCheck className="h-3 w-3 text-primary" />
                 {inspection}/100
               </span>
             </div>
-            <div className="flex items-center justify-between text-xs">
-              <p className="flex items-center gap-1 text-muted-foreground">
-                <MapPin className="h-3 w-3 shrink-0" />
+            <div className="flex items-center justify-between text-[10px]">
+              <p className="flex items-center gap-0.5 text-muted-foreground">
+                <MapPin className="h-2.5 w-2.5 shrink-0" />
                 {vehicle.city}
               </p>
               {vehicle.dealerRating != null && (
                 <span className="flex items-center gap-0.5 font-semibold text-foreground">
-                  <Star className="h-3 w-3 fill-primary text-primary" />
+                  <Star className="h-2.5 w-2.5 fill-primary text-primary" />
                   {vehicle.dealerRating}
                 </span>
               )}
             </div>
             {vehicle.metadata.certificationProgram && (
-              <p className="text-[11px] font-medium text-primary">{vehicle.metadata.certificationProgram}</p>
+              <p className="text-[10px] font-medium text-primary">{vehicle.metadata.certificationProgram}</p>
             )}
           </CardContent>
         </Link>
         <div className="grid grid-cols-3 gap-1 border-t border-border p-2">
-          <Button size="sm" variant="outline" className="h-9 rounded-lg text-[11px]" asChild>
+          <Button size="sm" variant="outline" className="h-8 rounded-md px-1 text-[10px]" asChild>
             <Link to={`${path}#inspection`}>Report</Link>
           </Button>
-          <Button size="sm" variant="outline" className="h-9 rounded-lg text-[11px]" asChild>
+          <Button size="sm" variant="outline" className="h-8 rounded-md px-1 text-[10px]" asChild>
             <Link to="/finance/apply">Loan</Link>
           </Button>
-          <Button size="sm" className="h-9 rounded-lg text-[11px]" asChild>
+          <Button size="sm" className="h-8 rounded-md px-1 text-[10px]" asChild>
             <Link to={`${path}#inspect`}>Inspect</Link>
           </Button>
         </div>

@@ -28,7 +28,11 @@ import toast from "react-hot-toast";
 export function VehicleDetailPage() {
   const { slug, category } = useParams<{ slug: string; category?: string }>();
   const { vehicle, similar, loading } = useVehicleDetail(slug);
-  const { toggleWishlist, isWishlisted, addCompare, isInCompare } = useVehicleMarketStore();
+  const toggleWishlist = useVehicleMarketStore((s) => s.toggleWishlist);
+  const addCompare = useVehicleMarketStore((s) => s.addCompare);
+  const vehicleId = vehicle?.id ?? "";
+  const wishlisted = useVehicleMarketStore((s) => s.wishlist.includes(vehicleId));
+  const inCompare = useVehicleMarketStore((s) => s.compare.includes(vehicleId));
 
   useEffect(() => {
     if (vehicle) {
@@ -66,8 +70,6 @@ export function VehicleDetailPage() {
 
   const price = getDiscountedPrice(vehicle);
   const emi = getVehicleEmi(vehicle);
-  const wishlisted = isWishlisted(vehicle.id);
-  const inCompare = isInCompare(vehicle.id);
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,7 +137,11 @@ export function VehicleDetailPage() {
                   type="button"
                   variant="outline"
                   className="flex-1 gap-1"
-                  onClick={() => toggleWishlist(vehicle.id)}
+                  onClick={() => {
+                    const wasSaved = wishlisted;
+                    toggleWishlist(vehicle.id);
+                    toast.success(wasSaved ? "Removed from wishlist" : "Saved to wishlist");
+                  }}
                 >
                   <Heart className={`h-4 w-4 ${wishlisted ? "fill-red-500 text-red-500" : ""}`} />
                   {wishlisted ? "Saved" : "Save"}
