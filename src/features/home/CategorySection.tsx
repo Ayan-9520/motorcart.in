@@ -2,6 +2,8 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Bike, BusFront, Car, CarFront, Truck, Zap } from "lucide-react";
 import { VEHICLE_CATEGORIES } from "@/lib/constants";
+import { useHeroSearch } from "@/features/home/components/hero-search-context";
+import { getHeroHubConfig } from "@/features/home/data/hero-hub-config";
 import { SectionHeader } from "./SectionHeader";
 
 const iconMap = {
@@ -14,18 +16,24 @@ const iconMap = {
 } as const;
 
 export function CategorySection() {
+  const { mode } = useHeroSearch();
+  const hub = getHeroHubConfig(mode);
+  const categories = VEHICLE_CATEGORIES.filter((cat) => hub.categoryIds.includes(cat.id));
+
+  if (!categories.length) return null;
+
   return (
     <section className="home-section">
       <div className="container home-stack">
         <SectionHeader
           eyebrow="Browse by type"
-          title="Vehicle Categories"
-          description="New cars, used cars, bikes, trucks, buses, and EVs — all in one marketplace."
-          href="/vehicles"
+          title={`${hub.label} categories`}
+          description={`Explore ${hub.label.toLowerCase()} listings on Motorcart — filtered for your search.`}
+          href="/buy"
           linkLabel="View all"
         />
         <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-          {VEHICLE_CATEGORIES.map((cat, index) => {
+          {categories.map((cat, index) => {
             const Icon = iconMap[cat.icon as keyof typeof iconMap] ?? Car;
             return (
               <motion.div
@@ -39,13 +47,11 @@ export function CategorySection() {
                   to={cat.href}
                   className="group flex flex-col items-center gap-2 rounded-xl border border-border bg-card p-3 text-center shadow-card transition-all hover:border-primary/40 hover:shadow-card-hover dark:border-border dark:bg-card"
                 >
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary">
-                    <Icon className="h-5 w-5 text-primary transition-colors group-hover:text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-semibold text-foreground sm:text-sm">{cat.label}</p>
-                    <p className="text-[10px] text-muted-foreground sm:text-xs">{cat.count} listings</p>
-                  </div>
+                  <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-xs font-semibold text-foreground">{cat.label}</span>
+                  <span className="text-[10px] text-muted-foreground">{cat.count}</span>
                 </Link>
               </motion.div>
             );

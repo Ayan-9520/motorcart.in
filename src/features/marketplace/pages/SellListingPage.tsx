@@ -108,11 +108,11 @@ export function SellListingPage() {
       return;
     }
     if (!form.phone.trim() && !isAuthenticated) {
-      toast.error("Mobile number add karein");
+      toast.error("Please add a mobile number");
       return;
     }
     if (!isAuthenticated || !user) {
-      toast("Login karke listing publish karein", { icon: "🔐" });
+      toast("Sign in to publish your listing", { icon: "🔐" });
       setLoginModalOpen(true);
       return;
     }
@@ -122,7 +122,7 @@ export function SellListingPage() {
     setSubmitting(false);
 
     if (error) {
-      toast.error(error.message ?? "Listing submit nahi ho payi");
+      toast.error(error.message ?? "Could not submit listing");
       return;
     }
 

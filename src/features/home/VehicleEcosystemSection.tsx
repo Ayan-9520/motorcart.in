@@ -12,6 +12,8 @@ import {
   Wrench,
 } from "lucide-react";
 import { VEHICLE_ECOSYSTEM } from "@/lib/constants";
+import { useHeroSearch } from "@/features/home/components/hero-search-context";
+import { getHeroHubConfig } from "@/features/home/data/hero-hub-config";
 
 const ICONS = {
   Car,
@@ -24,20 +26,28 @@ const ICONS = {
 } as const;
 
 export function VehicleEcosystemSection() {
+  const { mode } = useHeroSearch();
+  const hub = getHeroHubConfig(mode);
+  const items = VEHICLE_ECOSYSTEM.filter((item) => hub.ecosystemIds.includes(item.id));
+
+  if (!items.length) return null;
+
   return (
     <section className="border-b border-border bg-card py-7 md:py-9">
       <div className="container home-stack">
         <div className="text-center">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary sm:text-xs">Marketplace</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary sm:text-xs">
+            {hub.label} marketplace
+          </p>
           <h2 className="mt-1.5 text-lg font-bold tracking-tight sm:text-xl">
-            New + certified pre-owned, one ecosystem
+            Everything for {hub.label.toLowerCase()} — one ecosystem
           </h2>
           <p className="mx-auto mt-1.5 max-w-xl text-xs text-muted-foreground sm:text-sm">
-            India&apos;s AI-powered automotive marketplace — split by trust layer, unified by Motorcart.
+            {hub.browseFooter}
           </p>
         </div>
         <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {VEHICLE_ECOSYSTEM.map((item, i) => {
+          {items.map((item, i) => {
             const Icon = ICONS[item.icon as keyof typeof ICONS] ?? Car;
             return (
               <motion.div

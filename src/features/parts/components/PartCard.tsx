@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import type { PartProduct } from "../types";
 import { partDetailPath, displayUnitPrice } from "../lib/part-utils";
+import { PartImage, partImageSrc } from "./PartImage";
 import type { AppRole } from "@/types/database";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -28,11 +29,10 @@ export function PartCard({ part, role: roleProp, index = 0 }: PartCardProps) {
     <article className="premium-part-card group" style={{ animationDelay: `${index * 40}ms` }}>
       <Link to={path} className="block">
         <div className="premium-part-card-media">
-          <img
-            src={part.images[0]}
+          <PartImage
+            src={partImageSrc(part.images)}
             alt={part.name}
-            loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="transition-transform duration-500 group-hover:scale-105"
           />
           {part.isFeatured && (
             <Badge className="absolute left-2.5 top-2.5 border-0 bg-primary text-[10px] text-primary-foreground shadow-sm">

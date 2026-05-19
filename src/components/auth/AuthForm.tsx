@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, Phone, Loader2 } from "lucide-react";
+import { Mail, Phone, Loader2, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,12 +24,14 @@ interface AuthFormProps {
 
 export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
   const navigate = useNavigate();
-  const { loginEmail, sendOtp, verifyOtp, loginGoogle, isLoading } = useAuth();
+  const { loginEmail, sendOtp, verifyOtp, loginGoogle, resendEmailConfirmation, isLoading } = useAuth();
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<EmailForm>({
     resolver: zodResolver(emailSchema),
@@ -37,12 +39,24 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
 
   const onEmailSubmit = async (data: EmailForm) => {
     setSubmitting(true);
-    const { error } = await loginEmail(data.email, data.password);
+    setPendingEmail(null);
+    const { error, needsEmailConfirmation } = await loginEmail(data.email, data.password);
     setSubmitting(false);
+    if (needsEmailConfirmation) {
+      setPendingEmail(data.email);
+      return;
+    }
     if (!error) {
       onSuccess?.();
       navigate("/dashboard/customer");
     }
+  };
+
+  const onResendVerification = async () => {
+    if (!pendingEmail) return;
+    setResending(true);
+    await resendEmailConfirmation(pendingEmail);
+    setResending(false);
   };
 
   const onSendOtp = async () => {
@@ -73,6 +87,28 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
       </TabsList>
 
       <TabsContent value="email">
+        {pendingEmail && (
+          <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm" role="alert">
+            <p className="flex items-start gap-2 font-medium text-foreground">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              Email verify pending
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              We sent a confirmation link to <strong className="text-foreground">{pendingEmail}</strong>. Please check
+              your inbox and spam folder.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-3 w-full"
+              disabled={resending}
+              onClick={onResendVerification}
+            >
+              {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resend verification email"}
+            </Button>
+          </div>
+        )}
         <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="email">Email</Label>

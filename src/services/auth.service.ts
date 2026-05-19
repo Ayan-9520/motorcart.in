@@ -19,6 +19,14 @@ export async function fetchUserProfile(userId: string): Promise<DbUser | null> {
   return data as DbUser;
 }
 
+const authRedirectUrl = () =>
+  typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined;
+
+export function isEmailNotConfirmedError(message: string): boolean {
+  const m = message.toLowerCase();
+  return m.includes("email not confirmed") || m.includes("email_not_confirmed");
+}
+
 export async function signInWithEmail(email: string, password: string) {
   return supabase.auth.signInWithPassword({ email, password });
 }
@@ -28,11 +36,22 @@ export async function signUpWithEmail(payload: SignUpPayload) {
     email: payload.email,
     password: payload.password,
     options: {
+      emailRedirectTo: authRedirectUrl(),
       data: {
         full_name: payload.fullName,
         role: payload.role ?? "customer",
         phone: payload.phone,
       },
+    },
+  });
+}
+
+export async function resendConfirmationEmail(email: string) {
+  return supabase.auth.resend({
+    type: "signup",
+    email,
+    options: {
+      emailRedirectTo: authRedirectUrl(),
     },
   });
 }

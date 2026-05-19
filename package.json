@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed:vehicles": "npx --yes tsx scripts/seed-vehicles.ts",
+    "auth:confirm": "npx --yes tsx scripts/confirm-user-email.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.0.1",

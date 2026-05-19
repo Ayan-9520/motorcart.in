@@ -282,6 +282,38 @@
     @apply mt-6 w-full min-w-0 lg:mt-8;
   }
 
+  .hero-hub-quicklinks-label {
+    @apply mb-3 text-xs font-semibold text-foreground;
+  }
+
+  .hero-hub-quicklinks-grid {
+    @apply grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4;
+  }
+
+  .hero-hub-quicklink-card {
+    @apply flex items-center gap-2.5 rounded-xl border border-border/80 bg-card p-3 no-underline transition-all hover:border-primary/35 hover:bg-primary/5 hover:shadow-sm;
+  }
+
+  .hero-hub-quicklink-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary;
+  }
+
+  .hero-hub-quicklink-text {
+    @apply min-w-0 flex-1;
+  }
+
+  .hero-hub-quicklink-title {
+    @apply block text-xs font-semibold text-foreground;
+  }
+
+  .hero-hub-quicklink-desc {
+    @apply block text-[10px] leading-snug text-muted-foreground;
+  }
+
+  .hero-hub-quicklink-arrow {
+    @apply shrink-0 text-muted-foreground;
+  }
+
   .hero-ai-picks-row {
     @apply grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3;
   }
@@ -1326,6 +1358,24 @@
     box-shadow: var(--shadow-card-hover);
   }
 
+  .premium-vehicle-card .relative.aspect-\[16\/10\]::after,
+  .premium-vehicle-card .relative.aspect-\[16\/11\]::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      180deg,
+      transparent 45%,
+      hsl(var(--card) / 0.15) 75%,
+      hsl(var(--card) / 0.55) 100%
+    );
+  }
+
+  .premium-vehicle-card img {
+    @apply object-cover;
+  }
+
   .marketplace-listing-page .premium-vehicle-card,
   .vehicle-listing-grid .premium-vehicle-card {
     @apply rounded-xl;
@@ -1630,6 +1680,14 @@
 
   .premium-part-card-media {
     @apply relative aspect-square overflow-hidden bg-muted;
+  }
+
+  .premium-part-card-media::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent 60%, hsl(var(--card) / 0.4) 100%);
   }
 
   .premium-part-card-body {
@@ -2252,6 +2310,200 @@
   .wishlist-hero {
     background-image: linear-gradient(180deg, hsl(var(--primary) / 0.06), hsl(var(--background)));
     @apply border-b border-border/60;
+  }
+
+  /* App download — phone mockup */
+  .app-download-visual {
+    background-image:
+    radial-gradient(ellipse 80% 60% at 70% 50%, hsl(var(--primary) / 0.14), transparent),
+    linear-gradient(135deg, hsl(var(--muted)) 0%, hsl(var(--secondary)) 100%);
+    @apply relative flex min-h-[280px] items-center justify-center overflow-hidden p-6 md:min-h-[360px] md:p-10;
+  }
+
+  .app-phone-mockup {
+    @apply relative mx-auto h-[300px] w-[min(100%,280px)] sm:h-[340px] sm:w-[300px];
+  }
+
+  .app-phone-glow {
+    @apply pointer-events-none absolute inset-0 -z-10 rounded-full bg-primary/20 blur-3xl;
+  }
+
+  .app-phone-frame {
+    @apply absolute;
+  }
+
+  .app-phone-frame-lg {
+    @apply left-1/2 top-1/2 z-20 w-[148px] -translate-x-[42%] -translate-y-1/2 sm:w-[168px];
+  }
+
+  .app-phone-frame-sm {
+    @apply right-0 top-1/2 z-10 hidden w-[118px] -translate-y-[38%] opacity-90 sm:block sm:w-[132px];
+  }
+
+  .app-phone-back {
+    transform: translateY(-38%) rotate(8deg);
+  }
+
+  .app-phone-front {
+    filter: drop-shadow(0 20px 40px rgb(0 0 0 / 0.18));
+  }
+
+  .app-phone-bezel {
+    @apply relative overflow-hidden rounded-[1.65rem] border-[3px] border-zinc-800 bg-zinc-900 p-[5px] shadow-xl;
+  }
+
+  .dark .app-phone-bezel {
+    @apply border-zinc-700 bg-zinc-950;
+  }
+
+  .app-phone-island {
+    @apply absolute left-1/2 top-[9px] z-30 h-[14px] w-[42px] -translate-x-1/2 rounded-full bg-zinc-900;
+  }
+
+  .app-phone-screen {
+    @apply overflow-hidden rounded-[1.35rem] bg-background;
+  }
+
+  .app-phone-home-indicator {
+    @apply absolute bottom-[6px] left-1/2 z-30 h-[3px] w-[28%] -translate-x-1/2 rounded-full bg-zinc-600/80;
+  }
+
+  .app-screen {
+    @apply flex min-h-[240px] flex-col text-[9px] leading-tight text-foreground sm:min-h-[280px] sm:text-[10px];
+  }
+
+  .app-phone-frame-sm .app-screen {
+    @apply min-h-[200px] text-[8px];
+  }
+
+  .app-phone-frame-lg .app-screen {
+    @apply min-h-[260px] sm:min-h-[290px];
+  }
+
+  .app-screen-home {
+    @apply bg-gradient-to-b from-background to-muted/40 p-2 pt-6;
+  }
+
+  .app-screen-auction {
+    @apply bg-gradient-to-b from-zinc-900 to-zinc-800 p-2 pt-6 text-white;
+  }
+
+  .app-status-bar {
+    @apply absolute left-0 right-0 top-1.5 flex items-center justify-between px-3 text-[8px] font-medium opacity-70;
+  }
+
+  .app-status-icons {
+    @apply tracking-widest;
+  }
+
+  .app-header {
+    @apply mt-4 flex items-center gap-1.5;
+  }
+
+  .app-logo-mark {
+    @apply flex h-5 w-5 items-center justify-center rounded-md bg-primary text-[9px] font-bold text-primary-foreground;
+  }
+
+  .app-logo-text {
+    @apply flex-1 text-[11px] font-bold tracking-tight;
+  }
+
+  .app-header-icon {
+    @apply h-3 w-3 text-muted-foreground;
+  }
+
+  .app-search-pill {
+    @apply mt-2 flex items-center gap-1.5 rounded-full border border-border/80 bg-muted/60 px-2.5 py-1.5 text-muted-foreground;
+  }
+
+  .app-tabs {
+    @apply mt-2 flex gap-2;
+  }
+
+  .app-tab {
+    @apply rounded-full px-2 py-0.5 text-[8px] font-medium text-muted-foreground;
+  }
+
+  .app-tab.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  .app-vehicle-card {
+    @apply mt-2 flex-1 overflow-hidden rounded-xl border border-border/60 bg-card shadow-sm;
+  }
+
+  .app-vehicle-img-wrap {
+    @apply relative aspect-[16/10] overflow-hidden bg-muted;
+  }
+
+  .app-vehicle-img {
+    @apply h-full w-full object-cover;
+  }
+
+  .app-badge-verified {
+    @apply absolute left-1.5 top-1.5 rounded bg-primary px-1 py-0.5 text-[7px] font-semibold uppercase tracking-wide text-primary-foreground;
+  }
+
+  .app-vehicle-title {
+    @apply px-2 pt-1.5 text-[9px] font-semibold leading-snug;
+  }
+
+  .app-vehicle-price {
+    @apply px-2 text-[10px] font-bold text-primary;
+  }
+
+  .app-vehicle-meta {
+    @apply px-2 pb-2 text-[8px] text-muted-foreground;
+  }
+
+  .app-bottom-nav {
+    @apply mt-auto flex items-center justify-around border-t border-border/60 py-2 text-muted-foreground;
+  }
+
+  .app-auction-live {
+    @apply mt-5 flex items-center gap-1 text-[8px] font-bold uppercase tracking-wider text-red-400;
+  }
+
+  .app-live-dot {
+    @apply h-1.5 w-1.5 animate-pulse rounded-full bg-red-500;
+  }
+
+  .app-auction-title {
+    @apply mt-3 text-[10px] font-semibold text-white/90;
+  }
+
+  .app-auction-bid {
+    @apply mt-1 text-lg font-bold text-primary;
+  }
+
+  .app-auction-meta {
+    @apply text-[8px] text-white/60;
+  }
+
+  .app-bid-bar {
+    @apply mt-3 h-1 overflow-hidden rounded-full bg-white/20;
+  }
+
+  .app-bid-fill {
+    @apply h-full rounded-full bg-primary;
+  }
+
+  .app-bid-btn {
+    @apply mt-3 w-full rounded-lg bg-primary py-1.5 text-[9px] font-semibold text-primary-foreground;
+  }
+
+  .app-auction-foot {
+    @apply mt-auto pt-4 text-[8px] text-white/50;
+  }
+
+  @media (max-width: 639px) {
+    .app-phone-frame-lg {
+      @apply -translate-x-1/2;
+    }
+
+    .app-phone-mockup {
+      @apply h-[280px] w-[200px];
+    }
   }
 }
 

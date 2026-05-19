@@ -5,8 +5,35 @@ import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
 import { filterVehicles, sortVehicles, paginateVehicles, slugify } from "@/lib/vehicle-utils";
 import type { VehicleSortOption } from "@/types/vehicle";
 
+type VehicleMetaExtras = VehicleListing["metadata"] & {
+  dealerName?: string;
+  dealerSlug?: string;
+  dealerPhone?: string;
+  dealerRating?: number;
+  dealerVerified?: boolean;
+};
+
+export function normalizeFuelType(fuel: string): string {
+  const key = fuel.trim().toLowerCase();
+  const map: Record<string, string> = {
+    petrol: "petrol",
+    diesel: "diesel",
+    electric: "electric",
+    ev: "electric",
+    cng: "cng",
+    hybrid: "hybrid",
+  };
+  return map[key] ?? "petrol";
+}
+
+export function normalizeTransmissionType(transmission: string): string {
+  const key = transmission.trim().toLowerCase();
+  if (key === "manual") return "manual";
+  return "automatic";
+}
+
 export function mapDbToListing(v: DbVehicle, dealer?: DbDealer | null): VehicleListing {
-  const meta = (v.metadata ?? {}) as VehicleListing["metadata"];
+  const meta = (v.metadata ?? {}) as VehicleMetaExtras;
   const category = (v.category as VehicleListing["category"]) || "used-cars";
   return {
     id: v.id,
@@ -37,17 +64,26 @@ export function mapDbToListing(v: DbVehicle, dealer?: DbDealer | null): VehicleL
     status: v.status,
     aiPriceScore: v.ai_price_score ?? undefined,
     dealerId: v.dealer_id ?? undefined,
-    dealerName: dealer?.name ?? "Motorcart Dealer",
-    dealerSlug: dealer?.slug,
-    dealerPhone: dealer?.phone ?? undefined,
-    dealerRating: dealer ? Number(dealer.rating) : undefined,
-    dealerVerified: dealer?.is_verified,
+    dealerName: dealer?.name ?? meta.dealerName ?? "Motorcart Dealer",
+    dealerSlug: dealer?.slug ?? meta.dealerSlug,
+    dealerPhone: dealer?.phone ?? meta.dealerPhone,
+    dealerRating: dealer ? Number(dealer.rating) : meta.dealerRating,
+    dealerVerified: dealer?.is_verified ?? meta.dealerVerified,
     metadata: meta,
     createdAt: v.created_at,
   };
 }
 
-export async function fetchVehiclesFromDb(limit = 100): Promise<VehicleListing[]> {
+/** Mock catalog + Supabase rows (DB wins on slug collision). */
+export async function getVehiclePool(): Promise<VehicleListing[]> {
+  const available = MOCK_VEHICLES.filter((v) => v.status === "available");
+  const dbVehicles = await fetchVehiclesFromDb(500);
+  if (!dbVehicles.length) return available;
+  const slugs = new Set(dbVehicles.map((v) => v.slug));
+  return [...dbVehicles, ...available.filter((v) => !slugs.has(v.slug))];
+}
+
+export async function fetchVehiclesFromDb(limit = 500): Promise<VehicleListing[]> {
   const { data, error } = await supabase
     .from("vehicles")
     .select("*, dealers(name, slug, phone, rating, is_verified)")
@@ -86,14 +122,7 @@ export async function searchVehicles(options: {
   page: number;
   pageSize: number;
 }): Promise<{ vehicles: VehicleListing[]; total: number; page: number; totalPages: number }> {
-  let pool = MOCK_VEHICLES.filter((v) => v.status === "available");
-
-  const dbVehicles = await fetchVehiclesFromDb();
-  if (dbVehicles.length) {
-    const slugs = new Set(dbVehicles.map((v) => v.slug));
-    pool = [...dbVehicles, ...MOCK_VEHICLES.filter((v) => !slugs.has(v.slug))];
-  }
-
+  const pool = await getVehiclePool();
   const filtered = filterVehicles(pool, options.filters);
   const sorted = sortVehicles(filtered, options.sort);
   const { items, total, page, totalPages } = paginateVehicles(sorted, options.page, options.pageSize);
@@ -183,8 +212,8 @@ export async function createVehicle(data: VehicleFormData, sellerId: string, dea
     year: data.year,
     price: data.price,
     original_price: data.originalPrice,
-    fuel_type: data.fuelType,
-    transmission: data.transmission,
+    fuel_type: normalizeFuelType(data.fuelType),
+    transmission: normalizeTransmissionType(data.transmission),
     body_type: data.bodyType,
     category: data.category,
     kms_driven: data.kmsDriven,
@@ -205,7 +234,8 @@ export async function createVehicle(data: VehicleFormData, sellerId: string, dea
 
 export async function updateVehicle(id: string, data: Partial<VehicleFormData> & { status?: string; is_featured?: boolean }) {
   const payload: Record<string, unknown> = { ...data };
-  if (data.fuelType) payload.fuel_type = data.fuelType;
+  if (data.fuelType) payload.fuel_type = normalizeFuelType(data.fuelType);
+  if (data.transmission) payload.transmission = normalizeTransmissionType(data.transmission);
   if (data.bodyType) payload.body_type = data.bodyType;
   if (data.kmsDriven != null) payload.kms_driven = data.kmsDriven;
   if (data.originalPrice != null) payload.original_price = data.originalPrice;

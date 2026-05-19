@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { HeroSearchFilters, HeroSearchMode } from "@/features/home/data/homepage-data";
 
 type HeroSearchContextValue = {
@@ -42,6 +42,14 @@ export function HeroSearchProvider({ children }: { children: ReactNode }) {
     setFuel("");
     setCity("");
   };
+
+  useEffect(() => {
+    setBrand("");
+    setBudget("");
+    setFuel("");
+    setCity("");
+    setQuery("");
+  }, [mode]);
 
   const value = useMemo(
     () => ({

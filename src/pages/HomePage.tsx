@@ -17,8 +17,37 @@ import { CommunitySection } from "@/features/home/CommunitySection";
 import { AppDownloadSection } from "@/features/home/AppDownloadSection";
 import { StatsSection } from "@/features/home/StatsSection";
 import { TestimonialsSection } from "@/features/home/TestimonialsSection";
+import { HeroSearchProvider } from "@/features/home/components/hero-search-context";
+import { useHeroSearch } from "@/features/home/components/hero-search-context";
+import { getHomeSectionVisibility } from "@/features/home/data/hero-hub-config";
 import { setPageMeta } from "@/utils/seo";
 import { SITE_TAGLINE } from "@/lib/constants";
+
+function HomePageSections() {
+  const { mode } = useHeroSearch();
+  const vis = getHomeSectionVisibility(mode);
+
+  return (
+    <>
+      {vis.trustBand && <HomeTrustBand />}
+      {vis.ecosystem && <VehicleEcosystemSection />}
+      {vis.newCars && <NewCarsHomeSection />}
+      {vis.preowned && <PreownedCarsHomeSection />}
+      {vis.categories && <CategorySection />}
+      {vis.auctions && <AuctionsSection />}
+      {vis.finance && <FinanceSection />}
+      {vis.banks && <BanksStripSection />}
+      {vis.services && <ServicesSection />}
+      {vis.parts && <PartsSection />}
+      {vis.ai && <AIFeaturesSection />}
+      {vis.dealer && <DealerCTA />}
+      {vis.community && <CommunitySection />}
+      {vis.stats && <StatsSection />}
+      {vis.testimonials && <TestimonialsSection />}
+      {vis.appDownload && <AppDownloadSection />}
+    </>
+  );
+}
 
 export function HomePage() {
   useEffect(() => {
@@ -30,24 +59,11 @@ export function HomePage() {
 
   return (
     <div className="home-page bg-background">
-      <HeroSection />
-      <QuickAccessSection />
-      <HomeTrustBand />
-      <VehicleEcosystemSection />
-      <NewCarsHomeSection />
-      <PreownedCarsHomeSection />
-      <CategorySection />
-      <AuctionsSection />
-      <FinanceSection />
-      <BanksStripSection />
-      <ServicesSection />
-      <PartsSection />
-      <AIFeaturesSection />
-      <DealerCTA />
-      <CommunitySection />
-      <StatsSection />
-      <TestimonialsSection />
-      <AppDownloadSection />
+      <HeroSearchProvider>
+        <HeroSection />
+        <QuickAccessSection />
+        <HomePageSections />
+      </HeroSearchProvider>
     </div>
   );
 }

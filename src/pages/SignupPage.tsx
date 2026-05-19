@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,10 @@ type FormData = z.infer<typeof schema>;
 
 export function SignupPage() {
   const navigate = useNavigate();
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, resendEmailConfirmation } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [verifyEmail, setVerifyEmail] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { role: "customer" },
@@ -32,7 +34,7 @@ export function SignupPage() {
 
   const onSubmit = async (data: FormData) => {
     setLoading(true);
-    const { error } = await registerUser({
+    const { error, needsEmailConfirmation, data: authData } = await registerUser({
       email: data.email,
       password: data.password,
       fullName: data.fullName,
@@ -40,8 +42,56 @@ export function SignupPage() {
       role: data.role as AppRole,
     });
     setLoading(false);
-    if (!error) navigate("/login");
+
+    if (error) return;
+
+    if (authData?.session) {
+      navigate("/dashboard/customer", { replace: true });
+      return;
+    }
+
+    if (needsEmailConfirmation) {
+      setVerifyEmail(data.email);
+      return;
+    }
+
+    navigate("/login");
   };
+
+  if (verifyEmail) {
+    return (
+      <Card>
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <Mail className="h-6 w-6 text-primary" />
+          </div>
+          <CardTitle>Verify your email</CardTitle>
+          <CardDescription>
+            We sent a confirmation link to <strong>{verifyEmail}</strong>. Click it to activate your account, then sign
+            in.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            disabled={resending}
+            onClick={async () => {
+              setResending(true);
+              await resendEmailConfirmation(verifyEmail);
+              setResending(false);
+            }}
+          >
+            {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resend verification email"}
+          </Button>
+          <Button type="button" variant="default" className="w-full" asChild>
+            <Link to="/login">Go to sign in</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

@@ -1,49 +1,22 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { Search, Car, Package, Sparkles } from "lucide-react";
+import { Search, Car, Package, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { setPageMeta } from "@/utils/seo";
 import { runGlobalSearch, buildBuySearchUrl } from "@/lib/global-search";
 import { VehicleCard } from "@/features/vehicles/components/VehicleCard";
-import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
-import { filterVehicles, filtersFromSearchParams } from "@/lib/vehicle-utils";
-import type { VehicleListing } from "@/types/vehicle";
+import { filtersFromSearchParams } from "@/lib/vehicle-utils";
+import type { VehicleListing, VehicleFilters } from "@/types/vehicle";
 import { MOCK_PARTS_CATALOG } from "@/features/parts/data/mock-parts-catalog";
+import { searchVehicles } from "@/services/vehicle.service";
 
 export function SearchResultsPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") ?? "";
   const hub = params.get("hub");
-
-  const vehicleResults = useMemo(() => {
-    const filters = filtersFromSearchParams(params);
-    let pool: VehicleListing[] = MOCK_VEHICLES.filter((v) => v.status === "available");
-
-    if (hub === "cars") {
-      pool = pool.filter((v) => v.category === "new-cars" || v.category === "used-cars");
-    } else if (hub === "bikes") {
-      pool = pool.filter((v) => v.category === "bikes");
-    } else if (hub === "trucks") {
-      pool = pool.filter((v) => v.category === "trucks");
-    } else if (hub === "buses") {
-      pool = pool.filter((v) => v.category === "buses");
-    } else if (hub === "auto") {
-      filters.hubCategory = "auto";
-    }
-
-    const hasCriteria =
-      Boolean(filters.q?.trim()) ||
-      Boolean(filters.brand) ||
-      Boolean(filters.fuel) ||
-      Boolean(filters.city) ||
-      filters.priceMin != null ||
-      filters.priceMax != null ||
-      Boolean(hub);
-
-    if (!hasCriteria) return [];
-    return filterVehicles(pool, filters);
-  }, [params, hub, q]);
+  const [vehicleResults, setVehicleResults] = useState<VehicleListing[]>([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(false);
 
   const partResults = useMemo(() => {
     if (!q.trim()) return [];
@@ -57,6 +30,90 @@ export function SearchResultsPage() {
   }, [q]);
 
   const quickLinks = useMemo(() => runGlobalSearch(q, 6).filter((r) => r.type === "page"), [q]);
+
+  useEffect(() => {
+    const filters: VehicleFilters = { ...filtersFromSearchParams(params) };
+
+    if (hub === "cars") {
+      filters.category = undefined;
+    } else if (hub === "bikes") {
+      filters.category = "bikes";
+    } else if (hub === "trucks") {
+      filters.category = "trucks";
+    } else if (hub === "buses") {
+      filters.category = "buses";
+    } else if (hub === "auto") {
+      filters.hubCategory = "auto";
+    } else if (hub === "ev") {
+      filters.category = "ev";
+    }
+
+    if (hub === "cars") {
+      const hasCriteria =
+        Boolean(filters.q?.trim()) ||
+        Boolean(filters.brand) ||
+        Boolean(filters.fuel) ||
+        Boolean(filters.city) ||
+        filters.priceMin != null ||
+        filters.priceMax != null;
+
+      if (!hasCriteria) {
+        setVehicleResults([]);
+        return;
+      }
+
+      let cancelled = false;
+      setLoadingVehicles(true);
+
+      Promise.all([
+        searchVehicles({ filters: { ...filters, category: "new-cars" }, sort: "newest", page: 1, pageSize: 60 }),
+        searchVehicles({ filters: { ...filters, category: "used-cars" }, sort: "newest", page: 1, pageSize: 60 }),
+      ])
+        .then(([newRes, usedRes]) => {
+          if (cancelled) return;
+          const merged = [...newRes.vehicles, ...usedRes.vehicles];
+          const seen = new Set<string>();
+          setVehicleResults(merged.filter((v) => (seen.has(v.id) ? false : (seen.add(v.id), true))));
+        })
+        .finally(() => {
+          if (!cancelled) setLoadingVehicles(false);
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const hasCriteria =
+      Boolean(filters.q?.trim()) ||
+      Boolean(filters.brand) ||
+      Boolean(filters.fuel) ||
+      Boolean(filters.city) ||
+      filters.priceMin != null ||
+      filters.priceMax != null ||
+      Boolean(hub) ||
+      Boolean(filters.category);
+
+    if (!hasCriteria) {
+      setVehicleResults([]);
+      return;
+    }
+
+    let cancelled = false;
+    setLoadingVehicles(true);
+
+    searchVehicles({ filters, sort: "newest", page: 1, pageSize: 120 })
+      .then((res) => {
+        if (!cancelled) setVehicleResults(res.vehicles);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingVehicles(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [params, hub]);
 
   useEffect(() => {
     setPageMeta({
@@ -121,7 +178,7 @@ export function SearchResultsPage() {
                   in <strong className="text-foreground capitalize">{hub}</strong>
                 </>
               ) : null}{" "}
-              — {vehicleResults.length} vehicles, {partResults.length} parts
+              — {loadingVehicles ? "…" : vehicleResults.length} vehicles, {partResults.length} parts
             </p>
 
             {quickLinks.length > 0 && (
@@ -137,6 +194,12 @@ export function SearchResultsPage() {
                   ))}
                 </div>
               </section>
+            )}
+
+            {loadingVehicles && (
+              <p className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading vehicles…
+              </p>
             )}
 
             {vehicleResults.length > 0 && (
@@ -181,7 +244,7 @@ export function SearchResultsPage() {
               </section>
             )}
 
-            {vehicleResults.length === 0 && partResults.length === 0 && (
+            {!loadingVehicles && vehicleResults.length === 0 && partResults.length === 0 && (
               <div className="rounded-2xl border border-border bg-card p-10 text-center">
                 <p className="font-semibold">No matches found</p>
                 <p className="mt-1 text-sm text-muted-foreground">Try a different spelling or browse categories</p>

@@ -4,6 +4,8 @@ import {
   fetchUserProfile,
   signInWithEmail,
   signUpWithEmail,
+  resendConfirmationEmail,
+  isEmailNotConfirmedError,
   signInWithPhoneOtp,
   verifyPhoneOtp,
   signInWithGoogle,
@@ -41,15 +43,38 @@ export function useAuth() {
 
   const loginEmail = useCallback(async (email: string, password: string) => {
     const { error } = await signInWithEmail(email, password);
-    if (error) toast.error(error.message);
-    else toast.success("Welcome back!");
-    return { error };
+    if (error) {
+      if (isEmailNotConfirmedError(error.message)) {
+        toast.error("Please verify your email first. Check your inbox and spam, or resend the verification link.", {
+          duration: 6000,
+        });
+      } else {
+        toast.error(error.message);
+      }
+    } else {
+      toast.success("Welcome back!");
+    }
+    return { error, needsEmailConfirmation: error ? isEmailNotConfirmedError(error.message) : false };
   }, []);
 
   const register = useCallback(async (payload: SignUpPayload) => {
-    const { error } = await signUpWithEmail(payload);
+    const { data, error } = await signUpWithEmail(payload);
+    if (error) {
+      toast.error(error.message);
+      return { data, error, needsEmailConfirmation: false };
+    }
+    if (data.session) {
+      toast.success("Account created — welcome!");
+      return { data, error: null, needsEmailConfirmation: false };
+    }
+    toast.success("Verification link sent to your email");
+    return { data, error: null, needsEmailConfirmation: true };
+  }, []);
+
+  const resendEmailConfirmation = useCallback(async (email: string) => {
+    const { error } = await resendConfirmationEmail(email);
     if (error) toast.error(error.message);
-    else toast.success("Check your email to verify your account");
+    else toast.success("Verification email resent — please check your inbox");
     return { error };
   }, []);
 
@@ -93,6 +118,7 @@ export function useAuth() {
     isAuthenticated,
     loginEmail,
     register,
+    resendEmailConfirmation,
     sendOtp,
     verifyOtp,
     loginGoogle,

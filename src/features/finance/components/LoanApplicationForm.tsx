@@ -42,7 +42,7 @@ export function LoanApplicationForm({ lenders, defaultBankSlug }: LoanApplicatio
 
   const submit = async () => {
     if (!isAuthenticated || !user) {
-      toast.error("Apply karne ke liye login karein");
+      toast.error("Please sign in to apply");
       navigate("/login", { state: { from: `/finance/apply${params.toString() ? `?${params}` : ""}` } });
       return;
     }

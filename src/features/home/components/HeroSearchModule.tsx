@@ -6,12 +6,10 @@ import {
   HERO_SEARCH_TABS,
   buildHeroSearchPath,
   heroBuyHubHref,
-  SEARCH_BRAND_SUGGESTIONS,
-  SEARCH_BUDGET_SUGGESTIONS,
-  SEARCH_FUEL_SUGGESTIONS,
   SEARCH_CITY_SUGGESTIONS,
   type HeroSearchMode,
 } from "@/features/home/data/homepage-data";
+import { getHeroHubConfig } from "@/features/home/data/hero-hub-config";
 import { useHeroSearch } from "@/features/home/components/hero-search-context";
 import { cn } from "@/lib/utils";
 
@@ -80,9 +78,11 @@ export function HeroSearchModule() {
     clearFilters,
   } = useHeroSearch();
 
+  const hub = getHeroHubConfig(mode);
   const activeTab = HERO_SEARCH_TABS.find((t) => t.id === mode) ?? HERO_SEARCH_TABS[0];
   const searchPath = buildHeroSearchPath(mode, query, filters);
   const buyHubPath = heroBuyHubHref(mode);
+  const cities = SEARCH_CITY_SUGGESTIONS;
 
   const onSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -96,19 +96,17 @@ export function HeroSearchModule() {
           const Icon = item.icon;
           const isActive = mode === item.id;
           return (
-            <Link
+            <button
               key={item.id}
-              to={item.hubHref}
+              type="button"
               role="tab"
               aria-selected={isActive}
-              onPointerEnter={() => setMode(item.id)}
-              onFocus={() => setMode(item.id)}
               onClick={() => setMode(item.id)}
               className={cn("hero-vehicle-tab", isActive && "hero-vehicle-tab-active")}
             >
               <Icon className="h-4 w-4" strokeWidth={isActive ? 2.25 : 2} />
               <span>{item.label}</span>
-            </Link>
+            </button>
           );
         })}
       </div>
@@ -117,7 +115,7 @@ export function HeroSearchModule() {
         <div className="hero-filter-toolbar">
           <span className="hero-filter-toolbar-title">
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
-            Refine {activeTab.label.toLowerCase()}
+            Refine {hub.label.toLowerCase()}
           </span>
           {hasFilters && (
             <button type="button" onClick={clearFilters} className="hero-filter-clear">
@@ -132,28 +130,30 @@ export function HeroSearchModule() {
             label="Brand"
             value={brand}
             onChange={setBrand}
-            options={SEARCH_BRAND_SUGGESTIONS}
+            options={hub.brands}
             placeholder="Type or pick brand"
           />
           <HeroFilterField
             label="Budget"
             value={budget}
             onChange={setBudget}
-            options={SEARCH_BUDGET_SUGGESTIONS}
-            placeholder="e.g. Under ₹10L or 8 lakh"
+            options={hub.budgets}
+            placeholder="e.g. Under ₹10L"
           />
-          <HeroFilterField
-            label="Fuel"
-            value={fuel}
-            onChange={setFuel}
-            options={SEARCH_FUEL_SUGGESTIONS}
-            placeholder="Petrol, Diesel, EV…"
-          />
+          {hub.fuels.length > 0 && (
+            <HeroFilterField
+              label="Fuel"
+              value={fuel}
+              onChange={setFuel}
+              options={hub.fuels}
+              placeholder="Petrol, Diesel, EV…"
+            />
+          )}
           <HeroFilterField
             label="City"
             value={city}
             onChange={setCity}
-            options={SEARCH_CITY_SUGGESTIONS}
+            options={cities}
             placeholder="Mumbai, Delhi NCR…"
           />
         </div>
@@ -176,10 +176,10 @@ export function HeroSearchModule() {
 
         <div className="hero-search-card-footer">
           <Link to={buyHubPath} className="hero-browse-link inline-flex items-center gap-1">
-            Open Buy — {activeTab.label}
+            Open {hub.label} hub
             <ArrowRight className="h-3 w-3" />
           </Link>
-          <span className="text-[11px] text-muted-foreground">New &amp; used · one hub</span>
+          <span className="text-[11px] text-muted-foreground">{hub.browseFooter}</span>
         </div>
       </div>
     </div>

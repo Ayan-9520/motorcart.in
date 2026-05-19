@@ -3,8 +3,12 @@ import { Car } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /** Reliable fallback when CDN / external image fails */
-export const VEHICLE_IMAGE_FALLBACK =
-  "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=800&q=80";
+import { optimizeImageUrl } from "@/lib/media-urls";
+
+export const VEHICLE_IMAGE_FALLBACK = optimizeImageUrl(
+  "https://images.unsplash.com/photo-1617788138017-80837c34d4af",
+  { w: 1200, h: 800, q: 85 }
+);
 
 export function vehicleImageSrc(images?: string[]): string {
   const src = images?.[0]?.trim();
