@@ -38,5 +38,5 @@ export function buildSocialCaptionPrompt(vehicle: { title: string; price: number
 }
 
 export function buildInventoryDescriptionPrompt(vehicle: Record<string, unknown>): string {
-  return `Write a premium 80-word used vehicle listing description (no fluff) for:\n${JSON.stringify(vehicle)}`;
+  return `Write a premium 80-word pre-owned vehicle listing description (no fluff) for:\n${JSON.stringify(vehicle)}`;
 }

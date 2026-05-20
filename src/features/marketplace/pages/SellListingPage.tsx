@@ -104,7 +104,7 @@ export function SellListingPage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!form.brand.trim() || !form.model.trim() || !form.city.trim()) {
-      toast.error("Brand, model aur city zaroori hain");
+      toast.error("Brand, model, and city are required");
       return;
     }
     if (!form.phone.trim() && !isAuthenticated) {
@@ -127,7 +127,7 @@ export function SellListingPage() {
     }
 
     setSubmitted(true);
-    toast.success("Listing submit ho gayi!");
+    toast.success("Listing submitted successfully!");
   };
 
   if (submitted) {
@@ -139,8 +139,8 @@ export function SellListingPage() {
           </div>
           <h1 className="mt-4 text-2xl font-bold">Listing submitted!</h1>
           <p className="mt-2 max-w-md text-sm text-muted-foreground">
-            Aapki {hubLabel.toLowerCase()} listing review ke liye gayi hai. Verified buyers jald contact
-            karenge.
+            Your {hubLabel.toLowerCase()} listing is under review. Verified buyers will contact you
+            shortly.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild>
@@ -166,10 +166,10 @@ export function SellListingPage() {
 
         <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
           <div className="min-w-0 flex-1">
-            <p className="text-xs font-semibold uppercase tracking-widest text-primary">Used vehicle only</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">Pre-owned vehicles only</p>
             <h1 className="marketplace-listing-title mt-1">{title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Details bharo — hum instant valuation aur verified buyers tak pahunchayenge.
+              Enter your details — we will share instant valuation and connect you with verified buyers.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
@@ -265,7 +265,7 @@ export function SellListingPage() {
                 <CardContent className="flex flex-col items-center gap-2 py-8 text-center">
                   <Upload className="h-8 w-8 text-muted-foreground" />
                   <p className="text-sm font-medium">Photos (coming soon)</p>
-                  <p className="text-xs text-muted-foreground">Abhi listing details se submit ho jayegi</p>
+                  <p className="text-xs text-muted-foreground">You can submit with listing details for now</p>
                 </CardContent>
               </Card>
 
@@ -286,7 +286,7 @@ export function SellListingPage() {
               <CardContent>
                 <p className="text-3xl font-bold text-primary">{formatCurrency(estimated)}</p>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  AI estimate based on year, kms &amp; market — final offer inspection ke baad.
+                  AI estimate based on year, kms &amp; market — final offer after inspection.
                 </p>
                 <ul className="mt-4 space-y-2 text-xs text-muted-foreground">
                   <li className="flex items-center gap-2">
@@ -307,9 +307,9 @@ export function SellListingPage() {
 
             <Card>
               <CardContent className="py-4 text-xs leading-relaxed text-muted-foreground">
-                <strong className="text-foreground">Note:</strong> Motorcart par sell sirf{" "}
-                <strong className="text-foreground">used / pre-owned</strong> vehicles ke liye hai. Naye
-                vehicles dealers OEM portal se list karte hain.
+                <strong className="text-foreground">Note:</strong> Motorcart sell is for{" "}
+                <strong className="text-foreground">pre-owned vehicles</strong> only. New vehicles are
+                listed by dealers through the OEM portal.
               </CardContent>
             </Card>
           </aside>

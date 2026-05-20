@@ -76,7 +76,7 @@ export const VEHICLE_ECOSYSTEM = [
   },
   {
     id: "used-cars",
-    label: "Certified Used",
+    label: "Certified Pre-Owned",
     icon: "CarFront",
     stat: "2.1L+",
     href: "/used-cars",
@@ -127,7 +127,7 @@ export const VEHICLE_ECOSYSTEM = [
 
 export const VEHICLE_CATEGORIES = [
   { id: "new-cars", label: "New Cars", icon: "Car", count: "45K+", href: "/new-cars" },
-  { id: "used-cars", label: "Certified Used", icon: "CarFront", count: "2.1L+", href: "/used-cars" },
+  { id: "used-cars", label: "Certified Pre-Owned", icon: "CarFront", count: "2.1L+", href: "/used-cars" },
   { id: "bikes", label: "Bikes", icon: "Bike", count: "85K+", href: "/vehicles/bikes" },
   { id: "trucks", label: "Trucks", icon: "Truck", count: "12K+", href: "/vehicles/trucks" },
   { id: "buses", label: "Buses", icon: "Bus", count: "3K+", href: "/vehicles/buses" },

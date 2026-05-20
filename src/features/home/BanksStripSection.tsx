@@ -46,6 +46,7 @@ export function BanksStripSection() {
                     {bank.rate}
                   </span>
                   <span className="text-[10px] text-muted-foreground">EMI from {bank.emi}/mo</span>
+                  <span className="mt-1 inline-block text-[10px] font-semibold text-primary">Compare →</span>
                 </span>
               </Link>
             </motion.div>

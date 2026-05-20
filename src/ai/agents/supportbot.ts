@@ -3,7 +3,7 @@ import { buildSupportPrompt } from "../prompts";
 import type { AgentRunContext, AgentRunResult } from "../types";
 
 const FAQ: Record<string, string> = {
-  vehicle: "Browse /vehicles for new & used cars, bikes, trucks & EVs. Use filters for budget, city & fuel type.",
+  vehicle: "Browse /vehicles for new & pre-owned cars, bikes, trucks & EVs. Use filters for budget, city & fuel type.",
   loan: "Visit /finance for EMI calculator, bank comparison & instant apply. Typical approval: 24–72 hours.",
   auction: "Live auctions at /auctions — register, place bids in real time, and get winner notifications.",
   service: "Book servicing, detailing & more at /services with slot booking & WhatsApp updates.",

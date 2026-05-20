@@ -26,7 +26,7 @@ export const FINANCE_HUB_CATEGORIES: FinanceHubCategoryItem[] = [
   },
   {
     id: "used-car-loan",
-    label: "Used Car Loan",
+    label: "Pre-Owned Car Loan",
     description: "Certified pre-owned · RC verified",
     icon: "CarFront",
     stats: { compare: "12 lenders", apply: "Same day" },

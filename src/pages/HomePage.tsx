@@ -15,6 +15,8 @@ import { AIFeaturesSection } from "@/features/home/AIFeaturesSection";
 import { DealerCTA } from "@/features/home/DealerCTA";
 import { CommunitySection } from "@/features/home/CommunitySection";
 import { AppDownloadSection } from "@/features/home/AppDownloadSection";
+import { FeaturedVehicles } from "@/features/home/FeaturedVehicles";
+import { AIRecommendationsHomeSection } from "@/features/home/AIRecommendationsHomeSection";
 import { StatsSection } from "@/features/home/StatsSection";
 import { TestimonialsSection } from "@/features/home/TestimonialsSection";
 import { HeroSearchProvider } from "@/features/home/components/hero-search-context";
@@ -31,6 +33,8 @@ function HomePageSections() {
     <>
       {vis.trustBand && <HomeTrustBand />}
       {vis.ecosystem && <VehicleEcosystemSection />}
+      {vis.featuredVehicles && <FeaturedVehicles />}
+      {vis.aiRecommendations && <AIRecommendationsHomeSection />}
       {vis.newCars && <NewCarsHomeSection />}
       {vis.preowned && <PreownedCarsHomeSection />}
       {vis.categories && <CategorySection />}

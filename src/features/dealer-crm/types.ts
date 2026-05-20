@@ -10,7 +10,7 @@ export type DealerType =
 
 export const DEALER_TYPE_LABELS: Record<DealerType, string> = {
   new_car_dealer: "New Car Dealer",
-  used_car_dealer: "Used Car Dealer",
+  used_car_dealer: "Pre-Owned Car Dealer",
   bike_dealer: "Bike Dealer",
   truck_dealer: "Truck Dealer",
   parts_seller: "Parts Dealer",

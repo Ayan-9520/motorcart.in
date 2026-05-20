@@ -5,7 +5,7 @@ import type { PublicDealer } from "../types";
 import { dealerProfilePath } from "../data/dealers-hub-data";
 
 const VERTICAL_LABEL: Record<PublicDealer["vertical"], string> = {
-  "used-cars": "Used cars",
+  "used-cars": "Pre-owned cars",
   "new-cars": "New cars",
   bikes: "Bikes",
   commercial: "Commercial",

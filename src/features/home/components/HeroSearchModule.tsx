@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
-import { Search, SlidersHorizontal, X, ArrowRight } from "lucide-react";
+import { Search, SlidersHorizontal, X, ArrowRight, Sparkles } from "lucide-react";
+import { buildHeroBuyPath } from "@/features/home/data/homepage-data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -89,6 +90,8 @@ export function HeroSearchModule() {
     navigate(searchPath);
   };
 
+  const quickSuggestions = hub.trending.slice(0, 4);
+
   return (
     <div className="hero-search-module space-y-3">
       <div className="hero-vehicle-tabs" role="tablist" aria-label="Browse category">
@@ -111,7 +114,27 @@ export function HeroSearchModule() {
         })}
       </div>
 
-      <div className="hero-search-card">
+      {quickSuggestions.length > 0 && (
+        <div className="hero-search-suggestions">
+          <span className="hero-search-suggestions-label">
+            <Sparkles className="h-3 w-3 text-primary" />
+            AI suggestions
+          </span>
+          <div className="hero-search-suggestion-chips">
+            {quickSuggestions.map((pick) => (
+              <Link
+                key={pick.id}
+                to={buildHeroBuyPath(pick.mode, pick.query, filters)}
+                className="hero-suggestion-chip"
+              >
+                {pick.title}
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="hero-search-card hero-search-card-float">
         <div className="hero-filter-toolbar">
           <span className="hero-filter-toolbar-title">
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />

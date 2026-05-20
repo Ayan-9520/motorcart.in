@@ -69,7 +69,7 @@ export function BuyCategoryListingPage() {
             {hubLabel}
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-foreground">{condition === "new" ? "New" : "Used"}</span>
+          <span className="font-medium text-foreground">{condition === "new" ? "New" : "Pre-Owned"}</span>
         </nav>
 
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
@@ -98,7 +98,7 @@ export function BuyCategoryListingPage() {
                 )}
               >
                 {c === "new" ? <Sparkles className="h-3.5 w-3.5" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-                {c === "new" ? "New" : "Used"}
+                {c === "new" ? "New" : "Pre-Owned"}
               </Link>
             ))}
           </div>

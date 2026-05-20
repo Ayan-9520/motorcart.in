@@ -63,7 +63,7 @@ export function HubCategoryCard({
           />
           <ConditionTile
             to={buyListingPath(item.id, "used")}
-            label="Used"
+            label="Pre-Owned"
             stat={item.stats.used}
             variant="used"
             compact={compact}

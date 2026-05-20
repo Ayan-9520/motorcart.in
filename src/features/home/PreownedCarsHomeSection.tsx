@@ -13,17 +13,17 @@ export function PreownedCarsHomeSection() {
     <section className="home-section-alt">
       <div className="container home-stack">
         <SectionHeader
-          eyebrow="Certified used"
+          eyebrow="Certified pre-owned"
           title="Inspected pre-owned you can trust"
           description="AI fair price, 200+ point reports, warranty & loan-ready inventory from verified dealers."
           href="/used-cars"
-          linkLabel="Used cars hub"
+          linkLabel="Pre-owned cars hub"
         />
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-2">
           {TRUST_BADGES.map((b) => (
             <span
               key={b.id}
-              className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold text-foreground"
+              className="hero-trust-pill border-primary/20 bg-primary/5 text-foreground"
             >
               {b.label}
             </span>
@@ -37,7 +37,7 @@ export function PreownedCarsHomeSection() {
         <div className="text-center">
           <Button size="sm" className="home-section-cta rounded-lg" asChild>
             <Link to="/used-cars/browse">
-              Browse certified used <ArrowRight className="h-4 w-4" />
+              Browse certified pre-owned <ArrowRight className="h-4 w-4" />
             </Link>
           </Button>
         </div>

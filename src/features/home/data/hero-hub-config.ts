@@ -65,7 +65,7 @@ const AUTO_BRANDS = ["Bajaj", "Piaggio", "Mahindra", "TVS"];
 
 const CAR_QUICK: HeroHubQuickLink[] = [
   { label: "New Cars", href: "/new-cars", icon: Car, description: "Latest models" },
-  { label: "Used Cars", href: "/used-cars", icon: CarFront, description: "Certified pre-owned" },
+  { label: "Pre-Owned Cars", href: "/used-cars", icon: CarFront, description: "Certified pre-owned" },
   { label: "Car Parts", href: "/parts", icon: Package, description: "OEM & aftermarket" },
   { label: "Car Auctions", href: "/auctions", icon: Gavel, description: "Live bidding" },
   { label: "Car Loans", href: "/finance", icon: Landmark, description: "Compare banks" },
@@ -76,7 +76,7 @@ const CAR_QUICK: HeroHubQuickLink[] = [
 
 const BIKE_QUICK: HeroHubQuickLink[] = [
   { label: "New Bikes", href: "/buy#category-bikes", icon: Bike, description: "Latest launches" },
-  { label: "Used Bikes", href: "/buy/bikes/used", icon: Bike, description: "Verified listings" },
+  { label: "Pre-Owned Bikes", href: "/buy/bikes/used", icon: Bike, description: "Verified listings" },
   { label: "Bike Parts", href: "/parts?category=accessories", icon: Package },
   { label: "Bike Finance", href: "/finance", icon: Landmark },
   { label: "Service", href: "/services", icon: Wrench },
@@ -123,10 +123,10 @@ const FINANCE_QUICK: HeroHubQuickLink[] = [
 export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   cars: {
     label: "Cars",
-    headlineSuffix: "New & certified used cars",
+    headlineSuffix: "New & certified pre-owned cars",
     primaryCta: { label: "Browse cars", href: "/buy#category-cars" },
     secondaryCta: { label: "Sell your car", href: "/sell" },
-    browseFooter: "New & used cars · parts · loans · auctions",
+    browseFooter: "New & pre-owned cars · parts · loans · auctions",
     insightsFoot: "Opens car marketplace — new, used, parts & finance",
     pickCta: "View listing",
     brands: CAR_BRANDS,
@@ -135,7 +135,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     aiPicks: [
       { id: "c1", title: "Best SUV under ₹15L", subtitle: "AI matched · Mumbai & NCR", query: "SUV under 15L", mode: "cars", badge: "Hot" },
       { id: "c2", title: "Low EMI hatchbacks", subtitle: "Verified dealers · high resale", query: "hatchback low EMI", mode: "cars", badge: "EMI" },
-      { id: "c3", title: "Certified used sedans", subtitle: "200+ point inspection", query: "certified sedan", mode: "cars", badge: "Used" },
+      { id: "c3", title: "Certified pre-owned sedans", subtitle: "200+ point inspection", query: "certified sedan", mode: "cars", badge: "Pre-Owned" },
     ],
     trending: [
       { id: "t1", title: "Creta 2024", subtitle: "12K+ listed", query: "Creta 2024", mode: "cars" },
@@ -159,7 +159,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     headlineSuffix: "Scooters & motorcycles",
     primaryCta: { label: "Browse bikes", href: "/buy#category-bikes" },
     secondaryCta: { label: "Sell your bike", href: "/sell" },
-    browseFooter: "New & used bikes · parts · finance",
+    browseFooter: "New & pre-owned bikes · parts · finance",
     insightsFoot: "Opens bike marketplace — two-wheelers only",
     pickCta: "View bike",
     brands: BIKE_BRANDS,
@@ -345,6 +345,8 @@ export type HomeSectionKey =
   | "hubQuickLinks"
   | "trustBand"
   | "ecosystem"
+  | "featuredVehicles"
+  | "aiRecommendations"
   | "newCars"
   | "preowned"
   | "categories"
@@ -365,6 +367,8 @@ export function getHomeSectionVisibility(mode: HeroSearchMode): Record<HomeSecti
     hubQuickLinks: true,
     trustBand: true,
     ecosystem: true,
+    featuredVehicles: true,
+    aiRecommendations: true,
     newCars: false,
     preowned: false,
     categories: true,
@@ -395,6 +399,8 @@ export function getHomeSectionVisibility(mode: HeroSearchMode): Record<HomeSecti
     case "auctions":
       return {
         ...base,
+        featuredVehicles: false,
+        aiRecommendations: false,
         newCars: false,
         preowned: false,
         parts: false,
@@ -406,6 +412,7 @@ export function getHomeSectionVisibility(mode: HeroSearchMode): Record<HomeSecti
     case "finance":
       return {
         ...base,
+        featuredVehicles: false,
         newCars: false,
         preowned: false,
         parts: false,

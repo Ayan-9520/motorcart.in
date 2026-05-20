@@ -46,7 +46,7 @@ export const SELL_HUB_CATEGORIES: SellHubCategoryItem[] = [
   {
     id: "ev",
     label: "Electric",
-    description: "Used EV cars & two-wheelers",
+    description: "Pre-owned EV cars & two-wheelers",
     icon: "Zap",
     hint: "Battery health report",
   },

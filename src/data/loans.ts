@@ -46,7 +46,7 @@ export const loanProducts: LoanProduct[] = [
     tenure_max_months: 60,
     processing_fee: "₹3,500 flat",
     max_loan_amount: 3500000,
-    features: ["Digital KYC", "Same-day approval", "Used car loans"],
+    features: ["Digital KYC", "Same-day approval", "Pre-owned car loans"],
     is_featured: true,
   },
 ];

@@ -17,7 +17,7 @@ export interface GlobalSearchResult {
 }
 
 const QUICK_PAGES: GlobalSearchResult[] = [
-  { id: "buy", type: "page", title: "Buy vehicles", subtitle: "New & used across all categories", href: "/buy", badge: "Buy" },
+  { id: "buy", type: "page", title: "Buy vehicles", subtitle: "New & pre-owned across all categories", href: "/buy", badge: "Buy" },
   { id: "finance", type: "page", title: "Car loans & EMI", subtitle: "Compare banks & apply online", href: "/finance", badge: "Finance" },
   { id: "auctions", type: "page", title: "Live auctions", subtitle: "Bid on repo & fleet vehicles", href: "/auctions", badge: "Auctions" },
   { id: "parts", type: "page", title: "Auto parts", subtitle: "OEM & aftermarket marketplace", href: "/parts", badge: "Parts" },

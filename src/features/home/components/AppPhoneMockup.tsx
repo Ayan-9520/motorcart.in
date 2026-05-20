@@ -42,7 +42,7 @@ function AppHomeScreen() {
       </div>
       <div className="app-tabs">
         <span className="app-tab active">Cars</span>
-        <span className="app-tab">Used</span>
+        <span className="app-tab">Pre-Owned</span>
         <span className="app-tab">Auctions</span>
       </div>
       <div className="app-vehicle-card">

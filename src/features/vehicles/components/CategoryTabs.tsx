@@ -6,7 +6,7 @@ import type { VehicleCategory } from "@/types/vehicle";
 const CATEGORIES: { id: VehicleCategory | "all"; label: string; icon: React.ElementType; href: string }[] = [
   { id: "all", label: "All", icon: Car, href: "/vehicles" },
   { id: "new-cars", label: "New Cars", icon: CarFront, href: "/new-cars/browse" },
-  { id: "used-cars", label: "Certified Used", icon: Car, href: "/used-cars/browse" },
+  { id: "used-cars", label: "Certified Pre-Owned", icon: Car, href: "/used-cars/browse" },
   { id: "bikes", label: "Bikes", icon: Bike, href: "/vehicles/bikes" },
   { id: "trucks", label: "Trucks", icon: Truck, href: "/vehicles/trucks" },
   { id: "buses", label: "Buses", icon: Bus, href: "/vehicles/buses" },

@@ -18,7 +18,7 @@ export function PreownedCarsHubPage() {
 
   useEffect(() => {
     setPageMeta({
-      title: "Certified Used Cars",
+      title: "Certified Pre-Owned Cars",
       description: PREOWNED_TAGLINE,
     });
   }, []);

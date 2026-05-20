@@ -29,13 +29,13 @@ export function sellListingPath(hub: HubCategorySlug): string {
 
 export function sellPageTitle(hub: HubCategorySlug): string {
   const labels: Record<HubCategorySlug, string> = {
-    cars: "used car",
-    bikes: "used bike",
-    trucks: "used truck",
-    buses: "used bus",
-    auto: "used auto",
-    equipment: "used equipment",
-    ev: "used EV",
+    cars: "pre-owned car",
+    bikes: "pre-owned bike",
+    trucks: "pre-owned truck",
+    buses: "pre-owned bus",
+    auto: "pre-owned auto",
+    equipment: "pre-owned equipment",
+    ev: "pre-owned EV",
   };
   return `Sell your ${labels[hub]}`;
 }
@@ -115,6 +115,6 @@ export function hubToVehicleCategory(hub: HubCategorySlug, condition: VehicleCon
 }
 
 export function listingPageTitle(hub: HubCategorySlug, condition: VehicleConditionSlug): string {
-  const cond = condition === "new" ? "New" : "Used";
+  const cond = condition === "new" ? "New" : "Pre-Owned";
   return `${cond} ${hubCategoryLabel(hub)}`;
 }

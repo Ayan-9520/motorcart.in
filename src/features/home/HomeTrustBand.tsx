@@ -1,11 +1,28 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { HERO_STATS } from "@/features/home/data/homepage-data";
+import {
+  CheckCircle2,
+  Landmark,
+  Lock,
+  Shield,
+  Sparkles,
+  Users,
+} from "lucide-react";
+import { HERO_STATS, HOME_TRUST_PILLS } from "@/features/home/data/homepage-data";
 import { PartnerLogoMarquee } from "@/features/home/components/PartnerLogoMarquee";
+
+const PILL_ICONS = {
+  users: Users,
+  landmark: Landmark,
+  shield: Shield,
+  check: CheckCircle2,
+  lock: Lock,
+  sparkles: Sparkles,
+} as const;
 
 export function HomeTrustBand() {
   return (
-    <section className="border-b border-border bg-muted/20 py-4 md:py-6">
+    <section className="border-b border-border bg-muted/15 py-4 md:py-6">
       <div className="container">
         <motion.div
           initial={{ opacity: 0, y: 12 }}
@@ -34,8 +51,20 @@ export function HomeTrustBand() {
             ))}
           </div>
 
+          <div className="hero-trust-pills">
+            {HOME_TRUST_PILLS.map((pill) => {
+              const Icon = PILL_ICONS[pill.icon];
+              return (
+                <span key={pill.id} className="hero-trust-pill">
+                  <Icon className="h-3 w-3 text-primary" />
+                  {pill.label}
+                </span>
+              );
+            })}
+          </div>
+
           <div className="hero-partners-block">
-            <p className="hero-partners-label">Trusted partners &amp; brands</p>
+            <p className="hero-partners-label">Featured OEM brands &amp; banking partners</p>
             <PartnerLogoMarquee />
           </div>
         </motion.div>

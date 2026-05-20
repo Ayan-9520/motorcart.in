@@ -67,7 +67,7 @@ export function LoanApplicationForm({ lenders, defaultBankSlug }: LoanApplicatio
     setSubmitting(false);
     if (result.ok) {
       const id = (result.data as { application_id: string }).application_id;
-      toast.success("Application submit ho gayi! DSA assigned.");
+      toast.success("Application submitted! A DSA has been assigned.");
       navigate(`/dashboard/customer/loans/${id}`);
     } else {
       toast.error("Submission failed — try again");

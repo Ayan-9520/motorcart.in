@@ -223,6 +223,46 @@ export const HERO_STATS = [
   { label: "Customers", value: "50K+", href: "/community" },
 ] as const;
 
+export const HOME_TRUST_PILLS = [
+  { id: "buyers", label: "50K+ buyers", icon: "users" as const },
+  { id: "lenders", label: "RBI lenders", icon: "landmark" as const },
+  { id: "dealers", label: "Verified dealers", icon: "shield" as const },
+  { id: "inventory", label: "Certified inventory", icon: "check" as const },
+  { id: "secure", label: "Secure transactions", icon: "lock" as const },
+  { id: "ai", label: "AI marketplace", icon: "sparkles" as const },
+] as const;
+
+export const HOME_AI_RECOMMENDATIONS = [
+  {
+    id: "suv",
+    title: "Best SUVs under ₹20L",
+    subtitle: "Family-ready picks with strong resale & mileage",
+    href: "/vehicles?type=suv&budget=under-20l",
+    badge: "AI Pick",
+  },
+  {
+    id: "hatch",
+    title: "Low EMI hatchbacks",
+    subtitle: "EMI from ₹9,999/mo · instant eligibility",
+    href: "/vehicles?body=hatchback&sort=emi",
+    badge: "Low EMI",
+  },
+  {
+    id: "ev",
+    title: "EV recommendations",
+    subtitle: "Subsidy-ready electric with charging partners",
+    href: "/buy/ev/new",
+    badge: "EV",
+  },
+  {
+    id: "repo",
+    title: "Repo auctions ending today",
+    subtitle: "Bank inventory · live bids · fair AI reserve",
+    href: "/auctions?filter=repo",
+    badge: "Ending soon",
+  },
+] as const;
+
 export const TRUSTED_PARTNERS = ["SBI", "HDFC", "ICICI", "AXIS", "BOB", "AU Finance", "Chola"] as const;
 
 export const POPULAR_BRANDS = [
@@ -394,7 +434,7 @@ export interface QuickAccessItem {
 
 export const QUICK_ACCESS: QuickAccessItem[] = [
   { label: "New Cars", href: "/new-cars", icon: Car, description: "45K+ models" },
-  { label: "Used Cars", href: "/used-cars", icon: CarFront, description: "2.1L+ certified" },
+  { label: "Pre-Owned Cars", href: "/used-cars", icon: CarFront, description: "2.1L+ certified" },
   { label: "Sell Cars", href: "/sell", icon: Store, description: "List in 5 min" },
   { label: "Live Auctions", href: "/auctions", icon: Gavel, description: "142 live now" },
   { label: "Car Loans", href: "/finance", icon: Landmark, description: "14 lenders" },
@@ -413,6 +453,8 @@ export const BANK_OFFERS = [
   { code: "HDFC", name: "HDFC Bank", rate: "8.9%", emi: "₹18,650", approval: "4 hrs", logo: "/partners/banks/hdfcbank.svg" },
   { code: "ICICI", name: "ICICI Bank", rate: "9.1%", emi: "₹18,780", approval: "6 hrs", logo: "/partners/banks/icicibank.svg" },
   { code: "AXIS", name: "Axis Bank", rate: "9.2%", emi: "₹18,890", approval: "12 hrs", logo: "/partners/banks/axisbank.svg" },
+  { code: "AU", name: "AU Small Finance Bank", rate: "9.5%", emi: "₹19,020", approval: "8 hrs", logo: "/partners/banks/au.svg" },
+  { code: "CHOLA", name: "Cholamandalam Finance", rate: "10.2%", emi: "₹19,280", approval: "6 hrs", logo: "/partners/banks/chola.svg" },
   { code: "BOB", name: "Bank of Baroda", rate: "8.7%", emi: "₹18,520", approval: "48 hrs", logo: "/partners/banks/bob.svg" },
   { code: "KOTAK", name: "Kotak Mahindra", rate: "9.0%", emi: "₹18,720", approval: "6 hrs", logo: "/partners/banks/kotak.svg" },
   { code: "PNB", name: "Punjab National Bank", rate: "8.8%", emi: "₹18,580", approval: "36 hrs", logo: "/partners/banks/pnb.svg" },
@@ -442,7 +484,7 @@ export const AI_SHOWCASE = [
 ];
 
 export const COMMUNITY_POSTS = [
-  { title: "Best time to buy a used SUV in 2026?", author: "Rahul M.", replies: 48, tag: "Discussion" },
+  { title: "Best time to buy a pre-owned SUV in 2026?", author: "Rahul M.", replies: 48, tag: "Discussion" },
   { title: "HDFC vs ICICI — which offered you better rates?", author: "Priya K.", replies: 32, tag: "Finance" },
   { title: "Dealer CRM tips that doubled our conversions", author: "AutoMax", replies: 91, tag: "Dealers" },
 ];

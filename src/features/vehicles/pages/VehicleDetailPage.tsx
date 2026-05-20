@@ -79,7 +79,7 @@ export function VehicleDetailPage() {
             to={vehicle.category === "new-cars" ? "/new-cars" : vehicle.category === "used-cars" ? "/used-cars" : "/vehicles"}
             className="hover:text-primary"
           >
-            {vehicle.category === "new-cars" ? "New Cars" : vehicle.category === "used-cars" ? "Used Cars" : "Vehicles"}
+            {vehicle.category === "new-cars" ? "New Cars" : vehicle.category === "used-cars" ? "Pre-Owned Cars" : "Vehicles"}
           </Link>
           <ChevronRight className="h-4 w-4" />
           <Link to={categoryToPath(vehicle.category)} className="hover:text-primary capitalize">

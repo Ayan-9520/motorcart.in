@@ -23,13 +23,10 @@ export function HeroSection() {
   }, []);
 
   return (
-    <section className="hero-section relative overflow-hidden border-b border-border/80">
-      <div
-        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_20%_-20%,hsl(var(--primary)/0.12),transparent_55%),radial-gradient(ellipse_60%_40%_at_100%_0%,hsl(var(--primary)/0.06),transparent_50%)]"
-        aria-hidden
-      />
+    <section className="hero-section relative overflow-hidden border-b border-border">
+      <div className="hero-section-surface" aria-hidden />
 
-      <div className="container relative py-8 md:py-10 lg:py-12">
+      <div className="container relative py-8 md:py-11 lg:py-12">
         <div className="hero-layout-grid">
           <motion.div
             initial={{ opacity: 0, y: 16 }}
@@ -42,11 +39,11 @@ export function HeroSection() {
               <span>Trusted by 50,000+ buyers &amp; 8,500+ dealers</span>
             </div>
 
-            <div className="space-y-3">
+            <motion.div className="space-y-3">
               <h1 className="hero-headline">
-                India&apos;s AI-powered
-                <br />
-                <span className="text-primary">automobile ecosystem</span>
+                <span className="hero-headline-line hero-headline-muted">India&apos;s</span>
+                <span className="hero-headline-line hero-headline-accent">AI-powered</span>
+                <span className="hero-headline-line">automotive ecosystem</span>
               </h1>
               <p className="hero-rotating-line">
                 <AnimatePresence mode="wait">
@@ -63,10 +60,14 @@ export function HeroSection() {
                 </AnimatePresence>
                 <span className="text-muted-foreground"> — {hub.headlineSuffix}.</span>
               </p>
-            </div>
+            </motion.div>
 
             <div className="flex flex-wrap gap-2">
-              <Button size="default" className="h-10 rounded-xl px-5 font-semibold shadow-[var(--shadow-primary)]" asChild>
+              <Button
+                size="default"
+                className="h-10 rounded-xl px-5 font-semibold shadow-[var(--shadow-primary)]"
+                asChild
+              >
                 <Link to={hub.primaryCta.href}>
                   {hub.primaryCta.label} <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -83,14 +84,9 @@ export function HeroSection() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.08 }}
-            className="hero-layout-right hidden min-w-0 md:flex md:flex-col md:gap-4 lg:sticky lg:top-20"
+            className="hero-layout-right hidden min-w-0 md:flex md:flex-col lg:sticky lg:top-20"
           >
-            <div>
-              <p className="mb-2 text-right text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Live {hub.label.toLowerCase()} preview
-              </p>
-              <HeroDashboardPanel />
-            </div>
+            <HeroDashboardPanel />
           </motion.div>
         </div>
 

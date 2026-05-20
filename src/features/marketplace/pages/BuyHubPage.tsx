@@ -18,9 +18,9 @@ const TRUST_STATS = [
 export function BuyHubPage() {
   useEffect(() => {
     setPageMeta({
-      title: "Buy Vehicles — New & Used",
+      title: "Buy Vehicles — New & Pre-Owned",
       description:
-        "Cars, bikes, trucks, buses, auto, equipment & EV — new and used with filters, verified dealers & EMI.",
+        "Cars, bikes, trucks, buses, auto, equipment & EV — new and pre-owned with filters, verified dealers & EMI.",
     });
   }, []);
 
@@ -35,7 +35,7 @@ export function BuyHubPage() {
               <h1 className="buy-hub-hero-title">Choose your vehicle</h1>
               <p className="buy-hub-hero-sub">
                 All categories below — tap <strong className="text-foreground">New</strong> or{" "}
-                <strong className="text-foreground">Used</strong> on any card
+                <strong className="text-foreground">Pre-Owned</strong> on any card
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs" asChild>
@@ -74,7 +74,7 @@ export function BuyHubPage() {
       <section className="container pb-12 pt-4">
         <div className="mb-4 flex items-center justify-between gap-2">
           <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            All categories · New &amp; Used
+            All categories · New &amp; Pre-Owned
           </h2>
           <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
             7 types
@@ -99,7 +99,7 @@ export function BuyHubPage() {
         <div className="buy-hub-footer-cta mt-8 text-center">
           <Button className="rounded-xl shadow-[var(--shadow-primary)]" asChild>
             <Link to="/buy/cars/used">
-              Browse used cars <ArrowRight className="ml-2 h-4 w-4" />
+              Browse pre-owned cars <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>

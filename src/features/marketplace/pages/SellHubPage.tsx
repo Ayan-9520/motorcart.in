@@ -10,7 +10,7 @@ import { parseHubCategorySlug, sellListingPath } from "../lib/route-utils";
 
 const STEPS = [
   { title: "Choose category", desc: "Car, bike, truck, bus, auto, equipment or EV" },
-  { title: "Add used vehicle details", desc: "Brand, year, kms, city — 5 minutes" },
+  { title: "Add pre-owned vehicle details", desc: "Brand, year, kms, city — 5 minutes" },
   { title: "Get offers", desc: "Instant valuation & verified buyer calls" },
 ];
 
@@ -20,9 +20,9 @@ export function SellHubPage() {
 
   useEffect(() => {
     setPageMeta({
-      title: "Sell Your Used Vehicle",
+      title: "Sell Your Pre-Owned Vehicle",
       description:
-        "Sell your used car, bike, truck or more — free listing, instant valuation and verified buyers on Motorcart.",
+        "Sell your pre-owned car, bike, truck or more — free listing, instant valuation and verified buyers on Motorcart.",
     });
   }, []);
 
@@ -39,10 +39,10 @@ export function SellHubPage() {
       <section className="marketplace-hub-hero marketplace-hub-hero-sell">
         <div className="container">
           <p className="marketplace-hub-eyebrow">Sell on Motorcart</p>
-          <h1 className="marketplace-hub-title">Sell your used vehicle</h1>
+          <h1 className="marketplace-hub-title">Sell your pre-owned vehicle</h1>
           <p className="marketplace-hub-subtitle">
-            Yahan sirf <strong className="text-foreground">used / pre-owned</strong> vehicles list hoti
-            hain — instant valuation, RC help, aur 8,500+ verified buyers.
+            List only <strong className="text-foreground">pre-owned vehicles</strong> here — instant
+            valuation, RC assistance, and 8,500+ verified buyers.
           </p>
         </div>
       </section>

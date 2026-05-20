@@ -52,7 +52,7 @@ export const DEALER_HUB_SERVICES: DealerHubService[] = [
 export const DEALER_CATEGORIES: DealerCategory[] = [
   {
     slug: "used-cars",
-    label: "Used cars",
+    label: "Pre-owned cars",
     description: "Certified pre-owned",
     icon: Car,
     href: "/dealers/browse?vertical=used-cars",

@@ -30,7 +30,7 @@ export function PreownedCarsListingPage() {
 
   useEffect(() => {
     setPageMeta({
-      title: "Browse Certified Used Cars",
+      title: "Browse Certified Pre-Owned Cars",
       description: "Inspected pre-owned cars with AI fair price, warranty & loan options on Motorcart.in",
     });
   }, [total]);
@@ -42,7 +42,7 @@ export function PreownedCarsListingPage() {
       <div className="container mx-auto space-y-6 px-4 py-8">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Link to="/used-cars" className="hover:text-primary">
-            Used Cars
+            Pre-Owned Cars
           </Link>
           <ChevronRight className="h-4 w-4" />
           <span className="text-foreground">Browse</span>

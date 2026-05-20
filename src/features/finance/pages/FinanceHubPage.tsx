@@ -54,7 +54,7 @@ export function FinanceHubPage() {
     setPageMeta({
       title: "Finance & Loans — Motorcart",
       description:
-        "New & used car loans, bike finance, EV green loans, refinance, insurance — compare 14+ lenders and apply online.",
+        "New & pre-owned car loans, bike finance, EV green loans, refinance, insurance — compare 14+ lenders and apply online.",
     });
   }, []);
 

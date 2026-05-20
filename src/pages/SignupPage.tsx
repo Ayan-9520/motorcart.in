@@ -123,7 +123,7 @@ export function SignupPage() {
             <select {...register("role")} className="mt-1 flex h-10 w-full rounded-lg border border-input bg-background px-3 text-sm">
               <option value="customer">Customer / Buyer</option>
               <option value="dealer">Dealer</option>
-              <option value="used_car_dealer">Used Car Dealer</option>
+              <option value="used_car_dealer">Pre-Owned Car Dealer</option>
               <option value="new_car_dealer">New Car Dealer</option>
               <option value="dsa_agent">DSA Agent</option>
             </select>
