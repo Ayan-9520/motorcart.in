@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight, Package, ShoppingCart, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,25 +11,43 @@ import { PartsHubCategoryCard } from "../components/PartsHubCategoryCard";
 import { PartsBrandStrip } from "../components/PartsBrandStrip";
 import { PartCard } from "../components/PartCard";
 import { PartsAiRecommendations } from "../components/PartsAiRecommendations";
-import { PART_CATEGORIES, PARTS_TRUST_STATS } from "../data/parts-hub-data";
-import { partsBrowsePath } from "../data/parts-hub-data";
+import { PART_CATEGORIES, PARTS_TRUST_STATS, partsBrowsePath } from "../data/parts-hub-data";
 import { MOCK_PARTS_CATALOG } from "../data/mock-parts-catalog";
 import { recommendParts } from "../lib/ai-parts";
 import { usePartsList } from "../hooks/usePartsList";
+import { parseVehicleHubParam, partMatchesVehicleHub, VEHICLE_HUB_ENTRIES } from "@/lib/vehicle-hub-catalog";
 
 export function PartsHubPage() {
+  const [params] = useSearchParams();
+  const hub = useMemo(() => parseVehicleHubParam(params.get("hub")), [params]);
+  const hubSuffix = hub ? `?hub=${hub}` : "";
+
   const cartCount = usePartsCartStore((s) => s.itemCount());
-  const { parts, loading } = usePartsList(undefined, "");
-  const featured = useMemo(() => MOCK_PARTS_CATALOG.filter((p) => p.isFeatured).slice(0, 8), []);
-  const aiPicks = useMemo(() => recommendParts(MOCK_PARTS_CATALOG, {}, 6), []);
+  const { parts, loading } = usePartsList(undefined, "", hub);
+
+  const featured = useMemo(() => {
+    let pool = MOCK_PARTS_CATALOG.filter((p) => p.isFeatured);
+    if (hub) pool = pool.filter((p) => partMatchesVehicleHub(p, hub));
+    if (pool.length < 6) {
+      const fill = MOCK_PARTS_CATALOG.filter(
+        (p) => partMatchesVehicleHub(p, hub) && !pool.some((x) => x.id === p.id)
+      );
+      pool = [...pool, ...fill].slice(0, 8);
+    }
+    return pool.slice(0, 8);
+  }, [hub]);
+
+  const aiPicks = useMemo(() => recommendParts(MOCK_PARTS_CATALOG, { hub }, 6), [hub]);
+
+  const hubLabel = hub ? VEHICLE_HUB_ENTRIES.find((e) => e.id === hub)?.label : null;
 
   useEffect(() => {
     setPageMeta({
-      title: "Auto Parts Marketplace — Motorcart",
+      title: hubLabel ? `${hubLabel} parts — Motorcart` : "Auto Parts Marketplace — Motorcart",
       description:
-        "Premium B2B & retail spare parts — GST invoice, wholesale, COD, AI fitment & fast delivery across India.",
+        "Premium B2B & retail spare parts for every vehicle class — GST invoice, wholesale, COD, AI fitment & fast delivery across India.",
     });
-  }, []);
+  }, [hubLabel]);
 
   return (
     <div className="parts-hub-page min-h-screen">
@@ -55,17 +73,19 @@ export function PartsHubPage() {
         <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="parts-hub-section-title">Shop by category</h2>
-            <p className="mt-1 text-sm text-muted-foreground">9 verticals · OEM &amp; aftermarket</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              9 verticals · OEM &amp; aftermarket{hubLabel ? ` · filtered for ${hubLabel}` : ""}
+            </p>
           </div>
           <Button variant="outline" className="rounded-xl" asChild>
-            <Link to={partsBrowsePath()}>
+            <Link to={partsBrowsePath({ hub: hub ?? undefined })}>
               Full catalogue <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
         </div>
         <div className="parts-hub-category-grid">
           {PART_CATEGORIES.map((cat) => (
-            <PartsHubCategoryCard key={cat.slug} category={cat} />
+            <PartsHubCategoryCard key={cat.slug} category={cat} searchSuffix={hubSuffix} />
           ))}
         </div>
       </section>
@@ -81,7 +101,7 @@ export function PartsHubPage() {
             <p className="mt-1 text-sm text-muted-foreground">GST-inclusive · bulk MOQ shown</p>
           </div>
           <Button className="rounded-xl shadow-[var(--shadow-primary)]" asChild>
-            <Link to={partsBrowsePath()}>
+            <Link to={partsBrowsePath({ hub: hub ?? undefined })}>
               <Package className="mr-2 h-4 w-4" />
               Browse all SKUs
             </Link>
@@ -128,7 +148,7 @@ export function PartsHubPage() {
         <div className="parts-hub-footer-cta mt-8 text-center">
           <p className="mb-3 text-sm text-muted-foreground">Need a quote for 50+ units? WhatsApp our parts desk.</p>
           <Button variant="outline" className="rounded-xl" asChild>
-            <Link to={partsBrowsePath()}>Open catalogue</Link>
+            <Link to={partsBrowsePath({ hub: hub ?? undefined })}>Open catalogue</Link>
           </Button>
         </div>
       </section>

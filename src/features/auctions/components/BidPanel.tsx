@@ -11,12 +11,21 @@ interface BidPanelProps {
   auction: AuctionListing;
   minBid: number;
   placing: boolean;
+  bidLocked?: boolean;
   onPlaceBid: (amount: number) => Promise<{ ok: boolean }>;
   onSetAutoBid: (max: number) => Promise<void>;
   isAuthenticated: boolean;
 }
 
-export function BidPanel({ auction, minBid, placing, onPlaceBid, onSetAutoBid, isAuthenticated }: BidPanelProps) {
+export function BidPanel({
+  auction,
+  minBid,
+  placing,
+  bidLocked = false,
+  onPlaceBid,
+  onSetAutoBid,
+  isAuthenticated,
+}: BidPanelProps) {
   const [amount, setAmount] = useState(minBid);
   const [autoMax, setAutoMax] = useState(minBid + auction.bidIncrement * 5);
   const [showAuto, setShowAuto] = useState(false);
@@ -43,8 +52,10 @@ export function BidPanel({ auction, minBid, placing, onPlaceBid, onSetAutoBid, i
     );
   }
 
+  const locked = placing || bidLocked;
+
   return (
-    <Card className="border-primary/20 shadow-wa">
+    <Card className="auc-bid-panel border-primary/20 shadow-wa">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Gavel className="h-5 w-5 text-primary" />
@@ -82,13 +93,17 @@ export function BidPanel({ auction, minBid, placing, onPlaceBid, onSetAutoBid, i
           />
         </div>
 
+        {locked && (
+          <p className="text-center text-xs text-amber-600 font-medium">Bid lock active — syncing with exchange</p>
+        )}
+
         <Button
           variant="default"
           className="w-full gap-2 h-12 text-base"
-          disabled={!isAuthenticated || placing || amount < minBid}
+          disabled={!isAuthenticated || locked || amount < minBid}
           onClick={() => onPlaceBid(amount)}
         >
-          {placing ? "Placing..." : <><Gavel className="h-5 w-5" /> Confirm Bid</>}
+          {locked ? "Processing bid…" : <><Gavel className="h-5 w-5" /> Confirm Bid</>}
         </Button>
 
         {!isAuthenticated && (

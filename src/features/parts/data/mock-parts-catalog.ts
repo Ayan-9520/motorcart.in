@@ -1,3 +1,4 @@
+import type { HubCategorySlug } from "@/features/marketplace/types";
 import type { PartCategorySlug, PartProduct } from "../types";
 import { getPartImages } from "./parts-images";
 
@@ -19,7 +20,8 @@ function p(
   compat: string[],
   feat: boolean,
   desc: string,
-  imgSeed = 0
+  imgSeed = 0,
+  vehicleHubs?: HubCategorySlug[]
 ): PartProduct {
   return {
     id,
@@ -27,6 +29,7 @@ function p(
     name,
     slug,
     categorySlug: cat,
+    vehicleHubs,
     brand,
     price,
     originalPrice: orig,
@@ -42,6 +45,9 @@ function p(
     isActive: true,
     description: desc,
     sku: `MC-${slug.slice(0, 12).toUpperCase().replace(/-/g, "")}`,
+    partOrigin: "aftermarket",
+    mrp: orig ?? price,
+    supplierSku: null,
     createdAt: new Date().toISOString(),
   };
 }
@@ -101,7 +107,43 @@ export const MOCK_PARTS_CATALOG: PartProduct[] = [
   p("p-i01", "leather-seat-cover-premium", "Premium Leatherette Seat Cover — 5 Seater", "interior-parts", "AutoStyle", 8999, 10999, 7200, 15, 1, 4.7, 1340, ["Creta", "Seltos", "XUV700"], true, "Airbag compatible. Perforated."),
   p("p-i02", "oem-ac-vent-grille", "Dashboard AC Vent Grille Set — Polo", "interior-parts", "VW Genuine", 1899, null, 1500, 40, 4, 4.2, 188, ["VW Polo"], false, "Direct snap-fit. Charcoal finish."),
   p("p-i03", "ambient-led-footwell-kit", "RGB Ambient LED Footwell Kit — App Control", "interior-parts", "Xenon", 2499, 2999, 2000, 50, 2, 4.5, 670, ["Universal"], true, "20 colours. Music sync mode."),
-  p("p-i04", "steering-wheel-cover-suede", "Suede Steering Wheel Cover — 38 cm", "interior-parts", "AutoStyle", 899, 1099, 720, 120, 4, 4.3, 2100, ["Universal"], false, "Anti-slip grip. Hand-stitched."),
+  p("p-i04", "steering-wheel-cover-suede", "Suede Steering Wheel Cover — 38 cm", "interior-parts", "AutoStyle", 899, 1099, 720, 120, 4, 4.3, 2100, ["Universal"], false, "Anti-slip grip. Hand-stitched.", 0),
+
+  // —— Bikes ——
+  p("p-bk01", "mrf-revzr-110-70-r17", "MRF Revz FC1 — 110/70 R17 Front", "tyres", "MRF", 4299, 4999, 3500, 55, 2, 4.7, 890, ["KTM Duke", "Apache RTR"], true, "Sport radial. Wet grip compound.", 1, ["bikes"]),
+  p("p-bk02", "ceat-zoom-plus-scooter", "CEAT Zoom Plus — 90/90 R12 Scooter", "tyres", "CEAT", 1899, 2199, 1550, 90, 4, 4.5, 2100, ["Activa", "Jupiter", "Access"], false, "Low rolling resistance for scooters.", 2, ["bikes"]),
+  p("p-bk03", "motul-7100-4t-10w50", "Motul 7100 4T 10W-50 — 1L", "lubricants", "Motul", 899, 1049, 720, 120, 4, 4.8, 3400, ["Performance bikes"], true, "Ester synthetic. Race proven.", 0, ["bikes"]),
+  p("p-bk04", "did-x-ring-chain-kit", "D.I.D X-Ring Chain & Sprocket Kit", "engine-parts", "D.I.D", 8499, 9999, 7200, 18, 1, 4.9, 560, ["Ninja", "R15", "RC 390"], true, "20,000 km service interval.", 1, ["bikes"]),
+  p("p-bk05", "ngk-iridium-bike-plug", "NGK Iridium IX — Single (bike)", "engine-parts", "NGK", 449, 549, 360, 200, 4, 4.6, 1200, ["Single-cylinder bikes"], false, "Long-life iridium centre electrode.", 2, ["bikes"]),
+  p("p-bk06", "bosch-bike-horn-disc", "Bosch Compact Disc Horn — 12V bike", "electronics", "Bosch", 599, 749, 480, 150, 4, 4.4, 2100, ["All bikes"], false, "90 dB. Low amp draw.", 0, ["bikes"]),
+  p("p-bk07", "exide-bike-battery-9ah", "Exide Xplore 9Ah Bike Battery", "battery", "Exide", 1299, 1499, 1050, 80, 2, 4.5, 890, ["150cc+ bikes"], false, "AGM maintenance-free.", 1, ["bikes"]),
+
+  // —— Trucks & HCV ——
+  p("p-tr01", "apollo-endutrax-315-80-r225", "Apollo EnduTrax MA518 — 315/80 R22.5", "tyres", "Apollo", 28999, 32999, 24500, 24, 2, 4.6, 420, ["BharatBenz", "Tata Prima"], true, "Mileage compound for highway haul.", 0, ["trucks"]),
+  p("p-tr02", "wabco-air-brake-valve", "WABCO Relay Emergency Valve", "brake-parts", "WABCO", 12499, 14499, 10200, 12, 1, 4.7, 180, ["HCV air brake"], true, "OEM spec relay valve.", 1, ["trucks"]),
+  p("p-tr03", "fleetguard-hydraulic-filter", "Fleetguard HF35375 Hydraulic Filter", "engine-parts", "Fleetguard", 2499, 2999, 2000, 45, 2, 4.5, 340, ["JCB", "Backhoe loaders"], false, "10 micron glass media.", 2, ["trucks", "equipment"]),
+  p("p-tr04", "bosch-truck-headlamp-led", "Bosch LED Headlamp Unit — 24V truck", "electronics", "Bosch", 8999, 10499, 7400, 20, 1, 4.6, 120, ["24V HCV"], false, "ECE R112 compliant beam.", 0, ["trucks"]),
+  p("p-tr05", "castrol-vectrax-15w40-20l", "Castrol Vecton 15W-40 CH-4 — 20L", "lubricants", "Castrol", 8999, 9999, 7400, 35, 2, 4.7, 890, ["Diesel trucks"], true, "Heavy-duty diesel protection.", 1, ["trucks"]),
+
+  // —— Buses & fleet ——
+  p("p-bs01", "goodyear-bus-295-80-r225", "Goodyear KMAX D — 295/80 R22.5", "tyres", "Goodyear", 31999, 35999, 26800, 16, 2, 4.8, 210, ["Volvo", "Scania coaches"], true, "Regional coach mileage leader.", 0, ["buses"]),
+  p("p-bs02", "valeo-bus-ac-compressor", "Valeo TM16 Bus AC Compressor", "engine-parts", "Valeo", 28999, null, 24000, 6, 1, 4.6, 88, ["AC coaches"], true, "R134a compatible. OEM fit.", 1, ["buses"]),
+  p("p-bs03", "3m-bus-floor-mat-roll", "3M Nomad Bus Floor Matting — 15m roll", "accessories", "3M", 18999, 21999, 15800, 8, 1, 4.5, 45, ["City buses"], false, "Anti-slip heavy traffic grade.", 2, ["buses"]),
+
+  // —— Auto / commercial 3W ——
+  p("p-au01", "lovato-cng-reducer-kit", "Lovato CNG Reducer & Solenoid Kit", "engine-parts", "Lovato", 8999, 10499, 7400, 22, 1, 4.5, 340, ["Auto rickshaw CNG"], true, "Italian regulator. ARAI listed.", 0, ["auto"]),
+  p("p-au02", "bajaj-auto-clutch-bell", "Bajaj RE Compact Clutch Bell Housing", "engine-parts", "Bajaj", 3499, 3999, 2800, 30, 2, 4.4, 560, ["Bajaj RE"], false, "Genuine spare. Heat treated.", 1, ["auto"]),
+  p("p-au03", "minda-auto-headlamp-led", "Minda LED Headlamp — 12V auto", "electronics", "Minda", 1299, 1599, 1050, 60, 2, 4.3, 890, ["E-rickshaw", "Auto"], false, "DOT pattern lens.", 2, ["auto", "bikes"]),
+
+  // —— Equipment & agri ——
+  p("p-eq01", "gates-hydraulic-hose-2sn", "Gates 2SN Hydraulic Hose — per metre", "accessories", "Gates", 899, 1099, 720, 200, 4, 4.6, 120, ["Excavators", "Loaders"], false, "400 bar WP. MSHA approved.", 0, ["equipment"]),
+  p("p-eq02", "cat-style-bucket-tooth", "Rock Chisel Bucket Tooth — CAT J250", "body-parts", "Vertex", 1899, 2199, 1500, 40, 4, 4.4, 210, ["JCB 3DX", "CAT mini"], false, "Forged steel. Pin included.", 1, ["equipment"]),
+  p("p-eq03", "mann-hydraulic-return-filter", "MANN HD 517/1 Hydraulic Return Filter", "engine-parts", "MANN", 1299, 1599, 1050, 55, 2, 4.5, 180, ["Hydraulic systems"], false, "Glass fibre media 10 µm.", 2, ["equipment", "trucks"]),
+
+  // —— EV ——
+  p("p-ev01", "abb-type2-ac-charger-7kw", "ABB Terra AC Wallbox — Type 2, 7.4 kW", "electronics", "ABB", 45999, 52999, 38000, 12, 1, 4.85, 120, ["Home & office EV"], true, "OCPP 1.6J. RFID + app.", 0, ["ev", "cars"]),
+  p("p-ev02", "exide-ev-12v-aux-battery", "Exide E-Ride 12V Aux Battery — EV", "battery", "Exide", 8999, 9999, 7400, 28, 1, 4.6, 340, ["Nexon EV", "ZS EV"], false, "Deep cycle for 12V systems.", 1, ["ev"]),
+  p("p-ev03", "lubricants-ev-transmission-fluid", "Shell E-Transmission Fluid — 1L", "lubricants", "Shell", 1899, 2199, 1550, 48, 2, 4.5, 220, ["EV reduction gear"], false, "Insulating properties for e-motors.", 2, ["ev"]),
 ];
 
 export const PARTS_CATALOG_STATS = {

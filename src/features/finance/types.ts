@@ -94,8 +94,79 @@ export interface LoanDocument {
 export interface FinanceAnalytics {
   totalApplications: number;
   submitted: number;
+  processing: number;
   approved: number;
+  rejected: number;
   disbursed: number;
   totalDisbursed: number;
+  totalPipelineValue: number;
   avgApprovalProbability: number;
+  conversionRate: number;
+}
+
+export interface FinanceLead {
+  id: string;
+  userId: string | null;
+  source: string;
+  productType: string;
+  loanAmount: number | null;
+  monthlyIncome: number | null;
+  cibilScore: number | null;
+  city: string | null;
+  phone: string | null;
+  email: string | null;
+  assignedDsaId: string | null;
+  assignedBankId: string | null;
+  applicationId: string | null;
+  status: "new" | "contacted" | "qualified" | "converted" | "lost";
+  createdAt: string;
+}
+
+export interface FinanceCommission {
+  id: string;
+  applicationId: string;
+  dsaAgentId: string;
+  loanAmount: number;
+  commissionRate: number;
+  commissionAmount: number;
+  status: "pending" | "approved" | "paid" | "cancelled";
+  paidAt: string | null;
+  createdAt: string;
+}
+
+export interface FinanceVerification {
+  id: string;
+  applicationId: string;
+  checkType: string;
+  status: "pending" | "approved" | "rejected";
+  notes: string | null;
+  documentPath: string | null;
+  createdAt: string;
+}
+
+export interface FinanceStatusHistoryEntry {
+  id: string;
+  applicationId: string;
+  fromStatus: string | null;
+  toStatus: string;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface BankIntegrationConfig {
+  id: string;
+  bankId: string;
+  bankName?: string;
+  provider: string;
+  apiBaseUrl: string | null;
+  webhookUrl: string | null;
+  syncEnabled: boolean;
+  lastSyncAt: string | null;
+  config: Record<string, unknown>;
+}
+
+export interface FinanceChartPoint {
+  label: string;
+  value: number;
+  fill?: string;
 }

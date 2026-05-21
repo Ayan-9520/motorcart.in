@@ -28,12 +28,44 @@ export async function fetchDealerByOwner(ownerId: string): Promise<DealerProfile
   return mapDealer(data as DbDealer);
 }
 
+async function seedDealerWorkspace(
+  profile: DealerProfile,
+  ownerId: string,
+  ownerEmail: string,
+  ownerName: string
+) {
+  await supabase.from("dealer_members").upsert(
+    {
+      dealer_id: profile.id,
+      user_id: ownerId,
+      email: ownerEmail.toLowerCase(),
+      full_name: ownerName,
+      role: "owner",
+      is_active: true,
+      joined_at: new Date().toISOString(),
+    },
+    { onConflict: "dealer_id,email" }
+  );
+  await supabase.from("dealer_storefronts").upsert(
+    { dealer_id: profile.id, hero_tagline: `Trusted ${profile.city} dealership` },
+    { onConflict: "dealer_id" }
+  );
+}
+
 export async function ensureDealerForUser(
   ownerId: string,
-  user: { fullName?: string; city?: string; state?: string; role?: string }
+  user: { fullName?: string; email?: string; city?: string; state?: string; role?: string }
 ): Promise<DealerProfile | null> {
   const existing = await fetchDealerByOwner(ownerId);
-  if (existing) return existing;
+  if (existing) {
+    await seedDealerWorkspace(
+      existing,
+      ownerId,
+      user.email ?? `${ownerId.slice(0, 8)}@motorcart.local`,
+      user.fullName ?? "Owner"
+    );
+    return existing;
+  }
 
   const slug = `dealer-${ownerId.slice(0, 8)}`;
   const { data, error } = await supabase
@@ -50,7 +82,14 @@ export async function ensureDealerForUser(
     .single();
 
   if (error) return null;
-  return mapDealer(data as DbDealer);
+  const profile = mapDealer(data as DbDealer);
+  await seedDealerWorkspace(
+    profile,
+    ownerId,
+    user.email ?? `owner-${ownerId.slice(0, 8)}@motorcart.local`,
+    user.fullName ?? "Owner"
+  );
+  return profile;
 }
 
 export async function fetchDealerVehiclesByDealerId(dealerId: string) {

@@ -10,6 +10,7 @@ import { formatCurrency } from "@/lib/utils";
 import { getDiscountedPrice, getVehicleEmi, vehicleDetailPath } from "@/lib/vehicle-utils";
 import type { VehicleListing } from "@/types/vehicle";
 import { setPageMeta } from "@/utils/seo";
+import { AICompareInsights } from "@/ai/ecosystem";
 
 const ROWS: { key: keyof VehicleListing | "emi" | "price"; label: string; fmt?: (v: VehicleListing) => string }[] = [
   { key: "price", label: "Price", fmt: (v) => formatCurrency(getDiscountedPrice(v)) },
@@ -55,6 +56,8 @@ export function VehicleComparePage() {
         <h1 className="text-2xl font-bold">Compare Vehicles</h1>
         <Button variant="ghost" size="sm" onClick={clearCompare}>Clear all</Button>
       </div>
+
+      <AICompareInsights vehicles={vehicles} />
 
       <div className="overflow-x-auto">
         <table className="w-full min-w-[640px] border-collapse text-sm">

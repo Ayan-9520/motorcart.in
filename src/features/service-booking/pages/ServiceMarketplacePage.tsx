@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { MapPin, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -12,12 +12,28 @@ import { ServiceCenterCard } from "../components/ServiceCenterCard";
 import { ServiceCatalogCard } from "../components/ServiceCatalogCard";
 import { SERVICE_CATEGORIES } from "../types";
 import { servicesBrowsePath } from "../data/services-hub-data";
+import { VehicleHubFilterRail } from "@/components/vehicle/VehicleHubFilterRail";
+import type { HubCategorySlug } from "@/features/marketplace/types";
+import { VEHICLE_HUB_ENTRIES } from "@/lib/vehicle-hub-catalog";
 
 export function ServiceMarketplacePage() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { centers, catalog, loading, categoryFilter, cityParam } = useServiceMarketplace();
+  const { centers, catalog, loading, categoryFilter, cityParam, hubParam } = useServiceMarketplace();
   const pickupOnly = params.get("pickup") === "1";
+
+  const buildHubHref = useCallback(
+    (hub: HubCategorySlug | null) => {
+      const next = new URLSearchParams(params);
+      if (hub) next.set("hub", hub);
+      else next.delete("hub");
+      const qs = next.toString();
+      return qs ? `/services/browse?${qs}` : "/services/browse";
+    },
+    [params]
+  );
+
+  const hubLabel = hubParam ? VEHICLE_HUB_ENTRIES.find((e) => e.id === hubParam)?.label : null;
 
   const filteredCenters = useMemo(() => {
     if (!pickupOnly) return centers;
@@ -43,13 +59,20 @@ export function ServiceMarketplacePage() {
       title={catMeta ? catMeta.label : "Browse services & centers"}
       subtitle={
         catMeta
-          ? catMeta.description
-          : "Filter by category and city — lock slots with OTP-verified handover"
+          ? `${catMeta.description}${hubLabel ? ` · ${hubLabel}` : ""}`
+          : `Filter by vehicle type, category and city${hubLabel ? ` · ${hubLabel}` : ""}`
       }
       category={categoryFilter}
     >
+      <div className="mb-5">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Vehicle type
+        </p>
+        <VehicleHubFilterRail activeHub={hubParam} buildHref={buildHubHref} />
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[12rem] flex-1 max-w-sm">
+        <div className="relative min-w-[12rem] max-w-sm flex-1">
           <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             defaultValue={cityParam ?? ""}
@@ -58,7 +81,13 @@ export function ServiceMarketplacePage() {
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 const v = (e.target as HTMLInputElement).value.trim();
-                navigate(servicesBrowsePath({ city: v || undefined, category: categoryFilter }));
+                navigate(
+                  servicesBrowsePath({
+                    city: v || undefined,
+                    category: categoryFilter,
+                    hub: hubParam ?? undefined,
+                  })
+                );
               }
             }}
           />
@@ -72,6 +101,11 @@ export function ServiceMarketplacePage() {
         {pickupOnly ? (
           <span className="rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
             Pickup &amp; drop only
+          </span>
+        ) : null}
+        {hubLabel ? (
+          <span className="rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+            {hubLabel}
           </span>
         ) : null}
       </div>

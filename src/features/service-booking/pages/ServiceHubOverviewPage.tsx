@@ -1,16 +1,16 @@
 import { Link } from "react-router-dom";
-import { CalendarCheck, IndianRupee, Timer } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Calendar, IndianRupee, Timer, Wrench } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/authStore";
 import { formatCurrency } from "@/lib/utils";
-import { useServiceHubData } from "../hooks/useServiceHubData";
+import { WorkshopShell } from "../components/WorkshopShell";
+import { BookingCalendar } from "../components/BookingCalendar";
+import { useWorkshopDesk } from "../hooks/useWorkshopDesk";
 
 export function ServiceHubOverviewPage() {
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin";
-  const { centerId, bookings, analytics, loading } = useServiceHubData(user?.id, isAdmin);
+  const { centerId, bookings, analytics, loading } = useWorkshopDesk(user?.id, user?.role === "admin");
 
   if (loading) {
     return (
@@ -27,80 +27,60 @@ export function ServiceHubOverviewPage() {
 
   if (!centerId) {
     return (
-      <div className="max-w-lg space-y-4">
-        <h1 className="text-2xl font-bold">Service hub</h1>
-        <p className="text-muted-foreground">
-          No workshop linked to this account yet. When your Supabase user owns a row in{" "}
-          <code className="rounded bg-muted px-1 text-sm">service_centers</code>, bookings and analytics appear here.
+      <WorkshopShell title="Workshop management" subtitle="Urban Company-grade operations desk">
+        <p className="text-muted-foreground max-w-lg">
+          No workshop linked to this account. When your user owns a row in{" "}
+          <code className="rounded bg-muted px-1 text-sm">service_centers</code>, bookings, calendar & tracking appear here.
         </p>
-        <Button asChild variant="outline">
+        <Button asChild variant="outline" className="mt-4">
           <Link to="/services">Public marketplace</Link>
         </Button>
-      </div>
+      </WorkshopShell>
     );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Workshop overview</h1>
-          <p className="text-sm text-muted-foreground">Booking pipeline, revenue signals & SLA</p>
-        </div>
-        <Button asChild>
-          <Link to="/dashboard/service/bookings">Manage bookings</Link>
-        </Button>
+    <WorkshopShell
+      title="Workshop overview"
+      subtitle="Bookings · pickup/drop · mechanic roster · invoices"
+      actions={
+        <>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/dashboard/service/calendar">Calendar</Link>
+          </Button>
+          <Button size="sm" asChild>
+            <Link to="/dashboard/service/bookings">Manage bookings</Link>
+          </Button>
+        </>
+      }
+    >
+      <div className="svc-stat-grid">
+        <article className="svc-stat-card">
+          <Calendar className="h-6 w-6 text-primary" />
+          <p className="svc-stat-card__label">Total bookings</p>
+          <p className="svc-stat-card__value">{analytics?.totalBookings ?? 0}</p>
+        </article>
+        <article className="svc-stat-card">
+          <Timer className="h-6 w-6 text-amber-500" />
+          <p className="svc-stat-card__label">Active / pending</p>
+          <p className="svc-stat-card__value">{analytics?.pending ?? 0}</p>
+        </article>
+        <article className="svc-stat-card">
+          <IndianRupee className="h-6 w-6 text-primary" />
+          <p className="svc-stat-card__label">Revenue</p>
+          <p className="svc-stat-card__value">{formatCurrency(analytics?.revenue ?? 0)}</p>
+        </article>
+        <article className="svc-stat-card">
+          <Wrench className="h-6 w-6 text-primary" />
+          <p className="svc-stat-card__label">Completed</p>
+          <p className="svc-stat-card__value">{analytics?.completed ?? 0}</p>
+        </article>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <CalendarCheck className="h-10 w-10 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Total bookings</p>
-              <p className="text-2xl font-bold">{analytics?.totalBookings ?? 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <Timer className="h-10 w-10 text-amber-500" />
-            <div>
-              <p className="text-sm text-muted-foreground">Active / pending</p>
-              <p className="text-2xl font-bold">{analytics?.pending ?? 0}</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="flex items-center gap-4 p-6">
-            <IndianRupee className="h-10 w-10 text-primary" />
-            <div>
-              <p className="text-sm text-muted-foreground">Recorded revenue</p>
-              <p className="text-2xl font-bold">{formatCurrency(analytics?.revenue ?? 0)}</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <h2 className="font-semibold">Upcoming</h2>
-          <ul className="mt-4 space-y-2">
-            {bookings
-              .filter((b) => new Date(b.scheduledAt) >= new Date())
-              .slice(0, 5)
-              .map((b) => (
-                <li key={b.id} className="flex justify-between text-sm">
-                  <span>{b.serviceName}</span>
-                  <span className="text-muted-foreground">{new Date(b.scheduledAt).toLocaleString()}</span>
-                </li>
-              ))}
-            {bookings.filter((b) => new Date(b.scheduledAt) >= new Date()).length === 0 && (
-              <p className="text-sm text-muted-foreground">No upcoming jobs.</p>
-            )}
-          </ul>
-        </CardContent>
-      </Card>
-    </div>
+      <section className="svc-section mt-8">
+        <h2 className="svc-section__title">This week</h2>
+        <BookingCalendar bookings={bookings} days={7} />
+      </section>
+    </WorkshopShell>
   );
 }

@@ -1,5 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import type { HeroSearchFilters, HeroSearchMode } from "@/features/home/data/homepage-data";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
+import type { HubCategorySlug } from "@/features/marketplace/types";
+
+const HUB_TO_HERO_MODE: Partial<Record<HubCategorySlug, HeroSearchMode>> = {
+  cars: "cars",
+  bikes: "bikes",
+  trucks: "trucks",
+  buses: "buses",
+  auto: "auto",
+};
 
 type HeroSearchContextValue = {
   mode: HeroSearchMode;
@@ -22,6 +33,8 @@ type HeroSearchContextValue = {
 const HeroSearchContext = createContext<HeroSearchContextValue | null>(null);
 
 export function HeroSearchProvider({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const isMarketingHome = pathname === "/";
   const [mode, setMode] = useState<HeroSearchMode>("cars");
   const [query, setQuery] = useState("");
   const [brand, setBrand] = useState("");
@@ -50,6 +63,26 @@ export function HeroSearchProvider({ children }: { children: ReactNode }) {
     setCity("");
     setQuery("");
   }, [mode]);
+
+  const activeHub = useVehicleHubStore((s) => s.activeHub);
+
+  /** Navbar vehicle hub must not override homepage hero — Phase 1 shows full ecosystem */
+  useEffect(() => {
+    if (isMarketingHome) return;
+    const mapped = HUB_TO_HERO_MODE[activeHub];
+    if (mapped) setMode(mapped);
+  }, [activeHub, isMarketingHome]);
+
+  useEffect(() => {
+    if (isMarketingHome) return;
+    const onHubChange = (e: Event) => {
+      const hub = (e as CustomEvent<{ hub: HubCategorySlug }>).detail?.hub;
+      const mapped = hub ? HUB_TO_HERO_MODE[hub] : undefined;
+      if (mapped) setMode(mapped);
+    };
+    window.addEventListener("motorcart:hub-change", onHubChange);
+    return () => window.removeEventListener("motorcart:hub-change", onHubChange);
+  }, [isMarketingHome]);
 
   const value = useMemo(
     () => ({

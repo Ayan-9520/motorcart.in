@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { extractHashtags } from "../lib/hashtags";
 import { scoreSpamContent, shouldQueueForReview } from "../lib/spam-detection";
 import { detectEmbedProvider } from "../lib/embed-utils";
+import { enrichAuthors, fetchFollowingUserIds } from "./community-profile.service";
 import type {
   CommunityComment,
   CommunityGroup,
@@ -243,13 +244,11 @@ const MOCK_COMMENTS: Record<string, CommunityComment[]> = {
   ],
 };
 
+/** Real posts only: DB + user's local drafts. No demo/mock filler. */
 function mergePosts(db: CommunityPost[]): CommunityPost[] {
   const local = readLs<CommunityPost[]>(LS_POSTS, []);
   const seen = new Set(db.map((p) => p.id));
-  const merged = [...db, ...local.filter((p) => !seen.has(p.id))];
-  if (merged.length >= 4) return merged.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  const sm = new Set(merged.map((m) => m.id));
-  return [...merged, ...MOCK_POSTS.filter((m) => !sm.has(m.id))].sort(
+  return [...db, ...local.filter((p) => !seen.has(p.id))].sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
 }
@@ -315,6 +314,7 @@ export async function fetchCommunityFeed(filters?: {
   dealerId?: string;
   vehicleOnly?: boolean;
   authorId?: string;
+  followingOnly?: boolean;
   limit?: number;
   currentUserId?: string | null;
 }): Promise<CommunityPost[]> {
@@ -374,6 +374,12 @@ export async function fetchCommunityFeed(filters?: {
     list = list.filter((p) => p.dealerId === filters.dealerId);
   }
 
+  if (filters?.followingOnly && filters?.currentUserId) {
+    const followingIds = await fetchFollowingUserIds(filters.currentUserId);
+    const allowed = new Set([...followingIds, filters.currentUserId]);
+    list = list.filter((p) => allowed.has(p.authorId));
+  }
+
   for (const p of list) {
     if (!p.hashtags?.length) p.hashtags = extractHashtags(p.body);
     if (!p.authorName) p.authorName = MOCK_AUTHOR;
@@ -387,6 +393,7 @@ export async function fetchCommunityFeed(filters?: {
     }
   }
 
+  list = await enrichAuthors(list);
   return list.slice(0, filters?.limit ?? 40);
 }
 
@@ -412,10 +419,7 @@ export async function fetchCommunityPost(postId: string, currentUserId?: string 
     }
   }
   if (!p) {
-    p =
-      readLs<CommunityPost[]>(LS_POSTS, []).find((x) => x.id === postId) ??
-      MOCK_POSTS.find((x) => x.id === postId) ??
-      null;
+    p = readLs<CommunityPost[]>(LS_POSTS, []).find((x) => x.id === postId) ?? null;
   }
   if (p && !p.authorName) p.authorName = MOCK_AUTHOR;
   if (p) {
@@ -461,6 +465,7 @@ export async function createCommunityPost(input: {
   authorId: string;
   authorName?: string;
   body: string;
+  mediaUrls?: string[];
   postKind?: CommunityPostKind;
   groupId?: string | null;
   dealerId?: string | null;
@@ -474,12 +479,15 @@ export async function createCommunityPost(input: {
   const hashtags = extractHashtags(input.body);
   const embedUrl = input.embedUrl ?? null;
   const embedProvider = embedUrl ? detectEmbedProvider(embedUrl) : null;
-  const postKind = input.postKind ?? (input.pollOptions?.length ? "poll" : embedUrl ? "embed" : "discussion");
+  const mediaUrls = input.mediaUrls ?? [];
+  const postKind =
+    input.postKind ??
+    (input.pollOptions?.length ? "poll" : embedUrl ? "embed" : mediaUrls.length ? "discussion" : "discussion");
 
   const row = {
     author_id: input.authorId,
     body: input.body,
-    media_urls: [] as string[],
+    media_urls: mediaUrls,
     vehicle_id: input.vehicleId ?? null,
     dealer_id: input.dealerId ?? null,
     group_id: input.groupId ?? null,
@@ -508,7 +516,7 @@ export async function createCommunityPost(input: {
     authorId: input.authorId,
     authorName: input.authorName ?? "You",
     body: input.body,
-    mediaUrls: [],
+    mediaUrls: mediaUrls,
     vehicleId: input.vehicleId ?? null,
     dealerId: input.dealerId ?? null,
     groupId: input.groupId ?? null,
@@ -531,6 +539,32 @@ export async function createCommunityPost(input: {
   all.unshift(fallback);
   writeLs(LS_POSTS, all);
   return fallback;
+}
+
+export async function deleteCommunityPost(
+  postId: string,
+  userId: string
+): Promise<{ ok: boolean; error?: string }> {
+  if (isDemoPostId(postId)) {
+    return { ok: false, error: "Demo posts cannot be deleted." };
+  }
+
+  const local = readLs<CommunityPost[]>(LS_POSTS, []);
+  const localIdx = local.findIndex((p) => p.id === postId && p.authorId === userId);
+  if (localIdx >= 0) {
+    local.splice(localIdx, 1);
+    writeLs(LS_POSTS, local);
+    return { ok: true };
+  }
+
+  const { error } = await supabase
+    .from("social_posts")
+    .delete()
+    .eq("id", postId)
+    .eq("author_id", userId);
+
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
 }
 
 export async function togglePostLike(postId: string, userId: string, currentlyLiked: boolean): Promise<void> {

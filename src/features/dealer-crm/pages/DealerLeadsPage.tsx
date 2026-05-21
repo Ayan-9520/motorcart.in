@@ -1,61 +1,83 @@
-import { useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { LayoutGrid, List } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { LeadTable } from "../components/LeadTable";
+import { LeadPipelineBoard } from "../components/LeadPipelineBoard";
+import { LeadDetailPanel } from "../components/LeadDetailPanel";
+import { DealerConsoleShell } from "../components/DealerConsoleShell";
 import { useDealerCRM } from "../hooks/useDealerCRM";
-import { supabase } from "@/integrations/supabase/client";
+import { useDealer } from "../hooks/useDealer";
+import { fetchDealerMembers } from "../services/dealer-enterprise.service";
+import { updateLeadStatus } from "../services/crm.service";
+import type { LeadWithMeta, TeamMember } from "../types";
 import type { LeadStatus } from "@/types/database";
 import { setPageMeta } from "@/utils/seo";
 import toast from "react-hot-toast";
 
 export function DealerLeadsPage() {
+  const { dealer } = useDealer();
   const { leads, refetch } = useDealerCRM();
+  const [view, setView] = useState<"pipeline" | "table">("pipeline");
+  const [selected, setSelected] = useState<LeadWithMeta | null>(null);
+  const [team, setTeam] = useState<TeamMember[]>([]);
 
   useEffect(() => {
-    setPageMeta({ title: "Lead Management" });
-  }, []);
+    setPageMeta({ title: "Lead CRM" });
+    if (dealer) void fetchDealerMembers(dealer.id).then(setTeam);
+  }, [dealer]);
 
-  const updateStatus = async (id: string, status: LeadStatus) => {
-    const { error } = await supabase.from("leads").update({ status }).eq("id", id);
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Lead updated");
+  const onStatusChange = async (id: string, status: LeadStatus) => {
+    try {
+      await updateLeadStatus(id, status);
+      toast.success("Stage updated");
       refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Update failed");
     }
   };
 
-  const byType = (type: string) => leads.filter((l) => l.type === type);
-
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Lead Management</h1>
-        <p className="text-muted-foreground">Track, qualify, and convert leads from all channels</p>
-      </div>
-
-      <Tabs defaultValue="all">
-        <TabsList>
-          <TabsTrigger value="all">All ({leads.length})</TabsTrigger>
-          <TabsTrigger value="lead">Leads ({byType("lead").length})</TabsTrigger>
-          <TabsTrigger value="enquiry">Enquiries ({byType("enquiry").length})</TabsTrigger>
-          <TabsTrigger value="test_drive">Test drives ({byType("test_drive").length})</TabsTrigger>
-        </TabsList>
-        <TabsContent value="all" className="mt-4">
-          <Card>
-            <CardHeader><CardTitle>All leads</CardTitle></CardHeader>
-            <CardContent><LeadTable leads={leads} onStatusChange={updateStatus} /></CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="lead" className="mt-4">
-          <Card><CardContent className="pt-6"><LeadTable leads={byType("lead")} onStatusChange={updateStatus} /></CardContent></Card>
-        </TabsContent>
-        <TabsContent value="enquiry" className="mt-4">
-          <Card><CardContent className="pt-6"><LeadTable leads={byType("enquiry")} onStatusChange={updateStatus} /></CardContent></Card>
-        </TabsContent>
-        <TabsContent value="test_drive" className="mt-4">
-          <Card><CardContent className="pt-6"><LeadTable leads={byType("test_drive")} onStatusChange={updateStatus} /></CardContent></Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+    <DealerConsoleShell
+      title="Lead CRM"
+      description="Pipeline stages, callbacks, WhatsApp, notes and team assignment."
+      crumbs={[{ label: "Leads" }]}
+      actions={
+        <div className="flex gap-1 rounded-lg border border-border p-0.5">
+          <Button
+            size="sm"
+            variant={view === "pipeline" ? "default" : "ghost"}
+            onClick={() => setView("pipeline")}
+          >
+            <LayoutGrid className="h-4 w-4" />
+          </Button>
+          <Button
+            size="sm"
+            variant={view === "table" ? "default" : "ghost"}
+            onClick={() => setView("table")}
+          >
+            <List className="h-4 w-4" />
+          </Button>
+        </div>
+      }
+    >
+      {view === "pipeline" ? (
+        <div className="dealer-leads-layout">
+          <LeadPipelineBoard
+            leads={leads}
+            selectedId={selected?.id}
+            onSelect={setSelected}
+            onStatusChange={(id, s) => void onStatusChange(id, s)}
+          />
+          <LeadDetailPanel
+            lead={selected}
+            dealerId={dealer?.id ?? ""}
+            team={team}
+            onUpdated={refetch}
+          />
+        </div>
+      ) : (
+        <LeadTable leads={leads} onStatusChange={(id, s) => void onStatusChange(id, s)} />
+      )}
+    </DealerConsoleShell>
   );
 }

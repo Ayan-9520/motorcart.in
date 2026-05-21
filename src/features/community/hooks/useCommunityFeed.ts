@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import {
   computeTrendingHashtags,
   createCommunityPost,
+  deleteCommunityPost,
   fetchCommunityFeed,
   fetchCommunityGroups,
   togglePostLike,
@@ -15,6 +16,7 @@ export function useCommunityFeed(opts?: {
   dealerId?: string;
   vehicleOnly?: boolean;
   authorId?: string;
+  followingOnly?: boolean;
 }) {
   const { user } = useAuth();
   const [params] = useSearchParams();
@@ -39,6 +41,7 @@ export function useCommunityFeed(opts?: {
           dealerId: opts?.dealerId,
           vehicleOnly: opts?.vehicleOnly,
           authorId: opts?.authorId,
+          followingOnly: opts?.followingOnly,
           currentUserId: user?.id ?? null,
           limit: 40,
         }),
@@ -50,7 +53,7 @@ export function useCommunityFeed(opts?: {
     } finally {
       setLoading(false);
     }
-  }, [tag, opts?.groupSlug, opts?.dealerId, opts?.vehicleOnly, opts?.authorId, user?.id]);
+  }, [tag, opts?.groupSlug, opts?.dealerId, opts?.vehicleOnly, opts?.authorId, opts?.followingOnly, user?.id]);
 
   useEffect(() => {
     void load();
@@ -62,15 +65,17 @@ export function useCommunityFeed(opts?: {
       extras?: {
         embedUrl?: string | null;
         pollOptions?: string[] | null;
+        mediaUrls?: string[];
         groupId?: string | null;
         dealerId?: string | null;
       }
     ) => {
-      if (!user?.id) return null;
+      if (!user?.id) throw new Error("Sign in required to post");
       const created = await createCommunityPost({
         authorId: user.id,
         authorName: user.fullName,
         body,
+        mediaUrls: extras?.mediaUrls,
         groupId: extras?.groupId ?? groupIdForSlug,
         dealerId: extras?.dealerId ?? opts?.dealerId ?? null,
         embedUrl: extras?.embedUrl ?? null,
@@ -91,5 +96,15 @@ export function useCommunityFeed(opts?: {
     [user?.id, load]
   );
 
-  return { posts, groups, trending, loading, tag, reload: load, createPost, like };
+  const deletePost = useCallback(
+    async (post: CommunityPost) => {
+      if (!user?.id || post.authorId !== user.id) return { ok: false as const, error: "Not allowed" };
+      const result = await deleteCommunityPost(post.id, user.id);
+      if (result.ok) await load();
+      return result;
+    },
+    [user?.id]
+  );
+
+  return { posts, groups, trending, loading, tag, reload: load, createPost, like, deletePost };
 }

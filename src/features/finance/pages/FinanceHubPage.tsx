@@ -32,13 +32,13 @@ const QUICK_TOOLS = [
   {
     title: "EMI Calculator",
     desc: "Instant monthly EMI",
-    href: "/finance/compare",
+    href: "/finance/tools",
     icon: Calculator,
   },
   {
     title: "Check eligibility",
     desc: "Soft check · no impact",
-    href: "/finance/offers",
+    href: "/finance/tools",
     icon: ShieldCheck,
   },
   {

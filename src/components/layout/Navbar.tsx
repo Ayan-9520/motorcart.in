@@ -1,25 +1,39 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
-import { Menu, X, Search, User, Car, ShoppingCart, Heart } from "lucide-react";
+import { Link, NavLink, useLocation } from "react-router-dom";
+import { Menu, X, Search, User, Users, Car, ShoppingCart, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LoginModal } from "@/components/auth/LoginModal";
 import { NotificationDropdown } from "@/components/layout/NotificationDropdown";
-import { NAV_LINKS } from "@/lib/constants";
+import { isVehicleHubNavPath, NAV_LINKS, VEHICLE_HUB_NAV } from "@/lib/constants";
 import { useUIStore } from "@/store/uiStore";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
+import { getRoleDashboardPath } from "@/auth/get-role-dashboard-path";
+import type { AppRole } from "@/types/database";
 import { usePartsCartStore } from "@/store/partsCartStore";
 import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { VehicleHubIconBar } from "@/features/marketplace/components/VehicleHubIconBar";
 
-const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  cn("nav-link whitespace-nowrap", isActive && "nav-link-active");
+function navMenuLinkClass(linkHref: string, isActive: boolean, pathname: string) {
+  const active =
+    linkHref === VEHICLE_HUB_NAV.href ? isVehicleHubNavPath(pathname) : isActive;
+  return cn("nav-menu-link whitespace-nowrap", active && "nav-menu-link-active");
+}
 
 export function Navbar() {
+  const { pathname } = useLocation();
+  const hideVehicleHubBar =
+    pathname === "/community" ||
+    pathname.startsWith("/community/") ||
+    pathname.startsWith("/dashboard");
   const [scrolled, setScrolled] = useState(false);
   const { mobileMenuOpen, setMobileMenuOpen, loginModalOpen, setLoginModalOpen, setSearchOpen } =
     useUIStore();
   const { isAuthenticated } = useAuth();
+  const user = useAuthStore((s) => s.user);
+  const workspaceHref = user ? getRoleDashboardPath(user.role as AppRole) : "/";
   const cartCount = usePartsCartStore((s) => s.itemCount());
   const wishlistCount = useVehicleMarketStore((s) => s.wishlist.length);
 
@@ -30,156 +44,234 @@ export function Navbar() {
   }, []);
 
   const openSearch = () => setSearchOpen(true);
+  const closeMobile = () => setMobileMenuOpen(false);
+
+  const utilities = (
+    <div className="nav-utilities-bar">
+      <button
+        type="button"
+        onClick={openSearch}
+        className="nav-icon-btn md:hidden"
+        aria-label="Search"
+      >
+        <Search className="h-5 w-5" />
+      </button>
+
+      <button type="button" onClick={openSearch} className="nav-search" aria-label="Search">
+        <Search className="h-4 w-4 shrink-0 text-primary" />
+        <span className="nav-search-text">Search…</span>
+        <kbd className="nav-kbd">⌘K</kbd>
+      </button>
+
+      <Link
+        to="/wishlist"
+        className={cn(
+          "nav-icon-btn nav-icon-btn-ghost relative",
+          wishlistCount > 0 && "text-primary"
+        )}
+        title={wishlistCount > 0 ? `Wishlist — ${wishlistCount} saved` : "Wishlist"}
+        aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} saved vehicles` : ""}`}
+      >
+        <Heart className={cn("h-5 w-5", wishlistCount > 0 && "fill-current")} />
+        {wishlistCount > 0 && (
+          <span className="nav-badge nav-badge-wishlist" aria-hidden>
+            {wishlistCount > 9 ? "9+" : wishlistCount}
+          </span>
+        )}
+      </Link>
+
+      <Link
+        to="/cart"
+        className="nav-icon-btn nav-icon-btn-ghost relative"
+        title={cartCount > 0 ? `Cart — ${cartCount} items` : "Parts cart"}
+        aria-label={`Cart${cartCount > 0 ? `, ${cartCount} items` : ""}`}
+      >
+        <ShoppingCart className="h-5 w-5" />
+        {cartCount > 0 && <span className="nav-badge">{cartCount > 9 ? "9+" : cartCount}</span>}
+      </Link>
+
+      <ThemeToggle />
+
+      <NotificationDropdown />
+
+      {isAuthenticated ? (
+        <>
+          <Button
+            variant="default"
+            size="sm"
+            className="nav-workspace hidden h-8 rounded-lg px-2.5 text-xs xl:inline-flex"
+            asChild
+          >
+            <Link to={workspaceHref}>Workspace</Link>
+          </Button>
+          <Link
+            to="/community"
+            className="nav-icon-btn nav-icon-btn-ghost hidden md:inline-flex"
+            aria-label="Community"
+          >
+            <Users className="h-5 w-5" />
+          </Link>
+          <Link
+            to="/profile"
+            className="nav-icon-btn nav-icon-btn-ghost hidden md:inline-flex"
+            aria-label="Account"
+          >
+            <User className="h-5 w-5" />
+          </Link>
+        </>
+      ) : (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="nav-login hidden h-8 rounded-lg px-2.5 text-xs font-semibold sm:inline-flex"
+          onClick={() => setLoginModalOpen(true)}
+        >
+          Login
+        </Button>
+      )}
+
+      <button
+        type="button"
+        className="nav-icon-btn md:hidden"
+        onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+        aria-expanded={mobileMenuOpen}
+      >
+        {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+      </button>
+    </div>
+  );
 
   return (
     <>
-      <header className={cn("nav-shell", scrolled && "nav-shell-scrolled")}>
-        <div className="nav-inner container">
-          <Link to="/" className="nav-brand">
-            <span className="nav-brand-mark">
-              <Car className="h-5 w-5" />
-            </span>
-            <span className="hidden sm:inline">
-              Motor<span className="text-primary">cart</span>
-            </span>
-          </Link>
-
-          <nav className="nav-links hidden lg:flex" aria-label="Main">
-            {NAV_LINKS.map((link) => (
-              <NavLink key={link.href} to={link.href} className={navLinkClass}>
-                {link.label}
-              </NavLink>
-            ))}
-          </nav>
-
-          <div className="nav-end">
-            <button
-              type="button"
-              onClick={openSearch}
-              className="nav-icon-btn md:hidden"
-              aria-label="Search"
-            >
-              <Search className="h-5 w-5 text-primary" />
-            </button>
-
-            <button type="button" onClick={openSearch} className="nav-search" aria-label="Search">
-              <Search className="h-4 w-4 shrink-0 text-primary" />
-              <span className="nav-search-text">Search…</span>
-              <kbd className="nav-kbd">⌘K</kbd>
-            </button>
-
-            <Link
-              to="/wishlist"
-              className={cn("nav-wishlist", wishlistCount > 0 && "nav-wishlist-active")}
-              aria-label={`Wishlist${wishlistCount > 0 ? `, ${wishlistCount} saved` : ""}`}
-            >
-              <Heart className={cn("h-5 w-5", wishlistCount > 0 && "fill-current")} />
-              {wishlistCount > 0 && (
-                <span className="nav-badge nav-badge-destructive">
-                  {wishlistCount > 9 ? "9+" : wishlistCount}
-                </span>
-              )}
+      <header className={cn("nav-shell nav-shell-stacked", scrolled && "nav-shell-scrolled")}>
+        {/* Row 1: logo + small vehicle icons + search & utilities */}
+        <div className="nav-top-bar">
+          <div className="container nav-top-bar-inner">
+            <Link to={workspaceHref} className="nav-brand shrink-0">
+              <span className="nav-brand-mark">
+                <Car className="h-5 w-5" />
+              </span>
+              <span className="hidden sm:inline">
+                Motor<span className="text-primary">cart</span>
+              </span>
             </Link>
 
-            <div className="nav-utilities">
-              <Link to="/cart" className="nav-icon-btn relative hidden sm:inline-flex" aria-label="Cart">
-                <ShoppingCart className="h-5 w-5" />
-                {cartCount > 0 && (
-                  <span className="nav-badge">{cartCount > 9 ? "9+" : cartCount}</span>
-                )}
-              </Link>
-
-              <ThemeToggle />
-
-              <div className="hidden sm:block">
-                <NotificationDropdown />
+            {!hideVehicleHubBar && (
+              <div className="nav-top-hub hidden min-w-0 flex-1 justify-center md:flex">
+                <VehicleHubIconBar variant="inline" />
               </div>
+            )}
 
-              {isAuthenticated ? (
-                <Link to="/profile" className="nav-icon-btn hidden sm:inline-flex" aria-label="Profile">
-                  <User className="h-5 w-5" />
-                </Link>
-              ) : (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="nav-login hidden h-9 rounded-lg px-3 text-sm sm:inline-flex"
-                  onClick={() => setLoginModalOpen(true)}
+            {utilities}
+          </div>
+        </div>
+
+        {/* Row 2: pages menu only */}
+        <div className="nav-menu-bar">
+          <div className="container nav-menu-bar-inner">
+            <nav className="nav-menu-track hidden md:flex" aria-label="Main">
+              {NAV_LINKS.map((link) => (
+                <NavLink
+                  key={link.href}
+                  to={link.href}
+                  className={({ isActive }) => navMenuLinkClass(link.href, isActive, pathname)}
+                  end={link.href === VEHICLE_HUB_NAV.href ? false : undefined}
                 >
-                  Login
-                </Button>
-              )}
-
-              <button
-                type="button"
-                className="nav-icon-btn lg:hidden"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-              </button>
-            </div>
+                  {link.label}
+                </NavLink>
+              ))}
+            </nav>
+            {!hideVehicleHubBar && (
+              <div className="nav-menu-hub-mobile flex min-w-0 flex-1 justify-center overflow-hidden md:hidden">
+                <VehicleHubIconBar variant="inline" />
+              </div>
+            )}
           </div>
         </div>
 
         {mobileMenuOpen && (
-          <div className="nav-mobile lg:hidden">
+          <div className="nav-mobile md:hidden">
+            {!hideVehicleHubBar && (
+              <div className="border-b border-border/60 px-3 py-2">
+                <VehicleHubIconBar variant="inline" onNavigate={closeMobile} />
+              </div>
+            )}
             <button
               type="button"
               className="nav-mobile-search"
               onClick={() => {
                 openSearch();
-                setMobileMenuOpen(false);
+                closeMobile();
               }}
             >
               <Search className="h-4 w-4 text-primary" />
               Search Motorcart
               <kbd className="nav-kbd ml-auto">⌘K</kbd>
             </button>
-            <nav className="flex flex-col gap-0.5">
+            <nav className="flex flex-col gap-0.5 px-2 pb-2">
               {NAV_LINKS.map((link) => (
                 <NavLink
                   key={link.href}
                   to={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={({ isActive }) =>
-                    cn("nav-mobile-link", isActive && "nav-mobile-link-active")
-                  }
+                  onClick={closeMobile}
+                  end={link.href === VEHICLE_HUB_NAV.href ? false : undefined}
+                  className={({ isActive }) => {
+                    const active =
+                      link.href === VEHICLE_HUB_NAV.href
+                        ? isVehicleHubNavPath(pathname)
+                        : isActive;
+                    return cn("nav-mobile-link", active && "nav-mobile-link-active");
+                  }}
                 >
                   {link.label}
                 </NavLink>
               ))}
             </nav>
-            <div className="mt-4 flex gap-2 border-t border-border/80 pt-4">
+            <div className="mx-4 flex gap-2 border-t border-border/80 py-4">
               <Link
                 to="/wishlist"
-                className="nav-mobile-wishlist flex flex-1 items-center justify-center gap-2 rounded-xl border border-border/70 py-2.5 text-sm font-medium"
-                onClick={() => setMobileMenuOpen(false)}
+                className="nav-mobile-wishlist relative flex flex-1 items-center justify-center gap-2 rounded-xl border border-border/70 py-2.5 text-sm font-medium"
+                onClick={closeMobile}
               >
                 <Heart className={cn("h-4 w-4", wishlistCount > 0 && "fill-primary text-primary")} />
                 Wishlist
                 {wishlistCount > 0 && (
-                  <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
+                  <span className="rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
                     {wishlistCount}
                   </span>
                 )}
               </Link>
-              {!isAuthenticated && (
+              <Link
+                to="/cart"
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-border/70 py-2.5 text-sm font-medium"
+                onClick={closeMobile}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                Cart
+              </Link>
+            </div>
+            <div className="border-t border-border/80 px-4 py-4">
+              <div className="mb-3 flex items-center justify-center gap-2">
+                <ThemeToggle />
+                <NotificationDropdown />
+              </div>
+              {isAuthenticated ? (
+                <Button variant="default" className="w-full rounded-xl" asChild onClick={closeMobile}>
+                  <Link to={workspaceHref}>Workspace</Link>
+                </Button>
+              ) : (
                 <Button
                   variant="outline"
-                  className="flex-1 rounded-xl"
+                  className="w-full rounded-xl"
                   onClick={() => {
-                    setMobileMenuOpen(false);
+                    closeMobile();
                     setLoginModalOpen(true);
                   }}
                 >
                   Login
                 </Button>
               )}
-            </div>
-            <div className="mt-3 sm:hidden">
-              <NotificationDropdown />
             </div>
           </div>
         )}

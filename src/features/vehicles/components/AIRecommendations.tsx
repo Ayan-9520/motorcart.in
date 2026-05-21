@@ -12,7 +12,7 @@ export function AIRecommendations({ pool = MOCK_VEHICLES }: { pool?: VehicleList
   if (!recommended.length) return null;
 
   return (
-    <section className="space-y-6 rounded-2xl border border-border bg-card p-6">
+    <section className="ai-eco-recs-section space-y-6 rounded-2xl border border-border bg-card p-6">
       <div className="flex items-center gap-2">
         <Sparkles className="h-6 w-6 text-primary" />
         <h2 className="text-2xl font-bold">AI Picks For You</h2>

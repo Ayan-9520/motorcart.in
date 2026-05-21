@@ -40,6 +40,20 @@ export function PartsCatalogShell({
           </nav>
           <h1 className="text-2xl font-bold tracking-tight md:text-3xl">{title}</h1>
           <p className="mt-2 max-w-2xl text-sm text-muted-foreground md:text-base">{subtitle}</p>
+          <div className="fintech-catalog-trust">
+            <span>
+              <span className="fintech-dot" />
+              GST-ready invoicing
+            </span>
+            <span>
+              <span className="fintech-dot" />
+              Verified supply chain
+            </span>
+            <span>
+              <span className="fintech-dot" />
+              Wholesale &amp; retail
+            </span>
+          </div>
         </div>
       </div>
       <div className="container pt-6 md:pt-8">{children}</div>

@@ -27,10 +27,12 @@ export const USER_ROLES = [
   "truck_dealer",
   "dsa_agent",
   "bank_nbfc",
+  "finance_manager",
   "service_center",
   "service_technician",
   "parts_seller",
   "admin",
+  "super_admin",
   "auction_partner",
 ] as const;
 
@@ -38,21 +40,42 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export const DASHBOARD_ROUTES: Partial<Record<UserRole, string>> = {
   customer: "/dashboard/customer",
-  dealer: "/dashboard/dealer",
-  used_car_dealer: "/dashboard/dealer",
-  new_car_dealer: "/dashboard/dealer",
-  bike_dealer: "/dashboard/dealer",
-  truck_dealer: "/dashboard/dealer",
-  dsa_agent: "/dashboard/dsa",
+  dealer: "/dealer/dashboard",
+  used_car_dealer: "/dealer/dashboard",
+  new_car_dealer: "/dealer/dashboard",
+  bike_dealer: "/dealer/dashboard",
+  truck_dealer: "/dealer/dashboard",
+  dsa_agent: "/finance/dashboard",
   bank_nbfc: "/dashboard/finance",
-  service_center: "/dashboard/service",
+  finance_manager: "/dashboard/finance-manager",
+  service_center: "/service-partner/dashboard",
   service_technician: "/dashboard/technician",
-  parts_seller: "/dashboard/parts",
-  admin: "/dashboard/admin",
+  super_admin: "/dashboard/super-admin",
+  parts_seller: "/parts-seller/dashboard",
+  admin: "/admin/dashboard",
   auction_partner: "/dashboard/auction",
 };
 
+/** Main nav entry for all vehicle hubs (cars, bikes, trucks, …) — not only cars */
+export const VEHICLE_HUB_NAV = { label: "Vehicles", href: "/cars" } as const;
+
+export const VEHICLE_HUB_PATH_PREFIXES = [
+  "/cars",
+  "/bikes",
+  "/trucks",
+  "/buses",
+  "/ev",
+  "/auto",
+] as const;
+
+export function isVehicleHubNavPath(pathname: string): boolean {
+  return VEHICLE_HUB_PATH_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
+  );
+}
+
 export const NAV_LINKS = [
+  VEHICLE_HUB_NAV,
   { label: "Buy", href: "/buy" },
   { label: "Sell", href: "/sell" },
   { label: "Auctions", href: "/auctions" },
@@ -62,6 +85,8 @@ export const NAV_LINKS = [
   { label: "Community", href: "/community" },
   { label: "AI", href: "/ai" },
   { label: "Dealers", href: "/dealers" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
 ] as const;
 
 export const VEHICLE_ECOSYSTEM = [

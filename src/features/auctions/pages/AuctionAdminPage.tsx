@@ -11,6 +11,7 @@ import {
   fetchAuctions,
   getAuctionAnalytics,
   updateAuctionAdmin,
+  finalizeAuctionRpc,
 } from "../services/auction.service";
 import type { AuctionListing } from "../types";
 import { AUCTION_TYPE_LABELS } from "../types";
@@ -54,6 +55,19 @@ export function AuctionAdminPage() {
     const { error } = await updateAuctionAdmin(id, { is_featured: !current });
     if (error) toast.error(error.message);
     else await load();
+    setUpdating(null);
+  };
+
+  const finalize = async (id: string) => {
+    setUpdating(id);
+    const r = await finalizeAuctionRpc(id);
+    if (!r.ok) toast.error(r.error ?? "Finalize failed");
+    else {
+      toast.success(
+        r.winner_id ? "Winner declared" : "Closed — reserve not met or no bids"
+      );
+      await load();
+    }
     setUpdating(null);
   };
 
@@ -153,9 +167,9 @@ export function AuctionAdminPage() {
                               size="sm"
                               variant="outline"
                               disabled={updating === a.id}
-                              onClick={() => setStatus(a.id, "ended")}
+                              onClick={() => void finalize(a.id)}
                             >
-                              End
+                              Hammer down
                             </Button>
                           )}
                           <Button

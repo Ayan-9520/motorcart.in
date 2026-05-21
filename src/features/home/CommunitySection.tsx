@@ -10,11 +10,11 @@ export function CommunitySection() {
     <section className="home-section-alt">
       <div className="container home-stack">
         <SectionHeader
-          eyebrow="Community"
-          title="Trending discussions and social"
-          description="Join 50K+ automotive professionals, buyers, and dealers."
+          eyebrow="Motorcart Social"
+          title="India's auto community — dealers, owners & reviewers"
+          description="Facebook-style feed for vehicles: verified dealers, purchase stories, reviews & city groups."
           href="/community"
-          linkLabel="Join community"
+          linkLabel="Open community"
         />
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="space-y-2.5 lg:col-span-2">

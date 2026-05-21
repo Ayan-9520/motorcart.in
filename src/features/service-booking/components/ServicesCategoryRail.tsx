@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Wrench,
   Hammer,
@@ -16,6 +16,8 @@ import {
 import { cn } from "@/lib/utils";
 import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "../types";
 import { servicesBrowsePath, servicesCategoryPath } from "../data/services-hub-data";
+import { parseVehicleHubParam } from "@/lib/vehicle-hub-catalog";
+import { useMemo } from "react";
 
 const ICONS: Record<string, LucideIcon> = {
   Wrench,
@@ -35,10 +37,13 @@ interface ServicesCategoryRailProps {
 }
 
 export function ServicesCategoryRail({ active = "all" }: ServicesCategoryRailProps) {
+  const [params] = useSearchParams();
+  const hub = useMemo(() => parseVehicleHubParam(params.get("hub")), [params]);
+
   return (
     <nav className="services-category-rail" aria-label="Service categories">
       <Link
-        to={servicesBrowsePath()}
+        to={servicesBrowsePath({ hub: hub ?? undefined })}
         className={cn(
           "services-category-pill",
           active === "all" && "services-category-pill-active"
@@ -51,7 +56,7 @@ export function ServicesCategoryRail({ active = "all" }: ServicesCategoryRailPro
         return (
           <Link
             key={c.slug}
-            to={servicesCategoryPath(c.slug)}
+            to={servicesCategoryPath(c.slug, hub)}
             className={cn(
               "services-category-pill gap-1.5",
               active === c.slug && "services-category-pill-active"

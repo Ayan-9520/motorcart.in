@@ -12,11 +12,15 @@ export type AppRole =
   | "truck_dealer"
   | "dsa_agent"
   | "bank_nbfc"
+  | "finance_manager"
   | "service_center"
   | "service_technician"
   | "parts_seller"
   | "admin"
+  | "super_admin"
   | "auction_partner";
+
+export type UserStatus = "active" | "suspended" | "pending_verification" | "closed";
 
 export type KycStatus = "pending" | "submitted" | "verified" | "rejected";
 export type VehicleStatus = "draft" | "available" | "reserved" | "sold";
@@ -32,6 +36,7 @@ export interface DbUser {
   full_name: string;
   avatar_url: string | null;
   role: AppRole;
+  status?: UserStatus;
   kyc_status: KycStatus;
   kyc_data: Record<string, unknown>;
   company_name: string | null;

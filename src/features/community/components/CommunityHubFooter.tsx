@@ -15,7 +15,7 @@ const LOAN_OFFERS = [
 
 export function CommunityHubFooter() {
   return (
-    <footer className="community-hub-footer">
+    <footer className="community-hub-footer community-premium-footer">
       <div className="container mx-auto grid gap-8 px-4 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <h3 className="community-hub-footer-title">About Us</h3>

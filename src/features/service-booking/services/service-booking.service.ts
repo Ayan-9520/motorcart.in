@@ -3,11 +3,15 @@ import type { BookingStatus, DbBooking, DbReview, DbService, DbServiceCenter } f
 import { MOCK_SERVICE_CENTERS, MOCK_SERVICES } from "../data/mock-service-data";
 import type {
   BookingAnalytics,
+  BookingTrackingEvent,
   BookingTrackingStep,
   PaymentStatus,
   ServiceBooking,
   ServiceCatalogItem,
   ServiceCenter,
+  ServiceInvoice,
+  VehicleServiceHistoryEntry,
+  WorkshopMechanic,
 } from "../types";
 
 const LS_BOOKINGS = "motorcart_service_bookings_v1";
@@ -67,6 +71,7 @@ export function mapServiceCenter(row: DbServiceCenter): ServiceCenter {
     rating: Number(row.rating),
     reviewCount: row.review_count,
     servicesOffered: row.services_offered ?? [],
+    vehicleHubs: (row as { vehicle_hubs?: ServiceCenter["vehicleHubs"] }).vehicle_hubs,
     isVerified: row.is_verified,
     isActive: row.is_active !== false,
     images: row.images?.length ? row.images : [],
@@ -487,4 +492,117 @@ export function computeBookingAnalytics(bookings: ServiceBooking[]): BookingAnal
 export async function resolveOwnedCenterId(userId: string): Promise<string | null> {
   const { data } = await supabase.from("service_centers").select("id").eq("owner_id", userId).maybeSingle();
   return (data as { id: string } | null)?.id ?? MOCK_SERVICE_CENTERS.find((c) => c.ownerId === userId)?.id ?? null;
+}
+
+export async function fetchWorkshopMechanics(centerId: string): Promise<WorkshopMechanic[]> {
+  const { data } = await supabase
+    .from("workshop_mechanics")
+    .select("*")
+    .eq("service_center_id", centerId)
+    .eq("is_active", true);
+  if (!data?.length) return [];
+  return data.map((m) => ({
+    id: m.id,
+    serviceCenterId: m.service_center_id,
+    userId: m.user_id,
+    displayName: m.display_name,
+    phone: m.phone,
+    specialization: m.specialization,
+    isActive: m.is_active,
+  }));
+}
+
+export async function updateBookingTrackingRpc(bookingId: string, step: BookingTrackingStep, notes?: string) {
+  const { data, error } = await supabase.rpc("update_booking_tracking", {
+    p_booking_id: bookingId,
+    p_step: step,
+    p_notes: notes ?? null,
+  });
+  if (!error && data && (data as { ok: boolean }).ok) return { ok: true };
+  await updateBookingRecord(bookingId, { trackingStep: step, status: step === "completed" ? "completed" : step === "cancelled" ? "cancelled" : undefined });
+  return { ok: true };
+}
+
+export async function assignMechanicRpc(bookingId: string, mechanicId: string) {
+  const { data, error } = await supabase.rpc("assign_booking_mechanic", {
+    p_booking_id: bookingId,
+    p_mechanic_id: mechanicId,
+  });
+  if (!error && data && (data as { ok: boolean }).ok) return { ok: true };
+  return { ok: false, error: error?.message ?? (data as { error?: string })?.error };
+}
+
+export async function fetchTrackingEvents(bookingId: string): Promise<BookingTrackingEvent[]> {
+  const { data } = await supabase
+    .from("booking_tracking_events")
+    .select("*")
+    .eq("booking_id", bookingId)
+    .order("created_at", { ascending: true });
+  if (!data?.length) return [];
+  return data.map((e) => ({
+    id: e.id,
+    bookingId: e.booking_id,
+    step: e.step,
+    notes: e.notes,
+    createdAt: e.created_at,
+  }));
+}
+
+export async function fetchServiceInvoice(bookingId: string): Promise<ServiceInvoice | null> {
+  const { data } = await supabase.from("service_invoices").select("*").eq("booking_id", bookingId).maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    bookingId: data.booking_id,
+    invoiceNumber: data.invoice_number,
+    subtotal: Number(data.subtotal),
+    gstAmount: Number(data.gst_amount),
+    grandTotal: Number(data.grand_total),
+    status: data.status,
+    issuedAt: data.issued_at,
+    lineItems: (data.line_items as Record<string, unknown>[]) ?? [],
+  };
+}
+
+export async function generateServiceInvoiceRpc(bookingId: string) {
+  const { data, error } = await supabase.rpc("generate_service_invoice", { p_booking_id: bookingId });
+  if (error) return { ok: false, error: error.message };
+  return data as { ok: boolean; invoice_number?: string; error?: string };
+}
+
+export async function fetchVehicleServiceHistory(userId: string): Promise<VehicleServiceHistoryEntry[]> {
+  const { data } = await supabase
+    .from("vehicle_service_history")
+    .select("*")
+    .eq("user_id", userId)
+    .order("completed_at", { ascending: false });
+  if (!data?.length) {
+    const bookings = await fetchMyBookings(userId);
+    return bookings
+      .filter((b) => b.status === "completed")
+      .map((b) => ({
+        id: b.id,
+        userId: b.userId,
+        bookingId: b.id,
+        serviceName: b.serviceName ?? "Service",
+        centerName: b.centerName ?? null,
+        vehicleDetails: b.vehicleDetails,
+        odometerKm: null,
+        totalAmount: b.totalAmount,
+        completedAt: b.scheduledAt,
+        notes: b.notes,
+      }));
+  }
+  return data.map((r) => ({
+    id: r.id,
+    userId: r.user_id,
+    bookingId: r.booking_id,
+    serviceName: r.service_name,
+    centerName: r.center_name,
+    vehicleDetails: r.vehicle_details ?? {},
+    odometerKm: r.odometer_km,
+    totalAmount: r.total_amount != null ? Number(r.total_amount) : null,
+    completedAt: r.completed_at,
+    notes: r.notes,
+  }));
 }

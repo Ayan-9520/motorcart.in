@@ -8,9 +8,11 @@ import { PostComposer } from "../components/PostComposer";
 import { PostCard } from "../components/PostCard";
 import type { CommunityGroup } from "../types";
 import toast from "react-hot-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export function CommunityGroupPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { user } = useAuth();
   const [group, setGroup] = useState<CommunityGroup | null>(null);
   const feed = useCommunityFeed({ groupSlug: slug });
 
@@ -50,7 +52,21 @@ export function CommunityGroupPage() {
         ) : (
           <div className="space-y-4">
             {feed.posts.map((p) => (
-              <PostCard key={p.id} post={p} onLike={() => void feed.like(p)} />
+              <PostCard
+                key={p.id}
+                post={p}
+                premium
+                onLike={() => void feed.like(p)}
+                onDelete={
+                  user?.id === p.authorId
+                    ? async () => {
+                        const r = await feed.deletePost(p);
+                        if (r.ok) toast.success("Post deleted");
+                        else toast.error(r.error ?? "Could not delete");
+                      }
+                    : undefined
+                }
+              />
             ))}
           </div>
         )}

@@ -51,8 +51,8 @@ export function ServicesSection() {
       <div className="container home-stack">
         <SectionHeader
           eyebrow="After-sales"
-          title="Automotive Services"
-          description="Wash, repair, detailing, and roadside assistance — book trusted providers near you."
+          title="Service, insurance & RC — all vehicle types"
+          description="Wash, repair, detailing, insurance & RC transfer — book trusted partners for cars, bikes & fleet."
           href="/services"
           linkLabel="All services"
         />

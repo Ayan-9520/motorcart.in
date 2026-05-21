@@ -1,18 +1,24 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, Phone, Loader2, AlertCircle } from "lucide-react";
+import { Mail, Phone, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { fetchAuthProviderSettings, normalizeAuthEmail } from "@/services/auth.service";
+import { AuthStatusAlert } from "@/components/auth/AuthStatusAlert";
+import type { AuthErrorUI } from "@/lib/auth-errors";
+import { useAuthStore } from "@/store/authStore";
+import { resolvePostLoginPath } from "@/auth/resolve-post-login";
+import type { AppRole } from "@/types/database";
 
 const emailSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
+  email: z.string().min(1, "Email is required").email("Enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type EmailForm = z.infer<typeof emailSchema>;
@@ -24,39 +30,113 @@ interface AuthFormProps {
 
 export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
   const navigate = useNavigate();
-  const { loginEmail, sendOtp, verifyOtp, loginGoogle, resendEmailConfirmation, isLoading } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname?: string; search?: string } } | null)?.from;
+  const redirectParam = new URLSearchParams(location.search).get("redirect");
+  const redirectTo =
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
+      ? redirectParam
+      : null;
+
+  const postLoginDest = (role?: AppRole) =>
+    redirectTo ?? (role ? resolvePostLoginPath(role, from) : "/dashboard/customer");
+
+  const {
+    loginEmail,
+    sendOtp,
+    verifyOtp,
+    loginGoogle,
+    resendEmailConfirmation,
+    isLoading,
+    isAuthenticated,
+  } = useAuth();
+
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [formattedPhone, setFormattedPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [loginError, setLoginError] = useState<AuthErrorUI | null>(null);
+  const [attemptedEmail, setAttemptedEmail] = useState("");
+  const [providers, setProviders] = useState<{
+    phone: boolean;
+    google: boolean;
+    needsEmailConfirm: boolean;
+  } | null>(null);
+  const [settingsLoading, setSettingsLoading] = useState(true);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<EmailForm>({
-    resolver: zodResolver(emailSchema),
+  const [rememberMe, setRememberMe] = useState(() => {
+    try {
+      return localStorage.getItem("motorcart_remember_me") !== "0";
+    } catch {
+      return true;
+    }
   });
+
+  useEffect(() => {
+    fetchAuthProviderSettings()
+      .then((s) => {
+        if (!s) return;
+        setProviders({
+          phone: s.phoneEnabled,
+          google: s.googleEnabled,
+          needsEmailConfirm: !s.mailerAutoconfirm,
+        });
+      })
+      .finally(() => setSettingsLoading(false));
+  }, []);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<EmailForm>({
+    resolver: zodResolver(emailSchema),
+    mode: "onBlur",
+  });
+
+  const clearLoginError = () => setLoginError(null);
 
   const onEmailSubmit = async (data: EmailForm) => {
     setSubmitting(true);
-    setPendingEmail(null);
-    const { error, needsEmailConfirmation } = await loginEmail(data.email, data.password);
+    setLoginError(null);
+    const email = normalizeAuthEmail(data.email);
+    setAttemptedEmail(email);
+
+    const result = await loginEmail(email, data.password);
     setSubmitting(false);
-    if (needsEmailConfirmation) {
-      setPendingEmail(data.email);
+
+    if (!result.success) {
+      if (result.errorUI) setLoginError(result.errorUI);
       return;
     }
-    if (!error) {
-      onSuccess?.();
-      navigate("/dashboard/customer");
+
+    try {
+      localStorage.setItem("motorcart_remember_me", rememberMe ? "1" : "0");
+    } catch {
+      /* ignore */
     }
+
+    onSuccess?.();
+    const u = useAuthStore.getState().user;
+    navigate(postLoginDest(u?.role as AppRole | undefined), { replace: true });
   };
 
   const onResendVerification = async () => {
-    if (!pendingEmail) return;
+    if (!attemptedEmail) return;
     setResending(true);
-    await resendEmailConfirmation(pendingEmail);
+    const { errorUI } = await resendEmailConfirmation(attemptedEmail);
     setResending(false);
+    if (!errorUI) {
+      setLoginError({
+        code: "email_not_verified",
+        title: "Verification email sent",
+        description: "Open the new link we sent, then return here to sign in.",
+        variant: "info",
+        showResendVerification: true,
+      });
+    }
   };
 
   const onSendOtp = async () => {
@@ -75,106 +155,236 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
     setSubmitting(false);
     if (!error) {
       onSuccess?.();
-      navigate("/dashboard/customer");
+      const u = useAuthStore.getState().user;
+      navigate(postLoginDest(u?.role as AppRole | undefined), { replace: true });
     }
   };
 
+  const busy = submitting || isLoading;
+  const signedInUser = useAuthStore((s) => s.user);
+  const dashboardHref = postLoginDest(signedInUser?.role as AppRole | undefined);
+
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="email" className="gap-1"><Mail className="h-4 w-4" /> Email</TabsTrigger>
-        <TabsTrigger value="phone" className="gap-1"><Phone className="h-4 w-4" /> Phone OTP</TabsTrigger>
+      {settingsLoading ? (
+        <div className="mb-3 flex items-center gap-2 text-xs text-muted-foreground" aria-busy="true">
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          Loading sign-in options…
+        </div>
+      ) : (
+        providers?.needsEmailConfirm && (
+          <p className="mb-3 rounded-lg border border-border/80 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Email verification is required before you can sign in. Check spam if you don&apos;t see our email.
+          </p>
+        )
+      )}
+
+      <TabsList className={providers?.phone ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
+        <TabsTrigger value="email" className="gap-1" disabled={busy}>
+          <Mail className="h-4 w-4" /> Email
+        </TabsTrigger>
+        {providers?.phone === true && (
+          <TabsTrigger value="phone" className="gap-1" disabled={busy}>
+            <Phone className="h-4 w-4" /> Phone OTP
+          </TabsTrigger>
+        )}
       </TabsList>
 
-      <TabsContent value="email">
-        {pendingEmail && (
-          <div className="mb-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm" role="alert">
-            <p className="flex items-start gap-2 font-medium text-foreground">
-              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              Email verify pending
-            </p>
-            <p className="mt-1 text-muted-foreground">
-              We sent a confirmation link to <strong className="text-foreground">{pendingEmail}</strong>. Please check
-              your inbox and spam folder.
-            </p>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-3 w-full"
-              disabled={resending}
-              onClick={onResendVerification}
-            >
-              {resending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Resend verification email"}
-            </Button>
-          </div>
+      <TabsContent value="email" className="mt-4 space-y-4">
+        {loginError && (
+          <AuthStatusAlert
+            error={loginError}
+            email={attemptedEmail}
+            onResendVerification={
+              loginError.showResendVerification ? onResendVerification : undefined
+            }
+            resending={resending}
+          />
         )}
-        <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4">
+
+        <form onSubmit={handleSubmit(onEmailSubmit)} className="space-y-4" noValidate>
           <div>
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" className="mt-1" {...register("email")} />
-            {errors.email && <p className="text-xs text-destructive mt-1">{errors.email.message}</p>}
+            <Label htmlFor="auth-email">Email</Label>
+            <Input
+              id="auth-email"
+              type="email"
+              autoComplete="email"
+              className="mt-1"
+              disabled={busy}
+              {...register("email", { onChange: clearLoginError })}
+            />
+            {errors.email && (
+              <p className="mt-1 text-xs text-destructive" role="alert">
+                {errors.email.message}
+              </p>
+            )}
           </div>
           <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" className="mt-1" {...register("password")} />
-            {errors.password && <p className="text-xs text-destructive mt-1">{errors.password.message}</p>}
+            <Label htmlFor="auth-password">Password</Label>
+            <Input
+              id="auth-password"
+              type="password"
+              autoComplete="current-password"
+              className="mt-1"
+              disabled={busy}
+              {...register("password", { onChange: clearLoginError })}
+            />
+            {errors.password && (
+              <p className="mt-1 text-xs text-destructive" role="alert">
+                {errors.password.message}
+              </p>
+            )}
           </div>
-          <Button type="submit" variant="default" className="w-full" disabled={submitting}>
-            {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
+          <div className="flex items-center gap-2">
+            <input
+              id="remember-me"
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-input text-primary focus:ring-primary"
+            />
+            <Label htmlFor="remember-me" className="cursor-pointer text-sm font-normal text-muted-foreground">
+              Keep me signed in on this device
+            </Label>
+          </div>
+          <Button type="submit" variant="default" className="w-full" disabled={busy}>
+            {submitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in…
+              </>
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </form>
-        <p className="mt-3 text-center text-sm">
-          <Link to="/forgot-password" className="text-primary hover:underline">Forgot password?</Link>
+
+        <p className="text-center text-sm">
+          <Link to="/forgot-password" className="text-primary hover:underline">
+            Forgot password?
+          </Link>
         </p>
       </TabsContent>
 
-      <TabsContent value="phone" className="space-y-4">
-        {!otpSent ? (
-          <>
-            <div>
-              <Label>Mobile number</Label>
-              <Input
-                className="mt-1"
-                placeholder="9876543210"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-              />
-            </div>
-            <Button type="button" variant="default" className="w-full" onClick={onSendOtp} disabled={submitting || !phone}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Send OTP"}
-            </Button>
-          </>
-        ) : (
-          <>
-            <div>
-              <Label>Enter OTP</Label>
-              <Input className="mt-1" placeholder="6-digit code" value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
-            </div>
-            <Button type="button" variant="default" className="w-full" onClick={onVerifyOtp} disabled={submitting || otp.length < 4}>
-              {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify & Sign In"}
-            </Button>
-            <Button type="button" variant="ghost" className="w-full text-sm" onClick={() => setOtpSent(false)}>
-              Change number
-            </Button>
-          </>
-        )}
-      </TabsContent>
+      {providers?.phone === true && (
+        <TabsContent value="phone" className="mt-4 space-y-4">
+          {!otpSent ? (
+            <>
+              <div>
+                <Label htmlFor="auth-phone">Mobile number</Label>
+                <Input
+                  id="auth-phone"
+                  className="mt-1"
+                  placeholder="9876543210"
+                  inputMode="tel"
+                  disabled={busy}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="default"
+                className="w-full"
+                onClick={onSendOtp}
+                disabled={busy || phone.replace(/\D/g, "").length < 10}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending OTP…
+                  </>
+                ) : (
+                  "Send OTP"
+                )}
+              </Button>
+            </>
+          ) : (
+            <>
+              <div>
+                <Label htmlFor="auth-otp">Enter OTP</Label>
+                <Input
+                  id="auth-otp"
+                  className="mt-1"
+                  placeholder="6-digit code"
+                  inputMode="numeric"
+                  disabled={busy}
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  maxLength={6}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="default"
+                className="w-full"
+                onClick={onVerifyOtp}
+                disabled={busy || otp.length < 4}
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying…
+                  </>
+                ) : (
+                  "Verify & Sign In"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-full text-sm"
+                disabled={busy}
+                onClick={() => setOtpSent(false)}
+              >
+                Change number
+              </Button>
+            </>
+          )}
+        </TabsContent>
+      )}
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
-        <div className="relative flex justify-center text-xs uppercase"><span className="bg-card px-2 text-muted-foreground">Or</span></div>
-      </div>
-
-      <Button type="button" variant="outline" className="w-full" onClick={() => loginGoogle()} disabled={isLoading}>
-        Continue with Google
-      </Button>
+      {providers?.google === true && (
+        <>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">Or</span>
+            </div>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={() => loginGoogle()}
+            disabled={busy}
+          >
+            Continue with Google
+          </Button>
+        </>
+      )}
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
-        No account? <Link to="/signup" className="text-primary font-medium hover:underline" onClick={onSuccess}>Sign up</Link>
+        No account?{" "}
+        <Link
+          to="/signup"
+          className="font-medium text-primary hover:underline"
+          onClick={onSuccess}
+        >
+          Sign up
+        </Link>
       </p>
+
+      {isAuthenticated && (
+        <p className="mt-2 text-center text-xs text-primary">
+          You are already signed in.{" "}
+          <Link to={dashboardHref} className="underline">
+            Go to dashboard
+          </Link>
+        </p>
+      )}
     </Tabs>
   );
 }
-
-

@@ -3,11 +3,18 @@ import { ArrowRight } from "lucide-react";
 import type { PartCategory } from "../types";
 import { PARTS_CATEGORY_ICONS, partsCategoryHref } from "../data/parts-hub-data";
 
-export function PartsHubCategoryCard({ category }: { category: PartCategory }) {
+export function PartsHubCategoryCard({
+  category,
+  searchSuffix = "",
+}: {
+  category: PartCategory;
+  /** e.g. `?hub=bikes` */
+  searchSuffix?: string;
+}) {
   const Icon = PARTS_CATEGORY_ICONS[category.slug];
 
   return (
-    <Link to={partsCategoryHref(category.slug)} className="parts-hub-category-card group">
+    <Link to={`${partsCategoryHref(category.slug)}${searchSuffix}`} className="parts-hub-category-card group">
       <span className="parts-hub-category-glow" aria-hidden />
       <span className="parts-hub-category-icon">
         <Icon className="h-7 w-7 text-primary" strokeWidth={1.75} />

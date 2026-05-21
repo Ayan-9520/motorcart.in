@@ -12,7 +12,7 @@ import {
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useUIStore } from "@/store/uiStore";
-import { runGlobalSearch, buildSearchPageUrl, type GlobalSearchResult } from "@/lib/global-search";
+import { runGlobalSearch, buildSearchPageUrl, getAISearchIntent, type GlobalSearchResult } from "@/lib/global-search";
 import { cn } from "@/lib/utils";
 import { TRENDING_SEARCHES } from "@/features/home/data/homepage-data";
 
@@ -29,6 +29,7 @@ export function GlobalSearchDialog() {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const results = useMemo(() => runGlobalSearch(query, 10), [query]);
+  const aiIntent = useMemo(() => getAISearchIntent(query), [query]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -81,7 +82,7 @@ export function GlobalSearchDialog() {
 
   return (
     <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-      <DialogContent className="global-search-dialog max-h-[min(85vh,640px)] gap-0 overflow-hidden p-0 sm:max-w-xl">
+      <DialogContent className="global-search-dialog ai-eco-search max-h-[min(85vh,640px)] gap-0 overflow-hidden p-0 sm:max-w-xl">
         <DialogTitle className="sr-only">Search Motorcart</DialogTitle>
         <form onSubmit={onSubmit} className="border-b border-border/80 p-4">
           <div className="relative">
@@ -91,8 +92,8 @@ export function GlobalSearchDialog() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={onKeyDown}
-              placeholder="Search vehicles, parts, dealers, loans…"
-              className="h-12 border-0 bg-muted/40 pl-11 pr-24 text-base shadow-none focus-visible:ring-primary"
+              placeholder="AI search — vehicles, parts, loans, services…"
+              className="h-12 border-0 bg-transparent pl-11 pr-24 text-base shadow-none focus-visible:ring-primary"
             />
             <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-card px-2 py-0.5 text-[10px] font-medium text-muted-foreground sm:inline">
               ⌘K
@@ -101,6 +102,12 @@ export function GlobalSearchDialog() {
         </form>
 
         <div className="global-search-results max-h-[50vh] overflow-y-auto p-2">
+          {aiIntent && query.trim() && (
+            <p className="ai-eco-search-hint px-2 pb-2">
+              <Sparkles className="inline h-3.5 w-3.5 text-primary mr-1" />
+              Intent: <strong>{aiIntent.label}</strong>
+            </p>
+          )}
           {!query.trim() && (
             <div className="px-2 pb-2">
               <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
@@ -181,7 +188,7 @@ function SearchResultRow({
         )}
       >
         {item.image ? (
-          <img src={item.image} alt="" className="h-11 w-14 shrink-0 rounded-lg object-cover" />
+          <img src={item.image} alt="" loading="lazy" decoding="async" className="h-11 w-14 shrink-0 rounded-lg object-cover" />
         ) : (
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Icon className="h-5 w-5" />

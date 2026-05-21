@@ -11,6 +11,7 @@ export function mapDbUserToAppUser(row: DbUser): User {
     role: row.role,
     kycStatus: row.kyc_status,
     isVerified: row.is_verified,
+    accountStatus: row.status ?? "active",
     city: row.city ?? undefined,
     state: row.state ?? undefined,
     companyName: row.company_name ?? undefined,

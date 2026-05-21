@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { Filter, Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -13,17 +13,48 @@ import { PartsCatalogShell } from "../components/PartsCatalogShell";
 import { recommendParts } from "../lib/ai-parts";
 import { MOCK_PARTS_CATALOG } from "../data/mock-parts-catalog";
 import { parseCategoryParam } from "../lib/part-utils";
-import { PART_CATEGORIES } from "../types";
+import { PART_CATEGORIES, PART_ORIGIN_LABELS, type PartOrigin } from "../types";
 import { usePartsCartStore } from "@/store/partsCartStore";
+import type { HubCategorySlug } from "@/features/marketplace/types";
+import { VehicleHubFilterRail } from "@/components/vehicle/VehicleHubFilterRail";
+import {
+  parseVehicleHubParam,
+  VEHICLE_HUB_ENTRIES,
+} from "@/lib/vehicle-hub-catalog";
 
 export function PartsListingPage() {
   const { category: catParam } = useParams<{ category?: string }>();
   const [params, setParams] = useSearchParams();
   const category = parseCategoryParam(catParam);
   const vehicle = params.get("vehicle") ?? "";
+  const hub = useMemo(() => parseVehicleHubParam(params.get("hub")), [params]);
+  const origin = (params.get("origin") as PartOrigin | null) ?? undefined;
   const [q, setQ] = useState(params.get("q") ?? "");
-  const { parts, loading } = usePartsList(category, q);
+  const { parts, loading } = usePartsList(category, q, hub, origin);
   const cartCount = usePartsCartStore((s) => s.itemCount());
+
+  const preserveSearch = useMemo(() => {
+    const p = new URLSearchParams();
+    const h = params.get("hub");
+    const veh = params.get("vehicle");
+    const qp = params.get("q");
+    if (h) p.set("hub", h);
+    if (veh) p.set("vehicle", veh);
+    if (qp) p.set("q", qp);
+    return p.toString();
+  }, [params]);
+
+  const buildHubHref = useCallback(
+    (h: HubCategorySlug | null) => {
+      const next = new URLSearchParams(params);
+      if (h) next.set("hub", h);
+      else next.delete("hub");
+      const qs = next.toString();
+      const base = category ? `/parts/${category}` : `/parts/browse`;
+      return qs ? `${base}?${qs}` : base;
+    },
+    [params, category]
+  );
 
   const filtered = useMemo(() => {
     if (!vehicle) return parts;
@@ -40,11 +71,13 @@ export function PartsListingPage() {
       recommendParts(MOCK_PARTS_CATALOG, {
         category: category ?? undefined,
         vehicle: vehicle || undefined,
+        hub,
       }, 6),
-    [category, vehicle]
+    [category, vehicle, hub]
   );
 
   const catMeta = category ? PART_CATEGORIES.find((c) => c.slug === category) : null;
+  const hubLabel = hub ? VEHICLE_HUB_ENTRIES.find((e) => e.id === hub)?.label : null;
 
   useEffect(() => {
     setPageMeta({
@@ -65,13 +98,40 @@ export function PartsListingPage() {
       title={catMeta ? catMeta.label : "Full parts catalogue"}
       subtitle={
         catMeta
-          ? catMeta.description
-          : "50,000+ SKUs · filter by category, vehicle fitment & brand"
+          ? `${catMeta.description}${hubLabel ? ` · ${hubLabel}` : ""}`
+          : `50,000+ SKUs · cars, bikes, auto, trucks, buses, equipment & EV${hubLabel ? ` · ${hubLabel}` : ""}`
       }
       category={category}
     >
+      <div className="mb-5">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Vehicle type
+        </p>
+        <VehicleHubFilterRail activeHub={hub} buildHref={buildHubHref} />
+      </div>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground w-full">
+          OEM & aftermarket
+        </span>
+        {(["", "oem", "aftermarket", "genuine_accessory"] as const).map((o) => {
+          const next = new URLSearchParams(params);
+          if (o) next.set("origin", o);
+          else next.delete("origin");
+          const qs = next.toString();
+          const base = category ? `/parts/${category}` : `/parts/browse`;
+          const href = qs ? `${base}?${qs}` : base;
+          const active = (origin ?? "") === o;
+          return (
+            <Button key={o || "all"} variant={active ? "default" : "outline"} size="sm" className="rounded-full" asChild>
+              <Link to={href}>{o ? PART_ORIGIN_LABELS[o] : "All parts"}</Link>
+            </Button>
+          );
+        })}
+      </div>
+
       <div className="mb-6 flex flex-wrap items-center gap-3">
-        <div className="relative min-w-[12rem] flex-1 max-w-md">
+        <div className="relative min-w-[12rem] max-w-md flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search parts…"
@@ -85,7 +145,7 @@ export function PartsListingPage() {
           Search
         </Button>
         {cartCount > 0 && (
-          <Button variant="outline" className="rounded-xl gap-2" asChild>
+          <Button variant="outline" className="gap-2 rounded-xl" asChild>
             <Link to="/cart">
               <ShoppingCart className="h-4 w-4" />
               Cart ({cartCount})
@@ -98,9 +158,14 @@ export function PartsListingPage() {
             {vehicle}
           </span>
         ) : null}
+        {hubLabel ? (
+          <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-3 py-1 text-xs font-medium text-foreground">
+            {hubLabel}
+          </span>
+        ) : null}
       </div>
 
-      <PartCategoryNav active={category ?? "all"} basePath="/parts" />
+      <PartCategoryNav active={category ?? "all"} basePath="/parts" preserveSearch={preserveSearch} />
 
       <div className="mt-6">
         <PartsAiRecommendations parts={aiPicks} title="PartsBot recommendations" />

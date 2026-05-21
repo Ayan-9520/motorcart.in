@@ -111,7 +111,7 @@ export function useDealerCRM() {
       convertedLeads: converted,
       testDriveRequests: testDrives,
       enquiries,
-      revenueMtd: revenueMtd || 4850000,
+      revenueMtd,
       conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 12,
       whatsappChats: 47,
       callsTracked: calls.length,

@@ -1,112 +1,230 @@
-import { useCallback, useEffect } from "react";
+import { useCallback } from "react";
 import { useAuthStore } from "@/store/authStore";
 import {
-  fetchUserProfile,
+  ensureUserProfile,
   signInWithEmail,
   signUpWithEmail,
   resendConfirmationEmail,
-  isEmailNotConfirmedError,
+  getAuthSettings,
+  requiresEmailConfirmation,
   signInWithPhoneOtp,
   verifyPhoneOtp,
   signInWithGoogle,
   resetPassword,
   signOut as authSignOut,
+  normalizeAuthEmail,
   type SignUpPayload,
 } from "@/services/auth.service";
+import {
+  classifyAuthError,
+  getAuthErrorToast,
+  getAuthErrorUI,
+  type AuthErrorCode,
+  type AuthErrorUI,
+} from "@/lib/auth-errors";
 import { mapDbUserToAppUser } from "@/services/mapUser";
 import { supabase } from "@/integrations/supabase/client";
+import type { AppRole } from "@/types/database";
 import toast from "react-hot-toast";
+import { setIntentionalSignOut } from "@/lib/auth-session-flag";
+import { logAuthActivity, registerDeviceTouch } from "@/services/auth-telemetry.service";
 
 export function useAuth() {
-  const { user, isLoading, isAuthenticated, setUser, setLoading, logout } = useAuthStore();
+  const { user, isLoading, isAuthenticated, setUser, setProfileHydrated, logout } = useAuthStore();
 
-  const loadProfile = useCallback(async (userId: string) => {
-    const profile = await fetchUserProfile(userId);
-    if (profile) setUser(mapDbUserToAppUser(profile));
-    else setUser(null);
-  }, [setUser]);
-
-  useEffect(() => {
-    setLoading(true);
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) loadProfile(session.user.id);
-      else setUser(null);
-    }).finally(() => setLoading(false));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) loadProfile(session.user.id);
-      else setUser(null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [loadProfile, setUser, setLoading]);
-
-  const loginEmail = useCallback(async (email: string, password: string) => {
-    const { error } = await signInWithEmail(email, password);
-    if (error) {
-      if (isEmailNotConfirmedError(error.message)) {
-        toast.error("Please verify your email first. Check your inbox and spam, or resend the verification link.", {
-          duration: 6000,
-        });
-      } else {
-        toast.error(error.message);
+  const loadProfile = useCallback(
+    async (
+      _userId: string,
+      authUser?: {
+        id: string;
+        email?: string;
+        phone?: string;
+        created_at: string;
+        email_confirmed_at?: string | null;
+        user_metadata?: Record<string, unknown>;
       }
-    } else {
-      toast.success("Welcome back!");
+    ): Promise<boolean> => {
+      if (!authUser) return false;
+
+      const profile = await ensureUserProfile(authUser);
+      if (profile) {
+        setUser(mapDbUserToAppUser(profile));
+      } else {
+        const { data: { user: au } } = await supabase.auth.getUser();
+        if (au) {
+          setUser({
+            id: au.id,
+            email: au.email ?? "",
+            phone: au.phone,
+            fullName: (au.user_metadata?.full_name as string) || au.email?.split("@")[0] || "User",
+            role: (au.user_metadata?.role as AppRole) ?? "customer",
+            accountStatus: "active",
+            kycStatus: "pending",
+            isVerified: !!au.email_confirmed_at,
+            createdAt: au.created_at,
+          });
+        }
+      }
+      setProfileHydrated(true);
+      return true;
+    },
+    [setUser, setProfileHydrated]
+  );
+
+  const syncSession = useCallback(async (): Promise<boolean> => {
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.getSession();
+
+    if (error) {
+      setUser(null);
+      return false;
     }
-    return { error, needsEmailConfirmation: error ? isEmailNotConfirmedError(error.message) : false };
-  }, []);
+
+    if (session?.user) {
+      return loadProfile(session.user.id, session.user);
+    }
+    setUser(null);
+    return false;
+  }, [loadProfile, setUser]);
+
+  const loginEmail = useCallback(
+    async (email: string, password: string) => {
+      const settings = await getAuthSettings();
+      const needsConfirm = requiresEmailConfirmation(settings);
+
+      const { data, error } = await signInWithEmail(email, password);
+
+      if (error) {
+        const errorCode = classifyAuthError(error.message, {
+          requiresEmailConfirmation: needsConfirm,
+        });
+        const errorUI = getAuthErrorUI(errorCode, error.message);
+        toast.error(getAuthErrorToast(errorCode), { duration: 5000 });
+
+        return {
+          error,
+          errorCode,
+          errorUI,
+          success: false as const,
+        };
+      }
+
+      if (data.session?.user) {
+        await loadProfile(data.session.user.id, data.session.user);
+        void registerDeviceTouch();
+        void logAuthActivity("sign_in", { channel: "email" });
+      }
+
+      toast.success("Welcome back!");
+      return {
+        error: null,
+        errorCode: null,
+        errorUI: null,
+        success: true as const,
+      };
+    },
+    [loadProfile]
+  );
 
   const register = useCallback(async (payload: SignUpPayload) => {
     const { data, error } = await signUpWithEmail(payload);
+
     if (error) {
-      toast.error(error.message);
-      return { data, error, needsEmailConfirmation: false };
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode, "signup"));
+      return {
+        data,
+        error,
+        errorCode,
+        errorUI: getAuthErrorUI(errorCode, error.message),
+        needsEmailConfirmation: false,
+      };
     }
-    if (data.session) {
+
+    if (data.session?.user) {
+      await loadProfile(data.session.user.id, data.session.user);
+      void registerDeviceTouch();
+      void logAuthActivity("sign_up", { role: String(payload.role ?? "customer") });
       toast.success("Account created — welcome!");
-      return { data, error: null, needsEmailConfirmation: false };
+      return { data, error: null, errorCode: null, errorUI: null, needsEmailConfirmation: false };
     }
-    toast.success("Verification link sent to your email");
-    return { data, error: null, needsEmailConfirmation: true };
-  }, []);
+
+    toast.success("Verification link sent — check your email (including spam)");
+    return { data, error: null, errorCode: null, errorUI: null, needsEmailConfirmation: true };
+  }, [loadProfile]);
 
   const resendEmailConfirmation = useCallback(async (email: string) => {
     const { error } = await resendConfirmationEmail(email);
-    if (error) toast.error(error.message);
-    else toast.success("Verification email resent — please check your inbox");
-    return { error };
+    if (error) {
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode));
+      return { error, errorCode, errorUI: getAuthErrorUI(errorCode, error.message) };
+    }
+    toast.success("Verification email sent — check your inbox and spam folder");
+    return { error: null, errorCode: null, errorUI: null };
   }, []);
 
   const sendOtp = useCallback(async (phone: string) => {
     const formatted = phone.startsWith("+") ? phone : `+91${phone.replace(/\D/g, "")}`;
     const { error } = await signInWithPhoneOtp(formatted);
-    if (error) toast.error(error.message);
-    else toast.success("OTP sent to your phone");
+    if (error) {
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode));
+    } else {
+      toast.success("OTP sent to your phone");
+    }
     return { error, phone: formatted };
   }, []);
 
   const verifyOtp = useCallback(async (phone: string, token: string) => {
-    const { error } = await verifyPhoneOtp(phone, token);
-    if (error) toast.error(error.message);
-    else toast.success("Phone verified!");
-    return { error };
-  }, []);
+    const { data, error } = await verifyPhoneOtp(phone, token);
+    if (error) {
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode));
+      return { error };
+    }
+    if (data.session?.user) {
+      await loadProfile(data.session.user.id, data.session.user);
+      void registerDeviceTouch();
+      void logAuthActivity("phone_otp", {});
+    }
+    toast.success("Phone verified — welcome!");
+    return { error: null };
+  }, [loadProfile]);
 
   const loginGoogle = useCallback(async () => {
     const { error } = await signInWithGoogle();
-    if (error) toast.error(error.message);
+    if (error) {
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode));
+    }
     return { error };
   }, []);
 
   const forgotPassword = useCallback(async (email: string) => {
-    const { error } = await resetPassword(email);
-    if (error) toast.error(error.message);
-    else toast.success("Password reset link sent");
+    const normalized = normalizeAuthEmail(email);
+    if (!normalized) {
+      toast.error("Enter a valid email address");
+      return { error: new Error("invalid email") };
+    }
+    const { error } = await resetPassword(normalized);
+    if (error) {
+      const errorCode = classifyAuthError(error.message);
+      toast.error(getAuthErrorToast(errorCode));
+    } else {
+      toast.success("Password reset link sent — check your email");
+    }
     return { error };
   }, []);
 
   const signOut = useCallback(async () => {
+    const uid = useAuthStore.getState().user?.id;
+    setIntentionalSignOut(true);
+    if (uid) {
+      await logAuthActivity("sign_out", {}).catch(() => {});
+    }
     await authSignOut();
     logout();
     toast.success("Signed out");
@@ -124,6 +242,12 @@ export function useAuth() {
     loginGoogle,
     forgotPassword,
     signOut,
-    refreshProfile: user ? () => loadProfile(user.id) : undefined,
+    syncSession,
+    refreshProfile: async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) await loadProfile(authUser.id, authUser);
+    },
   };
 }
+
+export type { AuthErrorCode, AuthErrorUI };

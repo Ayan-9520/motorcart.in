@@ -2,7 +2,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { DbAuction, DbBid } from "@/types/database";
 import { MOCK_AUCTIONS, MOCK_BIDS, MOCK_MESSAGES } from "../data/mock-auctions";
 import { mapDbAuction } from "../lib/auction-utils";
-import type { AuctionListing, AuctionBid, AuctionMessage, AuctionType, AuctionAnalytics } from "../types";
+import type {
+  AuctionListing,
+  AuctionBid,
+  AuctionMessage,
+  AuctionType,
+  AuctionAnalytics,
+  AuctionNotification,
+  PlaceBidResult,
+} from "../types";
 import type { AuctionStatus } from "@/types/database";
 
 export async function fetchAuctions(filters?: {
@@ -83,15 +91,80 @@ export async function fetchAuctionMessages(auctionId: string): Promise<AuctionMe
   return MOCK_MESSAGES[auctionId] ?? [];
 }
 
-export async function placeBidRpc(auctionId: string, amount: number, isAutoBid = false) {
+export async function placeBidRpc(
+  auctionId: string,
+  amount: number,
+  isAutoBid = false
+): Promise<PlaceBidResult> {
   const { data, error } = await supabase.rpc("place_auction_bid", {
     p_auction_id: auctionId,
     p_amount: amount,
     p_is_auto_bid: isAutoBid,
   });
   if (error) return { ok: false, error: error.message };
-  const result = data as { ok: boolean; error?: string; bid_id?: string; amount?: number };
-  return result;
+  const result = data as {
+    ok: boolean;
+    error?: string;
+    bid_id?: string;
+    amount?: number;
+    bidder_name?: string;
+    extended?: boolean;
+  };
+  return {
+    ok: result.ok,
+    error: result.error,
+    bidId: result.bid_id,
+    amount: result.amount,
+    bidderName: result.bidder_name,
+    extended: result.extended,
+  };
+}
+
+export async function finalizeAuctionRpc(auctionId: string) {
+  const { data, error } = await supabase.rpc("finalize_auction", { p_auction_id: auctionId });
+  if (error) return { ok: false, error: error.message };
+  return data as {
+    ok: boolean;
+    error?: string;
+    winner_id?: string;
+    winning_amount?: number;
+    reserve_met?: boolean;
+  };
+}
+
+export async function registerDealerAuctionRpc(auctionId: string, maxBid?: number) {
+  const { data, error } = await supabase.rpc("register_dealer_auction", {
+    p_auction_id: auctionId,
+    p_max_bid: maxBid ?? null,
+  });
+  if (error) return { ok: false, error: error.message };
+  return data as { ok: boolean; error?: string; entry_id?: string };
+}
+
+export async function fetchAuctionNotifications(
+  auctionId: string,
+  userId: string
+): Promise<AuctionNotification[]> {
+  const { data } = await supabase
+    .from("auction_notifications")
+    .select("*")
+    .eq("auction_id", auctionId)
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (!data?.length) return [];
+  return data.map((row) => ({
+    id: row.id,
+    auctionId: row.auction_id,
+    userId: row.user_id,
+    kind: row.kind as AuctionNotification["kind"],
+    title: row.title,
+    body: row.body,
+    payload: (row.payload as Record<string, unknown>) ?? {},
+    readAt: row.read_at,
+    createdAt: row.created_at,
+  }));
 }
 
 export async function setAutoBidRpc(auctionId: string, maxAmount: number) {

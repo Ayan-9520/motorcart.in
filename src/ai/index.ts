@@ -8,3 +8,4 @@ export { useSupportChat } from "./hooks/useSupportChat";
 export { useAIControlCenter } from "./hooks/useAIControlCenter";
 export { SupportChatWidget } from "./components/SupportChatWidget";
 export { AIControlCenterPage } from "./pages/AIControlCenterPage";
+export * from "./ecosystem";

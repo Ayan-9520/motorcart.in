@@ -9,11 +9,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { setPageMeta } from "@/utils/seo";
 import { PostCard } from "../components/PostCard";
 import { useCommunityPostDetail } from "../hooks/useCommunityPostDetail";
-import { togglePostLike } from "../services/community.service";
+import { deleteCommunityPost, togglePostLike } from "../services/community.service";
+import { useAppConfirmModal } from "@/shared/ui/modal/useAppConfirmModal";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export function CommunityPostPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { requestConfirm } = useAppConfirmModal();
   const { post, comments, pollChoice, loading, reload, comment, vote, share } = useCommunityPostDetail(id);
   const [draft, setDraft] = useState("");
   const [liked, setLiked] = useState(false);
@@ -48,6 +53,24 @@ export function CommunityPostPage() {
               setLiked(!liked);
               await reload();
             }}
+            onDelete={
+              user?.id === post.authorId
+                ? async () => {
+                    const ok = await requestConfirm({
+                      title: "Delete post?",
+                      description: "This cannot be undone.",
+                      confirmLabel: "Delete",
+                      variant: "destructive",
+                    });
+                    if (!ok) return;
+                    const r = await deleteCommunityPost(post.id, user.id);
+                    if (r.ok) {
+                      toast.success("Post deleted");
+                      navigate("/community", { replace: true });
+                    } else toast.error(r.error ?? "Could not delete");
+                  }
+                : undefined
+            }
           />
           {post.postKind === "poll" && post.pollOptions && (
             <Card className="mt-4">

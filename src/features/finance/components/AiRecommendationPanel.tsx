@@ -12,7 +12,7 @@ export function AiRecommendationPanel({ recommendations }: AiRecommendationPanel
   if (recommendations.length === 0) return null;
 
   return (
-    <Card className="border-primary/30 border border-border bg-card">
+    <Card className="ai-eco-finance-recs border-primary/30 border border-border bg-card">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-lg">
           <Sparkles className="h-5 w-5 text-primary" />

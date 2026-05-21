@@ -29,8 +29,8 @@ export function FinanceSection() {
       <div className="container home-stack">
         <SectionHeader
           eyebrow="Smart finance"
-          title="Instant Auto Loans"
-          description="Compare rates from top banks, preview EMI, and check eligibility with FinanceBot."
+          title="Loans for cars, bikes & commercial"
+          description="14+ banks & NBFCs — instant EMI, pre-approval for dealers, repo buyers & fleet owners."
           href="/finance"
           linkLabel="Compare all loans"
         />

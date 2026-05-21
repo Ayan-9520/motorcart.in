@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CategoryTabs } from "../components/CategoryTabs";
 import { AdvancedSearchBar } from "../components/AdvancedSearchBar";
@@ -10,6 +9,7 @@ import { VehicleCard } from "../components/VehicleCard";
 import { VehiclePagination } from "../components/VehiclePagination";
 import { CompareFloatingBar } from "../components/CompareFloatingBar";
 import { AIRecommendations } from "../components/AIRecommendations";
+import { VehicleMarketplaceShell } from "../components/VehicleMarketplaceShell";
 import { useVehicleSearch } from "@/hooks/useVehicleSearch";
 import { setPageMeta } from "@/utils/seo";
 import { VEHICLE_CATEGORIES } from "@/lib/constants";
@@ -50,15 +50,12 @@ export function VehicleListingPage() {
   const filterRecord = Object.fromEntries(searchParams.entries());
 
   return (
-    <div className="wa-pattern min-h-screen">
-      <div className="container mx-auto space-y-6 px-4 py-8">
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-bold md:text-4xl">{title}</h1>
-          <p className="mt-1 text-muted-foreground">
-            India&apos;s premium marketplace — verified listings, instant EMI, test drives
-          </p>
-        </motion.div>
-
+    <VehicleMarketplaceShell
+      title={title}
+      subtitle="Smart filters, AI picks, compare up to 4 cars, EMI & loan eligibility — CarDekho-grade experience."
+      count={total}
+    >
+      <div className="space-y-6">
         <CategoryTabs />
         <AdvancedSearchBar onToggleFilters={() => setShowMobileFilters((s) => !s)} />
 
@@ -102,6 +99,6 @@ export function VehicleListingPage() {
         </div>
       </div>
       <CompareFloatingBar />
-    </div>
+    </VehicleMarketplaceShell>
   );
 }

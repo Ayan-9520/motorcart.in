@@ -1,5 +1,5 @@
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,8 +11,11 @@ import { ServicesCategoryCard } from "../components/ServicesCategoryCard";
 import { ServiceCenterCard } from "../components/ServiceCenterCard";
 import { ServiceCatalogCard } from "../components/ServiceCatalogCard";
 import { SERVICE_CATEGORIES, SERVICES_TRUST_STATS, HOW_IT_WORKS, servicesBrowsePath } from "../data/services-hub-data";
+import { parseVehicleHubParam } from "@/lib/vehicle-hub-catalog";
 
 export function ServicesHubPage() {
+  const [params] = useSearchParams();
+  const hub = useMemo(() => parseVehicleHubParam(params.get("hub")), [params]);
   const { centers, catalog, loading } = useServiceMarketplace();
 
   useEffect(() => {
@@ -48,7 +51,7 @@ export function ServicesHubPage() {
             <p className="mt-1 text-sm text-muted-foreground">10 bookable verticals · transparent pricing</p>
           </div>
           <Button variant="outline" className="rounded-xl" asChild>
-            <Link to={servicesBrowsePath()}>
+            <Link to={servicesBrowsePath({ hub: hub ?? undefined })}>
               All services <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
           </Button>
@@ -67,7 +70,7 @@ export function ServicesHubPage() {
             <p className="mt-1 text-sm text-muted-foreground">Ratings, pickup &amp; live slot availability</p>
           </div>
           <Button variant="outline" className="rounded-xl" asChild>
-            <Link to={servicesBrowsePath()}>View all centers</Link>
+            <Link to={servicesBrowsePath({ hub: hub ?? undefined })}>View all centers</Link>
           </Button>
         </div>
         {loading ? (
@@ -119,7 +122,9 @@ export function ServicesHubPage() {
           ))}
         </ol>
         <div className="services-hub-footer-cta mt-10 text-center">
-          <p className="mb-3 text-sm text-muted-foreground">List your workshop on Motorcart — reach thousands of car owners</p>
+          <p className="mb-3 text-sm text-muted-foreground">
+            List your workshop on Motorcart — reach thousands of verified vehicle owners &amp; fleet operators
+          </p>
           <Button className="rounded-xl shadow-[var(--shadow-primary)]" asChild>
             <Link to="/dashboard/service-hub">Partner with us</Link>
           </Button>

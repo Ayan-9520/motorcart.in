@@ -9,7 +9,6 @@ import {
   Users,
 } from "lucide-react";
 import { HERO_STATS, HOME_TRUST_PILLS } from "@/features/home/data/homepage-data";
-import { PartnerLogoMarquee } from "@/features/home/components/PartnerLogoMarquee";
 
 const PILL_ICONS = {
   users: Users,
@@ -63,10 +62,6 @@ export function HomeTrustBand() {
             })}
           </div>
 
-          <div className="hero-partners-block">
-            <p className="hero-partners-label">Featured OEM brands &amp; banking partners</p>
-            <PartnerLogoMarquee />
-          </div>
         </motion.div>
       </div>
     </section>

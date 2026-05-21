@@ -1,3 +1,4 @@
+import { parseAIIntent } from "@/ai/ecosystem/ai-intent";
 import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
 import { MOCK_PARTS_CATALOG } from "@/features/parts/data/mock-parts-catalog";
 import { filterVehicles, vehicleDetailPath } from "@/lib/vehicle-utils";
@@ -67,9 +68,33 @@ function partToResult(p: PartProduct): GlobalSearchResult {
   };
 }
 
+export function getAISearchIntent(query: string) {
+  return parseAIIntent(query);
+}
+
 export function runGlobalSearch(query: string, limit = 8): GlobalSearchResult[] {
   const q = query.trim().toLowerCase();
   if (!q) return QUICK_PAGES.slice(0, 6);
+
+  const intent = parseAIIntent(query);
+  if (intent && intent.confidence >= 0.55) {
+    const intentResult: GlobalSearchResult = {
+      id: "ai-intent",
+      type: "page",
+      title: `AI: ${intent.label}`,
+      subtitle: "Suggested destination for your query",
+      href: intent.href,
+      badge: "AI",
+    };
+    const rest = runGlobalSearchInner(q, limit);
+    return [intentResult, ...rest.filter((r) => r.id !== "ai-intent")].slice(0, limit + 2);
+  }
+
+  return runGlobalSearchInner(q, limit);
+}
+
+function runGlobalSearchInner(query: string, limit = 8): GlobalSearchResult[] {
+  const q = query.trim().toLowerCase();
 
   const vehicles = filterVehicles(MOCK_VEHICLES.filter((v) => v.status === "available"), { q: query.trim() })
     .slice(0, limit)

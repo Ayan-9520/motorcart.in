@@ -1,33 +1,54 @@
 import { useCallback, useEffect, useState, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import {
   fetchAuctionBySlug,
   fetchAuctionBids,
   fetchAuctionMessages,
+  fetchAuctionNotifications,
   placeBidRpc,
   setAutoBidRpc,
   sendChatMessage,
+  finalizeAuctionRpc,
+  registerDealerAuctionRpc,
 } from "../services/auction.service";
 import { validateBidClient, recordBidAttempt } from "../lib/bid-validation";
 import { detectBidFraud } from "../lib/fraud-detection";
 import { getMinNextBid } from "../lib/auction-utils";
-import type { AuctionListing, AuctionBid, AuctionMessage } from "../types";
+import {
+  subscribeAuctionRoom,
+  unsubscribeChannel,
+  mergeBidFeed,
+} from "../lib/realtime-channel";
+import type { AuctionListing, AuctionBid, AuctionMessage, AuctionNotification } from "../types";
 import { useAuth } from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+
+const BID_COOLDOWN_MS = 400;
+const NOTIFY_DEBOUNCE_MS = 1200;
 
 export function useAuctionRoom(slug: string | undefined) {
   const { user } = useAuth();
   const [auction, setAuction] = useState<AuctionListing | null>(null);
   const [bids, setBids] = useState<AuctionBid[]>([]);
   const [messages, setMessages] = useState<AuctionMessage[]>([]);
+  const [notifications, setNotifications] = useState<AuctionNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [placing, setPlacing] = useState(false);
+  const [bidLocked, setBidLocked] = useState(false);
   const [viewerCount, setViewerCount] = useState(0);
-  const presenceRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
-  const lastBidIdRef = useRef<string | null>(null);
+  const [dealerRegistered, setDealerRegistered] = useState(false);
+  const [registeringDealer, setRegisteringDealer] = useState(false);
+
+  const channelRef = useRef<RealtimeChannel | null>(null);
+  const bidLockRef = useRef(false);
+  const lastBidAtRef = useRef(0);
+  const lastNotifyAtRef = useRef(0);
+  const finalizedRef = useRef(false);
+  const seenBidIdsRef = useRef(new Set<string>());
 
   const loadAuction = useCallback(async () => {
     if (!slug) return;
+    setLoading(true);
     const a = await fetchAuctionBySlug(slug);
     setAuction(a);
     if (a) {
@@ -35,95 +56,104 @@ export function useAuctionRoom(slug: string | undefined) {
       const [b, m] = await Promise.all([fetchAuctionBids(a.id), fetchAuctionMessages(a.id)]);
       setBids(b);
       setMessages(m);
+      seenBidIdsRef.current = new Set(b.map((x) => x.id));
+      if (user) {
+        const n = await fetchAuctionNotifications(a.id, user.id);
+        setNotifications(n);
+      }
     }
     setLoading(false);
-  }, [slug]);
+  }, [slug, user?.id]);
 
   useEffect(() => {
-    loadAuction();
+    void loadAuction();
   }, [loadAuction]);
 
-  // Realtime: auction updates, bids, chat
+  // Realtime: single multiplexed channel
   useEffect(() => {
     if (!auction?.id) return;
 
-    const auctionChannel = supabase
-      .channel(`auction-${auction.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "auctions", filter: `id=eq.${auction.id}` },
-        (payload) => {
-          const row = payload.new as Record<string, unknown>;
+    const presenceKey = user?.id ?? `anon-${crypto.randomUUID().slice(0, 8)}`;
+    const channel = subscribeAuctionRoom(auction.id, presenceKey, {
+      onAuctionUpdate: (patch) => {
+        setAuction((prev) => (prev ? { ...prev, ...patch } : prev));
+        if (patch.status === "ended") {
+          toast("Auction has ended", { icon: "🏁" });
+        }
+      },
+      onBidInsert: (bid) => {
+        if (seenBidIdsRef.current.has(bid.id)) return;
+        seenBidIdsRef.current.add(bid.id);
+        setBids((prev) => mergeBidFeed(prev, bid));
+        setAuction((prev) =>
+          prev && bid.amount >= (prev.currentBid ?? prev.startingBid)
+            ? { ...prev, currentBid: bid.amount, bidCount: prev.bidCount + 1 }
+            : prev
+        );
+        const now = Date.now();
+        if (user && bid.bidderId !== user.id && now - lastNotifyAtRef.current > NOTIFY_DEBOUNCE_MS) {
+          lastNotifyAtRef.current = now;
+          toast(`Outbid — ₹${bid.amount.toLocaleString("en-IN")}`, { icon: "🔔" });
+        }
+      },
+      onMessageInsert: (msg) => {
+        setMessages((prev) => (prev.some((m) => m.id === msg.id) ? prev : [...prev, msg]));
+      },
+      onNotificationInsert: (n) => {
+        if (!user || n.userId !== user.id) return;
+        setNotifications((prev) => (prev.some((x) => x.id === n.id) ? prev : [n, ...prev]));
+        toast(n.title, { icon: n.kind === "won" ? "🏆" : "🔔" });
+      },
+      onPresenceCount: setViewerCount,
+    });
+
+    channelRef.current = channel;
+    return () => {
+      unsubscribeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [auction?.id, user?.id]);
+
+  // Auto-finalize when countdown hits zero (client-initiated; idempotent RPC)
+  useEffect(() => {
+    if (!auction || auction.status !== "live" || finalizedRef.current) return;
+
+    const check = () => {
+      if (Date.now() < new Date(auction.endsAt).getTime()) return;
+      finalizedRef.current = true;
+      void finalizeAuctionRpc(auction.id).then((r) => {
+        if (r.ok) {
           setAuction((prev) =>
             prev
               ? {
                   ...prev,
-                  currentBid: row.current_bid != null ? Number(row.current_bid) : prev.currentBid,
-                  bidCount: Number(row.bid_count ?? prev.bidCount),
-                  status: (row.status as AuctionListing["status"]) ?? prev.status,
-                  winnerId: (row.winner_id as string) ?? prev.winnerId,
+                  status: "ended",
+                  winnerId: r.winner_id ?? prev.winnerId,
                 }
               : prev
           );
         }
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "bids", filter: `auction_id=eq.${auction.id}` },
-        async () => {
-          const b = await fetchAuctionBids(auction.id);
-          setBids(b);
-        }
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "auction_messages", filter: `auction_id=eq.${auction.id}` },
-        (payload) => {
-          const row = payload.new as Record<string, unknown>;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: String(row.id),
-              auctionId: String(row.auction_id),
-              userId: row.user_id as string | null,
-              displayName: String(row.display_name ?? "User"),
-              message: String(row.message),
-              isSystem: Boolean(row.is_system),
-              createdAt: String(row.created_at),
-            },
-          ]);
-        }
-      )
-      .subscribe();
-
-    // Presence for live viewers
-    const presenceChannel = supabase.channel(`presence-${auction.id}`, {
-      config: { presence: { key: user?.id ?? `anon-${Math.random().toString(36).slice(2)}` } },
-    });
-
-    presenceChannel
-      .on("presence", { event: "sync" }, () => {
-        const state = presenceChannel.presenceState();
-        setViewerCount(Object.keys(state).length);
-      })
-      .subscribe(async (status) => {
-        if (status === "SUBSCRIBED") {
-          await presenceChannel.track({ online_at: new Date().toISOString() });
-        }
       });
-
-    presenceRef.current = presenceChannel;
-
-    return () => {
-      supabase.removeChannel(auctionChannel);
-      supabase.removeChannel(presenceChannel);
     };
-  }, [auction?.id, user?.id]);
+
+    const id = setInterval(check, 1000);
+    check();
+    return () => clearInterval(id);
+  }, [auction?.id, auction?.endsAt, auction?.status]);
 
   const placeBid = useCallback(
     async (amount: number) => {
       if (!auction || !user) {
         toast.error("Please login to bid");
+        return { ok: false };
+      }
+      if (bidLockRef.current) {
+        toast.error("Bid in progress — please wait");
+        return { ok: false };
+      }
+      const now = Date.now();
+      if (now - lastBidAtRef.current < BID_COOLDOWN_MS) {
+        toast.error("Please wait before bidding again");
         return { ok: false };
       }
 
@@ -148,11 +178,14 @@ export function useAuctionRoom(slug: string | undefined) {
         return { ok: false };
       }
 
+      bidLockRef.current = true;
+      setBidLocked(true);
       setPlacing(true);
+      lastBidAtRef.current = now;
+
       const result = await placeBidRpc(auction.id, amount, false);
 
       if (!result.ok) {
-        // Mock fallback when RPC not deployed
         const minBid = getMinNextBid(auction);
         if (amount >= minBid) {
           recordBidAttempt(auction.id, user.id, amount);
@@ -165,23 +198,41 @@ export function useAuctionRoom(slug: string | undefined) {
             isAutoBid: false,
             createdAt: new Date().toISOString(),
           };
-          setBids((prev) => [mockBid, ...prev]);
+          seenBidIdsRef.current.add(mockBid.id);
+          setBids((prev) => mergeBidFeed(prev, mockBid));
           setAuction((prev) =>
             prev ? { ...prev, currentBid: amount, bidCount: prev.bidCount + 1 } : prev
           );
-          toast.success("Bid placed!");
-          setPlacing(false);
-          return { ok: true };
+          toast.success("Bid placed (demo mode)");
+        } else {
+          toast.error(result.error ?? "Bid failed");
         }
-        toast.error(result.error ?? "Bid failed");
-        setPlacing(false);
-        return { ok: false };
+      } else {
+        recordBidAttempt(auction.id, user.id, amount);
+        if (result.bidId) {
+          const optimistic: AuctionBid = {
+            id: result.bidId,
+            auctionId: auction.id,
+            bidderId: user.id,
+            bidderName: result.bidderName ?? user.fullName,
+            amount: result.amount ?? amount,
+            isAutoBid: false,
+            createdAt: new Date().toISOString(),
+          };
+          seenBidIdsRef.current.add(optimistic.id);
+          setBids((prev) => mergeBidFeed(prev, optimistic));
+          setAuction((prev) =>
+            prev ? { ...prev, currentBid: optimistic.amount, bidCount: prev.bidCount + 1 } : prev
+          );
+        }
+        if (result.extended) toast("Anti-snipe: auction extended by 2 minutes", { icon: "⏱️" });
+        toast.success("Bid placed!");
       }
 
-      recordBidAttempt(auction.id, user.id, amount);
-      toast.success("Bid placed!");
+      bidLockRef.current = false;
+      setBidLocked(false);
       setPlacing(false);
-      return { ok: true };
+      return { ok: result.ok || amount >= getMinNextBid(auction) };
     },
     [auction, user, bids]
   );
@@ -191,7 +242,7 @@ export function useAuctionRoom(slug: string | undefined) {
       if (!auction || !user) return;
       const result = await setAutoBidRpc(auction.id, maxAmount);
       if (result.ok) toast.success("Auto-bid activated");
-      else toast.error(result.error ?? "Auto-bid saved locally (demo)");
+      else toast.error(result.error ?? "Auto-bid unavailable");
     },
     [auction, user]
   );
@@ -200,47 +251,41 @@ export function useAuctionRoom(slug: string | undefined) {
     async (text: string) => {
       if (!auction || !user) return;
       await sendChatMessage(auction.id, text, user.fullName);
-      const msg: AuctionMessage = {
-        id: `local-${Date.now()}`,
-        auctionId: auction.id,
-        userId: user.id,
-        displayName: user.fullName,
-        message: text,
-        isSystem: false,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, msg]);
     },
     [auction, user]
   );
 
-  const minBid = auction ? getMinNextBid(auction) : 0;
-
-  // Notify when outbid
-  useEffect(() => {
-    const top = bids[0];
-    if (!top || !user) return;
-    if (lastBidIdRef.current && lastBidIdRef.current !== top.id) {
-      if (top.bidderId !== user.id) {
-        toast(`New bid: ${top.bidderName ?? "Someone"} — ₹${top.amount.toLocaleString("en-IN")}`, {
-          icon: "🔔",
-        });
-      }
+  const registerDealer = useCallback(async () => {
+    if (!auction) return;
+    setRegisteringDealer(true);
+    const r = await registerDealerAuctionRpc(auction.id);
+    if (r.ok) {
+      setDealerRegistered(true);
+      toast.success("Registered as dealer bidder");
+    } else {
+      toast.error(r.error ?? "Registration failed");
     }
-    lastBidIdRef.current = top.id;
-  }, [bids, user]);
+    setRegisteringDealer(false);
+  }, [auction]);
+
+  const minBid = auction ? getMinNextBid(auction) : 0;
 
   return {
     auction,
     bids,
     messages,
+    notifications,
     loading,
     placing,
+    bidLocked,
     viewerCount,
     minBid,
+    dealerRegistered,
+    registeringDealer,
     placeBid,
     setAutoBid,
     postMessage,
+    registerDealer,
     refetch: loadAuction,
   };
 }

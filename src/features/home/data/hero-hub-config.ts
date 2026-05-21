@@ -15,6 +15,10 @@ import {
   Wrench,
 } from "lucide-react";
 import type { HeroInsightPick, HeroSearchMode } from "@/features/home/data/homepage-data";
+import {
+  PHASE1_DASHBOARD_TAGS,
+  PHASE1_ECOSYSTEM_DASHBOARD,
+} from "@/features/home/data/phase1-home-data";
 
 export interface HeroHubQuickLink {
   label: string;
@@ -339,6 +343,19 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
 
 export function getHeroHubConfig(mode: HeroSearchMode): HeroHubConfig {
   return HERO_HUB_CONFIG[mode];
+}
+
+/** Homepage hero panel — balanced Phase 1 (cars, auction, finance, community) */
+export function getHomeHeroDashboard(): {
+  cards: HeroDashboardCard[];
+  tags: string[];
+  panelTitle: string;
+} {
+  return {
+    cards: PHASE1_ECOSYSTEM_DASHBOARD,
+    tags: [...PHASE1_DASHBOARD_TAGS],
+    panelTitle: "India vehicle ecosystem",
+  };
 }
 
 export type HomeSectionKey =

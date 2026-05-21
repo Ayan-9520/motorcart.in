@@ -41,14 +41,15 @@ export function NotificationDropdown() {
         type="button"
         variant="ghost"
         size="icon"
-        className="nav-icon-btn relative"
-        aria-label="Notifications"
+        className="nav-icon-btn nav-icon-btn-ghost relative"
+        title={unreadCount > 0 ? `Notifications — ${unreadCount} unread` : "Notifications"}
+        aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ""}`}
         aria-expanded={open}
         onClick={() => setOpen((o) => !o)}
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+          <span className="nav-badge nav-badge-notify" aria-hidden>
             {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}

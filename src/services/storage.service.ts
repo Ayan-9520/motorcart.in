@@ -7,7 +7,8 @@ export type StorageBucket =
   | "auction-images"
   | "service-images"
   | "part-images"
-  | "finance-documents";
+  | "finance-documents"
+  | "community-media";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];

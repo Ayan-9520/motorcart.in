@@ -3,7 +3,11 @@ import type { AICompletionRequest, AICompletionResult } from "../types";
 
 const API_KEY = import.meta.env.VITE_OPENAI_API_KEY as string | undefined;
 
+/** Client OpenAI is disabled in production unless explicitly allowed — use Edge Functions in prod. */
 export function isOpenAIConfigured(): boolean {
+  if (import.meta.env.PROD && import.meta.env.VITE_ALLOW_CLIENT_OPENAI !== "true") {
+    return false;
+  }
   return Boolean(API_KEY && API_KEY.length > 10 && !API_KEY.startsWith("sk-your"));
 }
 

@@ -93,6 +93,7 @@ export interface BulkUploadState {
 
 export interface TeamMember {
   id: string;
+  userId?: string;
   name: string;
   email: string;
   phone?: string;

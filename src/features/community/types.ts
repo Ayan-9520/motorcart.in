@@ -85,3 +85,28 @@ export interface CommunityNotification {
   isRead: boolean;
   createdAt: string;
 }
+
+export interface SocialProfile {
+  id: string;
+  fullName: string;
+  email: string | null;
+  avatarUrl: string | null;
+  coverUrl: string | null;
+  bio: string | null;
+  handle: string | null;
+  role: string;
+  isVerified: boolean;
+  postCount: number;
+  followerCount: number;
+  followingCount: number;
+  isFollowing?: boolean;
+  isSelf?: boolean;
+}
+
+export interface SocialProfileUpdate {
+  fullName?: string;
+  bio?: string | null;
+  handle?: string | null;
+  avatarUrl?: string | null;
+  coverUrl?: string | null;
+}

@@ -10,8 +10,8 @@ export function QuickAccessSection() {
       <div className="container home-stack">
         <SectionHeader
           eyebrow="Quick access"
-          title="Everything you need, one tap away"
-          description="Buy, sell, finance, service, and grow — premium tools for buyers, dealers, and partners."
+          title="Cars · Bikes · Trucks · Auctions · Finance · Parts · Service · Community"
+          description="Jump to any part of the ecosystem — same platform for buyers, dealers, bankers & fleet owners."
           align="center"
         />
         <div className="quick-access-grid">

@@ -13,7 +13,7 @@ export function CommunityGroupsPage() {
   }, []);
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-10">
+    <div className="community-feed-page container mx-auto max-w-3xl px-4 py-8 pb-24 lg:pb-10">
       <Link to="/community" className="text-sm text-primary hover:underline">
         ← Feed
       </Link>

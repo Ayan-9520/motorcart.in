@@ -4,9 +4,10 @@ import { SERVICES_HUB_FEATURES } from "../data/services-hub-data";
 export function ServicesFintechStrip() {
   return (
     <section className="container pb-8">
-      <h2 className="services-hub-section-title text-center">Why Motorcart Services</h2>
-      <p className="mb-6 text-center text-sm text-muted-foreground">
-        Ride-hailing experience for car care — book, track, pay
+      <h2 className="services-hub-section-title text-center">Service experience, fintech-grade</h2>
+      <p className="mb-6 text-center text-sm text-muted-foreground md:max-w-2xl md:mx-auto">
+        Book like ride-hailing: live slots, OTP at the bay, transparent quotes &amp; secure checkout — for every
+        vehicle class from two-wheelers to fleets.
       </p>
       <ul className="services-features-grid">
         {SERVICES_HUB_FEATURES.map((f) => (

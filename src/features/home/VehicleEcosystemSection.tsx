@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight,
@@ -34,9 +34,13 @@ const CARD_TIER: Record<string, string> = {
 };
 
 export function VehicleEcosystemSection() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
   const { mode } = useHeroSearch();
   const hub = getHeroHubConfig(mode);
-  const items = VEHICLE_ECOSYSTEM.filter((item) => hub.ecosystemIds.includes(item.id));
+  const items = isHome
+    ? VEHICLE_ECOSYSTEM
+    : VEHICLE_ECOSYSTEM.filter((item) => hub.ecosystemIds.includes(item.id));
 
   if (!items.length) return null;
 
@@ -45,13 +49,17 @@ export function VehicleEcosystemSection() {
       <div className="container home-stack">
         <div className="text-center">
           <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-primary sm:text-xs">
-            {hub.label} marketplace
+            {isHome ? "Full marketplace" : `${hub.label} marketplace`}
           </p>
           <h2 className="mt-1.5 text-xl font-bold tracking-tight sm:text-2xl">
-            Everything for {hub.label.toLowerCase()} — one ecosystem
+            {isHome
+              ? "Buy, sell, finance, auction & service — every segment"
+              : `Everything for ${hub.label.toLowerCase()} — one ecosystem`}
           </h2>
           <p className="mx-auto mt-2 max-w-xl text-xs text-muted-foreground sm:text-sm">
-            {hub.browseFooter}
+            {isHome
+              ? "Cars lead Phase 1 — bikes, trucks, buses, auto & EV on the same platform."
+              : hub.browseFooter}
           </p>
         </div>
         <div className="ecosystem-grid">

@@ -1,17 +1,18 @@
-import type { LucideIcon } from "lucide-react";
+import type { HubCategorySlug } from "@/features/marketplace/types";
 import {
   CalendarClock,
   Car,
   CreditCard,
+  FileText,
   MapPin,
   MessageCircle,
   ShieldCheck,
   Smartphone,
+  Star,
   Truck,
   Wrench,
   Zap,
-  FileText,
-  Star,
+  type LucideIcon,
 } from "lucide-react";
 import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "../types";
 
@@ -65,17 +66,19 @@ export function servicesBrowsePath(params?: {
   city?: string;
   category?: ServiceCategorySlug | string;
   pickup?: boolean;
+  hub?: HubCategorySlug | null;
 }): string {
   const s = new URLSearchParams();
   if (params?.city) s.set("city", params.city);
   if (params?.category) s.set("category", params.category);
   if (params?.pickup) s.set("pickup", "1");
+  if (params?.hub) s.set("hub", params.hub);
   const qs = s.toString();
   return qs ? `/services/browse?${qs}` : "/services/browse";
 }
 
-export function servicesCategoryPath(slug: ServiceCategorySlug): string {
-  return `/services/browse?category=${slug}`;
+export function servicesCategoryPath(slug: ServiceCategorySlug, hub?: HubCategorySlug | null): string {
+  return servicesBrowsePath({ category: slug, hub: hub ?? undefined });
 }
 
 export { SERVICE_CATEGORIES };

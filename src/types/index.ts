@@ -1,4 +1,4 @@
-import type { AppRole, KycStatus } from "@/types/database";
+import type { AppRole, KycStatus, UserStatus } from "@/types/database";
 
 export type UserRole = AppRole;
 
@@ -9,6 +9,7 @@ export interface User {
   fullName: string;
   avatarUrl?: string;
   role: UserRole;
+  accountStatus: UserStatus;
   kycStatus: KycStatus;
   isVerified: boolean;
   city?: string;

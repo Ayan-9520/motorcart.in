@@ -60,8 +60,22 @@ export function Footer() {
             ))}
           </div>
         </div>
-        <p className="mt-12 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} {SITE_NAME}. All rights reserved. · Privacy · Terms
+        <p className="mt-12 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t border-border pt-8 text-center text-sm text-muted-foreground">
+          <span>© {new Date().getFullYear()} {SITE_NAME}. All rights reserved.</span>
+          <span className="hidden sm:inline" aria-hidden>
+            ·
+          </span>
+          <Link to="/privacy" className="hover:text-foreground hover:underline">
+            Privacy
+          </Link>
+          <span aria-hidden>·</span>
+          <Link to="/terms" className="hover:text-foreground hover:underline">
+            Terms
+          </Link>
+          <span aria-hidden>·</span>
+          <Link to="/faqs" className="hover:text-foreground hover:underline">
+            FAQs
+          </Link>
         </p>
       </div>
     </footer>

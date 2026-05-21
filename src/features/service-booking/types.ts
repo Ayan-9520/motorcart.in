@@ -1,4 +1,5 @@
 import type { BookingStatus } from "@/types/database";
+import type { HubCategorySlug } from "@/features/marketplace/types";
 
 export type ServiceCategorySlug =
   | "car-servicing"
@@ -58,6 +59,8 @@ export interface ServiceCenter {
   rating: number;
   reviewCount: number;
   servicesOffered: string[];
+  /** When set, center is listed for these vehicle hubs only; omit = all types */
+  vehicleHubs?: HubCategorySlug[];
   isVerified: boolean;
   isActive: boolean;
   images: string[];
@@ -118,4 +121,47 @@ export interface BookingAnalytics {
   pending: number;
   revenue: number;
   avgRating: number;
+}
+
+export interface WorkshopMechanic {
+  id: string;
+  serviceCenterId: string;
+  userId: string | null;
+  displayName: string;
+  phone: string | null;
+  specialization: string | null;
+  isActive: boolean;
+}
+
+export interface BookingTrackingEvent {
+  id: string;
+  bookingId: string;
+  step: string;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface ServiceInvoice {
+  id: string;
+  bookingId: string;
+  invoiceNumber: string;
+  subtotal: number;
+  gstAmount: number;
+  grandTotal: number;
+  status: string;
+  issuedAt: string | null;
+  lineItems: Record<string, unknown>[];
+}
+
+export interface VehicleServiceHistoryEntry {
+  id: string;
+  userId: string;
+  bookingId: string | null;
+  serviceName: string;
+  centerName: string | null;
+  vehicleDetails: Record<string, unknown>;
+  odometerKm: number | null;
+  totalAmount: number | null;
+  completedAt: string;
+  notes: string | null;
 }

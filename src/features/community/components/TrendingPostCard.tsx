@@ -1,21 +1,21 @@
 import { Link } from "react-router-dom";
 import {
   BadgeCheck,
+  Bookmark,
   Heart,
-  ImageIcon,
   MessageCircle,
+  MoreHorizontal,
   Share2,
   Star,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { CommunityHubPost } from "../data/community-hub-posts";
 
 const TAG_STYLES = {
   purchase:
-    "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800",
-  review:
-    "bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-200 dark:border-amber-800",
-  promotion:
-    "bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-950/40 dark:text-orange-200 dark:border-orange-800",
+    "community-premium-tag community-premium-tag-purchase",
+  review: "community-premium-tag community-premium-tag-review",
+  promotion: "community-premium-tag community-premium-tag-promo",
 } as const;
 
 interface TrendingPostCardProps {
@@ -27,12 +27,14 @@ export function TrendingPostCard({ post }: TrendingPostCardProps) {
   const tagClass = TAG_STYLES[post.tag.variant];
 
   return (
-    <article className="community-hub-post">
-      <div className="flex items-start justify-between gap-3">
+    <article className="community-premium-post">
+      <div className="community-premium-post-header">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="community-hub-avatar" aria-hidden>
-            {post.authorName.charAt(0)}
-          </span>
+          <div className="community-premium-post-avatar-ring">
+            <span className="community-premium-post-avatar" aria-hidden>
+              {post.authorName.charAt(0)}
+            </span>
+          </div>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="font-semibold text-foreground">{post.authorName}</span>
@@ -45,43 +47,50 @@ export function TrendingPostCard({ post }: TrendingPostCardProps) {
             </p>
           </div>
         </div>
-        <span className={`community-hub-tag ${tagClass}`}>
-          <TagIcon className="h-3 w-3 shrink-0" />
-          {post.tag.label}
-        </span>
+        <div className="flex shrink-0 items-start gap-2">
+          <span className={tagClass}>
+            <TagIcon className="h-3 w-3 shrink-0" />
+            {post.tag.label}
+          </span>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="More">
+            <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </div>
       </div>
 
-      <p className="community-hub-body">{post.body}</p>
+      <p className="community-premium-post-body">{post.body}</p>
 
       {post.imageUrl ? (
-        <Link to="/community" className="community-hub-media block overflow-hidden">
-          <img src={post.imageUrl} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <Link to="/community" className="community-premium-post-media group">
+          <img src={post.imageUrl} alt="" className="community-premium-post-media-img" loading="lazy" />
+          <span className="community-premium-post-media-shade" aria-hidden />
         </Link>
-      ) : (
-        <div className="community-hub-media community-hub-media-placeholder">
-          <ImageIcon className="h-10 w-10 text-muted-foreground/40" strokeWidth={1.25} />
-        </div>
-      )}
+      ) : null}
 
-      <div className="community-hub-post-footer">
-        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5">
+      <div className="community-premium-post-actions">
+        <div className="community-premium-post-stats">
+          <button type="button" className="community-premium-action community-premium-action-like">
             <Heart className="h-4 w-4" />
-            {post.likes}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
+            <span>{post.likes}</span>
+          </button>
+          <button type="button" className="community-premium-action">
             <MessageCircle className="h-4 w-4" />
-            {post.comments}
-          </span>
-          <span className="inline-flex items-center gap-1.5">
+            <span>{post.comments}</span>
+          </button>
+          <button type="button" className="community-premium-action">
             <Share2 className="h-4 w-4" />
-            {post.shares}
-          </span>
+            <span>{post.shares}</span>
+          </button>
         </div>
-        <span className="inline-flex items-center gap-1 text-sm font-semibold text-amber-600">
-          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-          {post.rating.toFixed(1)}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="community-premium-rating">
+            <Star className="h-4 w-4" />
+            {post.rating.toFixed(1)}
+          </span>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full" aria-label="Save">
+            <Bookmark className="h-4 w-4 text-muted-foreground" />
+          </Button>
+        </div>
       </div>
     </article>
   );

@@ -1,107 +1,147 @@
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Calculator, GitCompare, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { setPageMeta } from "@/utils/seo";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
+import { parseHubCategorySlug, buyListingPath } from "../lib/route-utils";
 import { BUY_HUB_CATEGORIES } from "../data/buy-hub-categories";
+import { getHubCopy } from "../data/marketplace-hub-config";
 import { HubCategoryCard } from "../components/HubCategoryCard";
-import { BuyCategoryIconRail } from "../components/BuyCategoryIconRail";
-
-const TRUST_STATS = [
-  { icon: TrendingUp, label: "2.5L+", sub: "Listings" },
-  { icon: Users, label: "8,500+", sub: "Dealers" },
-  { icon: ShieldCheck, label: "100%", sub: "RC verified" },
-  { icon: Sparkles, label: "AI", sub: "Fair price" },
-];
+import { MarketplaceHubHero } from "../components/MarketplaceHubHero";
+import type { HubCategorySlug } from "../types";
 
 export function BuyHubPage() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const activeHub = useVehicleHubStore((s) => s.activeHub);
+  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const copy = getHubCopy(activeHub);
+
+  const hubParam = searchParams.get("hub");
+  useEffect(() => {
+    const parsed = parseHubCategorySlug(hubParam ?? undefined);
+    if (parsed) setActiveHub(parsed);
+  }, [hubParam, setActiveHub]);
+
+  const activeCategory = useMemo(
+    () => BUY_HUB_CATEGORIES.find((c) => c.id === activeHub) ?? BUY_HUB_CATEGORIES[0],
+    [activeHub]
+  );
+
+  const otherCategories = useMemo(
+    () => BUY_HUB_CATEGORIES.filter((c) => c.id !== activeHub),
+    [activeHub]
+  );
+
   useEffect(() => {
     setPageMeta({
-      title: "Buy Vehicles — New & Pre-Owned",
-      description:
-        "Cars, bikes, trucks, buses, auto, equipment & EV — new and pre-owned with filters, verified dealers & EMI.",
+      title: `Buy ${copy.plural} — New & Pre-Owned`,
+      description: `Browse new and pre-owned ${copy.plural.toLowerCase()} with verified dealers, AI fair price & instant EMI on Motorcart.`,
     });
-  }, []);
+  }, [copy.plural]);
 
   return (
     <div className="buy-hub-page min-h-screen">
-      {/* Compact premium header — categories start higher on screen */}
-      <section className="buy-hub-top">
-        <div className="container">
-          <div className="buy-hub-top-inner">
-            <div className="buy-hub-top-copy">
-              <p className="marketplace-hub-eyebrow">Buy on Motorcart</p>
-              <h1 className="buy-hub-hero-title">Choose your vehicle</h1>
-              <p className="buy-hub-hero-sub">
-                All categories below — tap <strong className="text-foreground">New</strong> or{" "}
-                <strong className="text-foreground">Pre-Owned</strong> on any card
-              </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs" asChild>
-                  <Link to="/vehicles/compare">
-                    <GitCompare className="mr-1 h-3.5 w-3.5" />
-                    Compare
-                  </Link>
-                </Button>
-                <Button size="sm" variant="outline" className="h-8 rounded-lg text-xs" asChild>
-                  <Link to="/finance/compare">
-                    <Calculator className="mr-1 h-3.5 w-3.5" />
-                    EMI
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <ul className="buy-hub-stats-compact">
-              {TRUST_STATS.map(({ icon: Icon, label, sub }) => (
-                <li key={sub} className="buy-hub-stat-compact">
-                  <Icon className="h-3.5 w-3.5 text-primary" />
-                  <span>
-                    <strong>{label}</strong>
-                    <em>{sub}</em>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
+      <MarketplaceHubHero mode="buy" />
 
-          {/* All 7 categories — always visible icon row */}
-          <BuyCategoryIconRail categories={BUY_HUB_CATEGORIES} />
+      <section className="container py-6 md:py-8">
+        <div className="buy-hub-featured-header">
+          <div>
+            <h2 className="text-lg font-bold tracking-tight md:text-xl">
+              {copy.plural} for you
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              New launches &amp; certified pre-owned — tap a condition to browse
+            </p>
+          </div>
+          <ul className="buy-hub-stats-compact">
+            <li className="buy-hub-stat-compact">
+              <TrendingUp className="h-3.5 w-3.5 text-primary" />
+              <span>
+                <strong>{activeCategory.stats.new}</strong>
+                <em>New</em>
+              </span>
+            </li>
+            <li className="buy-hub-stat-compact">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+              <span>
+                <strong>{activeCategory.stats.used}</strong>
+                <em>Pre-Owned</em>
+              </span>
+            </li>
+            <li className="buy-hub-stat-compact">
+              <Users className="h-3.5 w-3.5 text-primary" />
+              <span>
+                <strong>8.5K+</strong>
+                <em>Dealers</em>
+              </span>
+            </li>
+          </ul>
+        </div>
+
+        <motion.div
+          key={activeHub}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mt-4"
+        >
+          <HubCategoryCard item={activeCategory} />
+        </motion.div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button className="rounded-xl shadow-[var(--shadow-primary)]" asChild>
+            <Link to={buyListingPath(activeHub, "new")}>
+              <Sparkles className="mr-1.5 h-4 w-4" />
+              New {copy.plural}
+            </Link>
+          </Button>
+          <Button variant="outline" className="rounded-xl" asChild>
+            <Link to={buyListingPath(activeHub, "used")}>
+              Browse pre-owned {copy.plural.toLowerCase()}
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
       </section>
 
-      {/* Full category cards — 4 + 3 layout, all on front */}
-      <section className="container pb-12 pt-4">
-        <div className="mb-4 flex items-center justify-between gap-2">
-          <h2 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
-            All categories · New &amp; Pre-Owned
-          </h2>
-          <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold text-primary">
-            7 types
-          </span>
-        </div>
-
+      <section className="container border-t border-border/70 pb-12 pt-2">
+        <h3 className="mb-4 text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          All vehicle types
+        </h3>
         <div className="buy-hub-grid-all">
-          {BUY_HUB_CATEGORIES.map((item, i) => (
+          {otherCategories.map((item, i) => (
             <motion.div
               key={item.id}
-              id={`category-${item.id}`}
-              className="buy-hub-grid-item scroll-mt-28"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.3 }}
+              transition={{ delay: i * 0.03 }}
+              className="buy-hub-grid-item"
             >
-              <HubCategoryCard item={item} compact />
+              <div
+                role="button"
+                tabIndex={0}
+                className="w-full cursor-pointer text-left"
+                onClick={() => {
+                  const hub = item.id as HubCategorySlug;
+                  setActiveHub(hub);
+                  navigate(`/buy?hub=${hub}`, { replace: true });
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    const hub = item.id as HubCategorySlug;
+                    setActiveHub(hub);
+                    navigate(`/buy?hub=${hub}`, { replace: true });
+                  }
+                }}
+              >
+                <HubCategoryCard item={item} compact />
+              </div>
             </motion.div>
           ))}
-        </div>
-
-        <div className="buy-hub-footer-cta mt-8 text-center">
-          <Button className="rounded-xl shadow-[var(--shadow-primary)]" asChild>
-            <Link to="/buy/cars/used">
-              Browse pre-owned cars <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
         </div>
       </section>
     </div>

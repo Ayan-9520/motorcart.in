@@ -16,8 +16,8 @@ export function PartsSection() {
       <div className="container home-stack">
         <SectionHeader
           eyebrow="Auto parts"
-          title="Genuine Parts Marketplace"
-          description="Tyres, brakes, batteries, and accessories from verified sellers with fast delivery."
+          title="Parts for cars, bikes & commercial vehicles"
+          description="OEM & aftermarket — tyres, brakes, batteries & accessories with pan-India delivery."
           href="/parts"
           linkLabel="Shop all parts"
         />

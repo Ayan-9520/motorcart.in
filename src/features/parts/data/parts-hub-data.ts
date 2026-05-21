@@ -1,3 +1,4 @@
+import type { HubCategorySlug } from "@/features/marketplace/types";
 import type { LucideIcon } from "lucide-react";
 import {
   Battery,
@@ -83,10 +84,11 @@ export function partsCategoryHref(slug: PartCategorySlug): string {
   return `/parts/${slug}`;
 }
 
-export function partsBrowsePath(params?: { q?: string; vehicle?: string }): string {
+export function partsBrowsePath(params?: { q?: string; vehicle?: string; hub?: HubCategorySlug | null }): string {
   const s = new URLSearchParams();
   if (params?.q) s.set("q", params.q);
   if (params?.vehicle && params.vehicle !== "All vehicles") s.set("vehicle", params.vehicle);
+  if (params?.hub) s.set("hub", params.hub);
   const qs = s.toString();
   return qs ? `/parts/browse?${qs}` : "/parts/browse";
 }

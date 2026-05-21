@@ -1,4 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
+import { RouteSuspense } from "@/layouts/RouteSuspense";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingButtons } from "@/components/layout/FloatingButtons";
@@ -7,18 +8,22 @@ import { GlobalSearchDialog } from "@/components/search/GlobalSearchDialog";
 
 export function PublicLayout() {
   const { pathname } = useLocation();
-  const hideDefaultFooter = pathname === "/community";
+  const isCommunity =
+    pathname === "/community" || pathname.startsWith("/community/");
+  const hideDefaultFooter = isCommunity;
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <Navbar />
       <main className="flex-1 pb-20 md:pb-0">
-        <Outlet />
+        <RouteSuspense>
+          <Outlet />
+        </RouteSuspense>
       </main>
       {!hideDefaultFooter && <Footer />}
       <FloatingButtons />
       <GlobalSearchDialog />
-      <MobileBottomNav />
+      {!isCommunity && <MobileBottomNav />}
     </div>
   );
 }

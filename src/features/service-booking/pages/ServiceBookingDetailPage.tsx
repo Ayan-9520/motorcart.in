@@ -20,40 +20,16 @@ import {
   fetchBookingById,
   fetchServiceById,
   fetchServiceCenterBySlug,
+  fetchServiceInvoice,
+  generateServiceInvoiceRpc,
   submitCenterReview,
   updateBookingRecord,
 } from "../services/service-booking.service";
-import type { ServiceBooking, ServiceCenter } from "../types";
-
-const STEPS = [
-  "scheduled",
-  "confirmed",
-  "mechanic_assigned",
-  "en_route",
-  "arrived",
-  "in_service",
-  "completed",
-] as const;
-
-function TrackingBar({ step }: { step: string }) {
-  const idx = STEPS.indexOf(step as (typeof STEPS)[number]);
-  const active = idx < 0 ? 0 : idx;
-  return (
-    <div className="space-y-2">
-      <div className="flex h-2 overflow-hidden rounded-full bg-muted">
-        {STEPS.map((_, i) => (
-          <div
-            key={i}
-            className={`flex-1 border-r border-zinc-950 last:border-0 ${i <= active ? "bg-primary" : ""}`}
-          />
-        ))}
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Status: <span className="font-medium text-primary">{step.replace(/_/g, " ")}</span>
-      </p>
-    </div>
-  );
-}
+import { ServiceTrackingTimeline } from "../components/ServiceTrackingTimeline";
+import { PickupDropCard } from "../components/PickupDropCard";
+import { ServiceInvoiceCard } from "../components/ServiceInvoiceCard";
+import { useBookingTracking } from "../hooks/useWorkshopDesk";
+import type { ServiceBooking, ServiceCenter, ServiceInvoice } from "../types";
 
 export function ServiceBookingDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -63,6 +39,9 @@ export function ServiceBookingDetailPage() {
   const [loading, setLoading] = useState(true);
   const [review, setReview] = useState({ rating: 5, title: "", content: "" });
   const [payBusy, setPayBusy] = useState(false);
+  const [invoice, setInvoice] = useState<ServiceInvoice | null>(null);
+  const [invoiceBusy, setInvoiceBusy] = useState(false);
+  const { events } = useBookingTracking(id);
 
   const load = useCallback(async () => {
     if (!id || !user?.id) {
@@ -77,6 +56,7 @@ export function ServiceBookingDetailPage() {
       if (b) {
         const svc = await fetchServiceById(b.serviceId);
         if (svc?.centerSlug) setCenter(await fetchServiceCenterBySlug(svc.centerSlug));
+        setInvoice(await fetchServiceInvoice(b.id));
       }
     } finally {
       setLoading(false);
@@ -157,7 +137,8 @@ export function ServiceBookingDetailPage() {
                 <h1 className="text-2xl font-bold text-foreground">{booking.serviceName ?? "Service"}</h1>
                 <p className="text-sm text-muted-foreground">{booking.centerName}</p>
                 <p className="text-sm text-muted-foreground">{formatSlotLabel(booking.scheduledAt)}</p>
-                <TrackingBar step={booking.trackingStep} />
+                <ServiceTrackingTimeline currentStep={booking.trackingStep} events={events} />
+                <PickupDropCard booking={booking} />
                 {booking.otpCode && (
                   <p className="text-sm text-muted-foreground">
                     Handover OTP: <span className="font-mono text-white">{booking.otpCode}</span>
@@ -195,6 +176,26 @@ export function ServiceBookingDetailPage() {
                     {booking.paymentStatus === "paid" ? "Paid" : "Pay now (demo)"}
                   </Button>
                 </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-border bg-card">
+              <CardContent className="space-y-3 p-6">
+                <h2 className="font-semibold text-foreground">Service invoice</h2>
+                <ServiceInvoiceCard
+                  invoice={invoice}
+                  generating={invoiceBusy}
+                  onGenerate={
+                    booking.status === "completed" || booking.trackingStep === "completed"
+                      ? async () => {
+                          setInvoiceBusy(true);
+                          const r = await generateServiceInvoiceRpc(booking.id);
+                          if (r.ok) setInvoice(await fetchServiceInvoice(booking.id));
+                          setInvoiceBusy(false);
+                        }
+                      : undefined
+                  }
+                />
               </CardContent>
             </Card>
 

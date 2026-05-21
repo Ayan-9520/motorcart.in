@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Search, SlidersHorizontal, X, ArrowRight, Sparkles } from "lucide-react";
 import { buildHeroBuyPath } from "@/features/home/data/homepage-data";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,16 @@ import {
 import { getHeroHubConfig } from "@/features/home/data/hero-hub-config";
 import { useHeroSearch } from "@/features/home/components/hero-search-context";
 import { cn } from "@/lib/utils";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
+import type { HubCategorySlug } from "@/features/marketplace/types";
+
+const HERO_MODE_TO_HUB: Partial<Record<HeroSearchMode, HubCategorySlug>> = {
+  cars: "cars",
+  bikes: "bikes",
+  trucks: "trucks",
+  buses: "buses",
+  auto: "auto",
+};
 
 const MODE_PLACEHOLDERS: Record<HeroSearchMode, string> = {
   cars: "Brand, model, variant — e.g. Creta SX, Swift VDI…",
@@ -61,6 +71,7 @@ function HeroFilterField({
 
 export function HeroSearchModule() {
   const navigate = useNavigate();
+  const isHome = useLocation().pathname === "/";
   const {
     mode,
     setMode,
@@ -78,6 +89,7 @@ export function HeroSearchModule() {
     hasFilters,
     clearFilters,
   } = useHeroSearch();
+  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
 
   const hub = getHeroHubConfig(mode);
   const activeTab = HERO_SEARCH_TABS.find((t) => t.id === mode) ?? HERO_SEARCH_TABS[0];
@@ -104,10 +116,14 @@ export function HeroSearchModule() {
               type="button"
               role="tab"
               aria-selected={isActive}
-              onClick={() => setMode(item.id)}
+              onClick={() => {
+                setMode(item.id);
+                const mapped = HERO_MODE_TO_HUB[item.id];
+                if (mapped) setActiveHub(mapped);
+              }}
               className={cn("hero-vehicle-tab", isActive && "hero-vehicle-tab-active")}
             >
-              <Icon className="h-4 w-4" strokeWidth={isActive ? 2.25 : 2} />
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" strokeWidth={isActive ? 2.25 : 2} />
               <span>{item.label}</span>
             </button>
           );
@@ -138,7 +154,7 @@ export function HeroSearchModule() {
         <div className="hero-filter-toolbar">
           <span className="hero-filter-toolbar-title">
             <SlidersHorizontal className="h-3.5 w-3.5 text-primary" />
-            Refine {hub.label.toLowerCase()}
+            {isHome ? "Search across ecosystem" : `Refine ${hub.label.toLowerCase()}`}
           </span>
           {hasFilters && (
             <button type="button" onClick={clearFilters} className="hero-filter-clear">

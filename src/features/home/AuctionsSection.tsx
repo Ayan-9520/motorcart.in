@@ -32,8 +32,8 @@ export function AuctionsSection() {
       <div className="container home-stack">
         <SectionHeader
           eyebrow="Live now"
-          title="Live Auctions"
-          description="Transparent bidding on certified vehicles with AI-powered fair market valuations."
+          title="Live auctions — cars, bikes & commercial"
+          description="Dealer inventory, bank repo & fleet disposals. Transparent bidding with AI fair-value for bankers and buyers."
           href="/auctions"
           linkLabel="All auctions"
         />

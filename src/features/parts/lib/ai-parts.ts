@@ -1,3 +1,5 @@
+import type { HubCategorySlug } from "@/features/marketplace/types";
+import { partMatchesVehicleHub } from "@/lib/vehicle-hub-catalog";
 import type { PartProduct } from "../types";
 
 export function scorePartForUser(part: PartProduct, hints: { vehicle?: string; category?: string }): number {
@@ -16,11 +18,13 @@ export function scorePartForUser(part: PartProduct, hints: { vehicle?: string; c
 
 export function recommendParts(
   catalog: PartProduct[],
-  hints: { vehicle?: string; category?: string },
+  hints: { vehicle?: string; category?: string; hub?: HubCategorySlug | null },
   limit = 6
 ): PartProduct[] {
-  return [...catalog]
-    .filter((p) => p.isActive && p.stock > 0)
+  const hub = hints.hub ?? null;
+  let pool = catalog.filter((p) => p.isActive && p.stock > 0);
+  if (hub) pool = pool.filter((p) => partMatchesVehicleHub(p, hub));
+  return [...pool]
     .map((p) => ({ p, s: scorePartForUser(p, hints) }))
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)

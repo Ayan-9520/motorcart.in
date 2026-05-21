@@ -28,7 +28,7 @@ export function ApplicationStatusTracker({ status, approvalProbability }: Applic
   const activeIdx = idx >= 0 ? idx : status === "draft" ? -1 : 0;
 
   return (
-    <div className="space-y-4">
+    <div className="fin-stages space-y-4">
       {approvalProbability != null && (
         <p className="text-sm">
           AI approval probability: <strong className="text-primary">{approvalProbability}%</strong>

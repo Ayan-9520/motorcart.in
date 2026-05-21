@@ -1,125 +1,93 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuthStore } from "@/store/authStore";
 import { formatSlotLabel } from "../lib/slots";
-import { useServiceHubData } from "../hooks/useServiceHubData";
-import { updateBookingRecord } from "../services/service-booking.service";
-import type { BookingStatus } from "@/types/database";
-import type { BookingTrackingStep, ServiceBooking } from "../types";
-
-const STATUSES: BookingStatus[] = ["pending", "confirmed", "in_progress", "completed", "cancelled"];
+import { WorkshopShell } from "../components/WorkshopShell";
+import { ServiceTrackingTimeline } from "../components/ServiceTrackingTimeline";
+import { PickupDropCard } from "../components/PickupDropCard";
+import { useWorkshopDesk } from "../hooks/useWorkshopDesk";
+import {
+  assignMechanicRpc,
+  generateServiceInvoiceRpc,
+  updateBookingTrackingRpc,
+} from "../services/service-booking.service";
+import type { BookingTrackingStep } from "../types";
+import toast from "react-hot-toast";
 
 export function ServiceHubBookingsPage() {
   const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === "admin";
-  const { centerId, bookings, loading, reload } = useServiceHubData(user?.id, isAdmin);
-  const [mechanicDraft, setMechanicDraft] = useState<Record<string, string>>({});
+  const { centerId, bookings, mechanics, loading, reload } = useWorkshopDesk(user?.id, user?.role === "admin");
+  const [expanded, setExpanded] = useState<string | null>(null);
 
-  const assignMechanic = async (b: ServiceBooking) => {
-    const raw = mechanicDraft[b.id]?.trim();
-    await updateBookingRecord(b.id, {
-      mechanicId: raw || null,
-      trackingStep: raw ? "mechanic_assigned" : b.trackingStep,
-    });
+  const assign = async (bookingId: string, mechanicId: string) => {
+    const r = await assignMechanicRpc(bookingId, mechanicId);
+    if (r.ok) {
+      toast.success("Mechanic assigned");
+      void reload();
+    } else toast.error(r.error ?? "Failed");
+  };
+
+  const advance = async (bookingId: string, step: BookingTrackingStep) => {
+    await updateBookingTrackingRpc(bookingId, step);
+    if (step === "completed") await generateServiceInvoiceRpc(bookingId);
+    toast.success(`Step: ${step}`);
     void reload();
   };
 
   if (loading) return <Skeleton className="h-64 w-full" />;
-
-  if (!centerId) {
-    return <p className="text-muted-foreground">Link a service center to your account to manage bookings.</p>;
-  }
+  if (!centerId) return <p className="text-muted-foreground">Link a service center to manage bookings.</p>;
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Booking management</h1>
-      <p className="text-sm text-muted-foreground">Assign technicians (user UUID), update status, coordinate pickup & drop.</p>
-      <Card>
-        <CardContent className="overflow-x-auto p-0">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left">
-              <tr>
-                <th className="p-3">Service</th>
-                <th className="p-3">Slot</th>
-                <th className="p-3">Status</th>
-                <th className="p-3">Tracking</th>
-                <th className="p-3 min-w-[200px]">Mechanic (user id)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bookings.map((b) => (
-                <tr key={b.id} className="border-b last:border-0">
-                  <td className="p-3">
-                    <p className="font-medium">{b.serviceName}</p>
-                    <Badge variant="outline" className="mt-1 text-xs">
-                      {b.id.slice(0, 8)}…
-                    </Badge>
-                  </td>
-                  <td className="p-3 text-muted-foreground">{formatSlotLabel(b.scheduledAt)}</td>
-                  <td className="p-3">
-                    <select
-                      className="h-9 w-full max-w-[140px] rounded-md border border-input bg-background px-2"
-                      value={b.status}
-                      onChange={async (e) => {
-                        await updateBookingRecord(b.id, { status: e.target.value as BookingStatus });
-                        void reload();
-                      }}
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                  </td>
-                  <td className="p-3">
-                    <select
-                      className="h-9 w-full max-w-[160px] rounded-md border border-input bg-background px-2"
-                      value={b.trackingStep}
-                      onChange={async (e) => {
-                        await updateBookingRecord(b.id, {
-                          trackingStep: e.target.value as BookingTrackingStep,
-                        });
-                        void reload();
-                      }}
-                    >
-                      {["scheduled", "confirmed", "mechanic_assigned", "en_route", "arrived", "in_service", "completed", "cancelled"].map(
-                        (s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        )
-                      )}
-                    </select>
-                  </td>
-                  <td className="p-3">
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <Input
-                        placeholder="Technician UUID"
-                        value={mechanicDraft[b.id] ?? b.mechanicId ?? ""}
-                        onChange={(e) => setMechanicDraft((d) => ({ ...d, [b.id]: e.target.value }))}
-                        className="h-9"
-                      />
-                      <Button size="sm" variant="secondary" type="button" onClick={() => assignMechanic(b)}>
-                        Save
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {bookings.length === 0 && <p className="p-6 text-muted-foreground">No bookings for this center.</p>}
-        </CardContent>
-      </Card>
-      <Button variant="outline" asChild>
-        <Link to="/services">View marketplace</Link>
-      </Button>
-    </div>
+    <WorkshopShell
+      title="Order management"
+      subtitle="Assign mechanics · update tracking · issue invoices · pickup & drop"
+      actions={
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/dashboard/service/calendar">Calendar view</Link>
+        </Button>
+      }
+    >
+      <ul className="space-y-4">
+        {bookings.map((b) => (
+          <li key={b.id} className="svc-booking-card">
+            <div className="flex flex-wrap justify-between gap-3">
+              <div>
+                <p className="font-semibold">{b.serviceName}</p>
+                <p className="text-sm text-muted-foreground">{formatSlotLabel(b.scheduledAt)}</p>
+                <Badge variant="outline" className="mt-1 capitalize">
+                  {b.status}
+                </Badge>
+              </div>
+              <Button size="sm" variant="ghost" onClick={() => setExpanded(expanded === b.id ? null : b.id)}>
+                {expanded === b.id ? "Hide" : "Manage"}
+              </Button>
+            </div>
+            <PickupDropCard booking={b} />
+            {expanded === b.id && (
+              <div className="mt-4 space-y-4 border-t pt-4">
+                <ServiceTrackingTimeline
+                  currentStep={b.trackingStep}
+                  editable
+                  onAdvance={(step) => void advance(b.id, step)}
+                />
+                <div className="flex flex-wrap gap-2">
+                  {mechanics.map((m) => (
+                    <Button key={m.id} size="sm" variant="outline" onClick={() => void assign(b.id, m.id)}>
+                      Assign {m.displayName}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </li>
+        ))}
+        {!bookings.length && (
+          <p className="text-center py-12 text-muted-foreground">No bookings yet</p>
+        )}
+      </ul>
+    </WorkshopShell>
   );
 }

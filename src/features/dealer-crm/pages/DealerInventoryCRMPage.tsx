@@ -21,6 +21,8 @@ import { formatCurrency } from "@/lib/utils";
 import { vehicleDetailPath } from "@/lib/vehicle-utils";
 import toast from "react-hot-toast";
 import { setPageMeta } from "@/utils/seo";
+import { suggestVehiclePrice } from "../services/dealer-enterprise.service";
+import { AIInventoryTips, AIPricingInsight } from "@/ai/ecosystem";
 
 export function DealerInventoryCRMPage() {
   const { dealer, user } = useDealer();
@@ -161,7 +163,9 @@ export function DealerInventoryCRMPage() {
           <TabsTrigger value="optimizer">AI optimizer</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="list" className="space-y-4 mt-4">
+        <TabsContent value="list" className="mt-4">
+          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(240px,280px)]">
+            <div className="space-y-4 min-w-0">
           {showForm && (
             <Card>
               <CardHeader>
@@ -184,13 +188,39 @@ export function DealerInventoryCRMPage() {
                   </div>
                 ))}
                 <div><Label>Year</Label><Input type="number" className="mt-1" value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} /></div>
-                <div><Label>Price (₹)</Label><Input type="number" className="mt-1" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} /></div>
+                <div>
+                  <Label>Price (₹)</Label>
+                  <Input type="number" className="mt-1" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-1 h-8 text-xs text-primary"
+                    onClick={() => {
+                      const s = suggestVehiclePrice({
+                        year: form.year,
+                        kmsDriven: form.kmsDriven,
+                        listedPrice: form.price || 500000,
+                        brand: form.brand,
+                      });
+                      setForm({ ...form, price: s.suggested });
+                      toast.success(`${formatCurrency(s.suggested)} · ${s.confidence}% confidence`);
+                    }}
+                  >
+                    AI price suggestion
+                  </Button>
+                </div>
                 <div><Label>KM driven</Label><Input type="number" className="mt-1" value={form.kmsDriven} onChange={(e) => setForm({ ...form, kmsDriven: Number(e.target.value) })} /></div>
                 <div><Label>Discount %</Label><Input type="number" className="mt-1" value={form.discount} onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })} /></div>
                 <div className="sm:col-span-2 lg:col-span-3 flex gap-2">
                   <Button variant="default" onClick={save}>Save listing</Button>
                   <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
                 </div>
+                {form.price > 0 && (
+                  <div className="sm:col-span-2 lg:col-span-3">
+                    <AIPricingInsight price={form.price} />
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -223,6 +253,11 @@ export function DealerInventoryCRMPage() {
                 No inventory yet. Add manually or bulk upload Excel.
               </Card>
             )}
+          </div>
+            </div>
+            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+              <AIInventoryTips vehicles={vehicles} />
+            </aside>
           </div>
         </TabsContent>
 

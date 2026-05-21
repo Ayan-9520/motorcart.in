@@ -1,3 +1,5 @@
+import type { HubCategorySlug } from "@/features/marketplace/types";
+
 export type PartCategorySlug =
   | "engine-parts"
   | "battery"
@@ -37,12 +39,22 @@ export type PartOrderStatus =
 
 export type PartPaymentMethod = "cod" | "online" | "whatsapp";
 
+export type PartOrigin = "oem" | "aftermarket" | "genuine_accessory";
+
+export const PART_ORIGIN_LABELS: Record<PartOrigin, string> = {
+  oem: "OEM Genuine",
+  aftermarket: "Aftermarket",
+  genuine_accessory: "Genuine Accessory",
+};
+
 export interface PartProduct {
   id: string;
   sellerId: string;
   name: string;
   slug: string;
   categorySlug: PartCategorySlug;
+  /** When set, part is shown only for these marketplace hubs; omit = fits all types */
+  vehicleHubs?: HubCategorySlug[];
   brand: string | null;
   price: number;
   originalPrice: number | null;
@@ -58,7 +70,29 @@ export interface PartProduct {
   isActive: boolean;
   description: string | null;
   sku: string | null;
+  partOrigin: PartOrigin;
+  mrp: number | null;
+  supplierSku: string | null;
   createdAt: string;
+}
+
+export interface PartsSupplierProfile {
+  id: string;
+  userId: string;
+  businessName: string;
+  gstin: string | null;
+  tier: "standard" | "preferred" | "oem_partner";
+  cities: string[];
+  isVerified: boolean;
+}
+
+export interface PartsSupplierAnalytics {
+  activeSkus: number;
+  lowStock: number;
+  oemCount: number;
+  aftermarketCount: number;
+  inventoryValue: number;
+  pendingOrders: number;
 }
 
 export interface PartReview {

@@ -73,3 +73,32 @@ export interface AuctionAnalytics {
   avgBidsPerAuction: number;
   reserveMetRate: number;
 }
+
+export type AuctionNotificationKind =
+  | "outbid"
+  | "winning"
+  | "won"
+  | "reserve_met"
+  | "auction_ended"
+  | "system";
+
+export interface AuctionNotification {
+  id: string;
+  auctionId: string;
+  userId: string;
+  kind: AuctionNotificationKind;
+  title: string;
+  body: string;
+  payload: Record<string, unknown>;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface PlaceBidResult {
+  ok: boolean;
+  error?: string;
+  bidId?: string;
+  amount?: number;
+  bidderName?: string;
+  extended?: boolean;
+}

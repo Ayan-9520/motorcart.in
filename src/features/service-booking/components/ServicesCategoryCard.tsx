@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Wrench,
   Hammer,
@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import type { ServiceCategory } from "../types";
 import { SERVICE_CATEGORY_IMAGES, servicesCategoryPath } from "../data/services-hub-data";
+import { parseVehicleHubParam } from "@/lib/vehicle-hub-catalog";
+import { useMemo } from "react";
 
 const ICONS: Record<string, LucideIcon> = {
   Wrench,
@@ -30,11 +32,13 @@ const ICONS: Record<string, LucideIcon> = {
 };
 
 export function ServicesCategoryCard({ category }: { category: ServiceCategory }) {
+  const [params] = useSearchParams();
+  const hub = useMemo(() => parseVehicleHubParam(params.get("hub")), [params]);
   const Icon = ICONS[category.icon] ?? Wrench;
   const image = SERVICE_CATEGORY_IMAGES[category.slug];
 
   return (
-    <Link to={servicesCategoryPath(category.slug)} className="services-category-card group">
+    <Link to={servicesCategoryPath(category.slug, hub)} className="services-category-card group">
       {image ? (
         <>
           <img src={image} alt="" className="services-category-bg" loading="lazy" />

@@ -104,7 +104,7 @@ export function BuyCategoryListingPage() {
           </div>
         </div>
 
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="hub-filter-rail mt-4">
           {BUY_HUB_CATEGORIES.map((cat) => (
             <Link
               key={cat.id}

@@ -4,9 +4,10 @@ import { PARTS_HUB_SERVICES } from "../data/parts-hub-data";
 export function PartsServicesStrip() {
   return (
     <section className="container pb-8">
-      <h2 className="parts-hub-section-title text-center">Why garages choose Motorcart</h2>
-      <p className="mb-6 text-center text-sm text-muted-foreground">
-        Fintech checkout · GST compliance · AI fitment · dealer wholesale
+      <h2 className="parts-hub-section-title text-center">Built for professional garages</h2>
+      <p className="mb-6 text-center text-sm text-muted-foreground md:max-w-2xl md:mx-auto">
+        Same stack you expect from a fintech: GST credit-ready invoices, slab wholesale pricing, COD &amp; online
+        settlement, and AI fitment — across cars, CV, trucks, buses &amp; equipment.
       </p>
       <ul className="parts-services-grid">
         {PARTS_HUB_SERVICES.map((s) => (

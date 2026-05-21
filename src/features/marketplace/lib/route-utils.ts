@@ -78,7 +78,7 @@ export function hubCategoryLabel(hub: HubCategorySlug): string {
     buses: "Buses",
     auto: "Auto",
     equipment: "Equipment",
-    ev: "Electric Vehicles",
+    ev: "EV",
   };
   return labels[hub];
 }

@@ -30,10 +30,10 @@ export function SupportChatWidget({ open, onOpenChange }: SupportChatWidgetProps
   return (
     <div
       className={cn(
-        "fixed bottom-56 right-4 z-50 flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-2xl md:bottom-40"
+        "ai-eco-chat fixed bottom-56 right-4 z-50 flex w-[min(calc(100vw-2rem),380px)] flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/95 shadow-2xl backdrop-blur-md md:bottom-40"
       )}
     >
-      <header className="flex items-center justify-between border-b border-border bg-primary px-4 py-3 text-white">
+      <header className="ai-eco-chat__head flex items-center justify-between border-b border-border/60 px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="ai-pulse" />
           <Bot className="h-5 w-5" />
@@ -44,13 +44,13 @@ export function SupportChatWidget({ open, onOpenChange }: SupportChatWidgetProps
         </Button>
       </header>
 
-      <div ref={scrollRef} className="flex max-h-72 flex-1 flex-col gap-3 overflow-y-auto p-4">
+      <div ref={scrollRef} className="ai-eco-chat__body flex max-h-72 flex-1 flex-col gap-3 overflow-y-auto p-4">
         {messages.map((m) => (
           <div
             key={m.id}
             className={cn(
-              "max-w-[90%] rounded-2xl px-3 py-2 text-sm",
-              m.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "bg-muted text-foreground"
+              "ai-eco-chat__bubble max-w-[90%] rounded-2xl px-3 py-2 text-sm",
+              m.role === "user" ? "ml-auto bg-primary text-primary-foreground" : "bg-muted/80 text-foreground"
             )}
           >
             {m.content}

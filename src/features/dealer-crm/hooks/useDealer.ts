@@ -19,6 +19,7 @@ export function useDealer() {
     if (!profile) {
       profile = await ensureDealerForUser(user.id, {
         fullName: user.fullName,
+        email: user.email,
         city: user.city,
         state: user.state,
         role: user.role,

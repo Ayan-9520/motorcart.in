@@ -6,6 +6,7 @@ import { formatCurrency } from "@/lib/utils";
 import type { PartProduct } from "../types";
 import { partDetailPath, displayUnitPrice } from "../lib/part-utils";
 import { PartImage, partImageSrc } from "./PartImage";
+import { PartOriginBadge } from "./PartOriginBadge";
 import type { AppRole } from "@/types/database";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -34,8 +35,9 @@ export function PartCard({ part, role: roleProp, index = 0 }: PartCardProps) {
             alt={part.name}
             className="transition-transform duration-500 group-hover:scale-105"
           />
+          <PartOriginBadge origin={part.partOrigin} className="absolute left-2.5 top-2.5" />
           {part.isFeatured && (
-            <Badge className="absolute left-2.5 top-2.5 border-0 bg-primary text-[10px] text-primary-foreground shadow-sm">
+            <Badge className="absolute left-2.5 top-9 border-0 bg-primary text-[10px] text-primary-foreground shadow-sm">
               Featured
             </Badge>
           )}

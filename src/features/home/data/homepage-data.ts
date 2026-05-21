@@ -434,18 +434,21 @@ export interface QuickAccessItem {
 
 export const QUICK_ACCESS: QuickAccessItem[] = [
   { label: "New Cars", href: "/new-cars", icon: Car, description: "45K+ models" },
-  { label: "Pre-Owned Cars", href: "/used-cars", icon: CarFront, description: "2.1L+ certified" },
-  { label: "Sell Cars", href: "/sell", icon: Store, description: "List in 5 min" },
-  { label: "Live Auctions", href: "/auctions", icon: Gavel, description: "142 live now" },
+  { label: "Pre-Owned", href: "/used-cars", icon: CarFront, description: "2.1L+ certified" },
+  { label: "Bikes", href: "/bikes", icon: Bike, description: "85K+ 2W" },
+  { label: "Trucks", href: "/trucks", icon: Truck, description: "Commercial" },
+  { label: "Buses", href: "/buses", icon: BusFront, description: "Fleet" },
+  { label: "Auto", href: "/auto", icon: CarTaxiFront, description: "3W" },
+  { label: "EV", href: "/ev", icon: Zap, description: "Electric" },
+  { label: "Live Auctions", href: "/auctions", icon: Gavel, description: "142 live" },
+  { label: "Community", href: "/community", icon: MessageCircle, description: "128K+ members" },
   { label: "Car Loans", href: "/finance", icon: Landmark, description: "14 lenders" },
-  { label: "EMI Calculator", href: "/finance/compare", icon: Calculator },
-  { label: "Compare Cars", href: "/vehicles/compare", icon: GitCompare },
-  { label: "Service Booking", href: "/services", icon: Wrench },
-  { label: "Spare Parts", href: "/parts", icon: Package },
-  { label: "Dealer Registration", href: "/dashboard/dealer", icon: Store },
-  { label: "AI Assistant", href: "/ai", icon: Bot },
-  { label: "Insurance", href: "/insurance", icon: Shield },
-  { label: "RC Transfer", href: "/services", icon: FileText },
+  { label: "Sell", href: "/sell", icon: Store, description: "List free" },
+  { label: "Parts", href: "/parts", icon: Package, description: "OEM parts" },
+  { label: "Service", href: "/services", icon: Wrench, description: "Book online" },
+  { label: "AI", href: "/ai", icon: Bot, description: "Smart search" },
+  { label: "Dealers", href: "/signup", icon: Store, description: "CRM" },
+  { label: "Compare", href: "/vehicles/compare", icon: GitCompare },
 ];
 
 export const BANK_OFFERS = [
@@ -497,8 +500,8 @@ export const FOOTER_COLUMNS = [
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Careers", href: "/about" },
-      { label: "Press", href: "/about" },
+      { label: "Careers", href: "/careers" },
+      { label: "Press", href: "/press" },
       { label: "Contact", href: "/contact" },
     ],
   },

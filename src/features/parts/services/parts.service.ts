@@ -1,7 +1,18 @@
+import type { HubCategorySlug } from "@/features/marketplace/types";
 import { supabase } from "@/integrations/supabase/client";
+import { partMatchesVehicleHub } from "@/lib/vehicle-hub-catalog";
 import type { DbPart, DbReview } from "@/types/database";
 import { MOCK_PARTS_CATALOG } from "../data/mock-parts-catalog";
-import type { PartCategorySlug, PartOrder, PartOrderItem, PartProduct, PartReview } from "../types";
+import type {
+  PartCategorySlug,
+  PartOrder,
+  PartOrderItem,
+  PartOrigin,
+  PartProduct,
+  PartReview,
+  PartsSupplierAnalytics,
+  PartsSupplierProfile,
+} from "../types";
 import { parseCategoryParam } from "../lib/part-utils";
 
 const SELLER_PLACEHOLDER = "00000000-0000-0000-0000-000000000001";
@@ -44,10 +55,14 @@ export function mapDbPart(row: DbPart & { description?: string; sku?: string; gs
     reviewCount: row.review_count,
     images: row.images?.length ? row.images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80"],
     compatibility: row.compatibility ?? [],
+    vehicleHubs: (row as { vehicle_hubs?: HubCategorySlug[] }).vehicle_hubs,
     isFeatured: row.is_featured,
     isActive: row.is_active,
     description: row.description ?? null,
     sku: row.sku ?? null,
+    partOrigin: ((row as { part_origin?: string }).part_origin as PartOrigin) ?? "aftermarket",
+    mrp: (row as { mrp?: number }).mrp != null ? Number((row as { mrp?: number }).mrp) : null,
+    supplierSku: (row as { supplier_sku?: string }).supplier_sku ?? null,
     createdAt: row.created_at,
   };
 }
@@ -62,6 +77,8 @@ export async function fetchParts(filters?: {
   category?: PartCategorySlug;
   search?: string;
   featured?: boolean;
+  hub?: HubCategorySlug | null;
+  origin?: PartOrigin;
 }): Promise<PartProduct[]> {
   let q = supabase.from("parts").select("*").eq("is_active", true).order("is_featured", { ascending: false });
   if (filters?.featured) q = q.eq("is_featured", true);
@@ -75,6 +92,7 @@ export async function fetchParts(filters?: {
   list = mergeCatalog(list);
 
   if (filters?.category) list = list.filter((p) => p.categorySlug === filters.category);
+  if (filters?.hub) list = list.filter((p) => partMatchesVehicleHub(p, filters.hub!));
   if (filters?.search) {
     const s = filters.search.toLowerCase();
     list = list.filter(
@@ -346,4 +364,40 @@ export async function updatePartStock(partId: string, stock: number) {
 export async function fetchSellerParts(sellerId: string): Promise<PartProduct[]> {
   const { data } = await supabase.from("parts").select("*").eq("seller_id", sellerId).order("updated_at", { ascending: false });
   return ((data ?? []) as DbPart[]).map((r) => mapDbPart(r as Parameters<typeof mapDbPart>[0]));
+}
+
+export function computeSupplierAnalytics(parts: PartProduct[], orders: PartOrder[]): PartsSupplierAnalytics {
+  return {
+    activeSkus: parts.filter((p) => p.isActive).length,
+    lowStock: parts.filter((p) => p.stock < 10).length,
+    oemCount: parts.filter((p) => p.partOrigin === "oem").length,
+    aftermarketCount: parts.filter((p) => p.partOrigin === "aftermarket").length,
+    inventoryValue: parts.reduce((s, p) => s + p.price * p.stock, 0),
+    pendingOrders: orders.filter((o) => o.status === "pending" || o.status === "confirmed").length,
+  };
+}
+
+export async function updatePartPricing(
+  partId: string,
+  patch: { price?: number; wholesale_price?: number; stock?: number; part_origin?: PartOrigin }
+) {
+  return supabase.from("parts").update(patch).eq("id", partId);
+}
+
+export async function updatePartOrderStatus(orderId: string, status: PartOrder["status"]) {
+  return supabase.from("part_orders").update({ status }).eq("id", orderId);
+}
+
+export async function fetchSupplierProfile(userId: string): Promise<PartsSupplierProfile | null> {
+  const { data } = await supabase.from("parts_supplier_profiles").select("*").eq("user_id", userId).maybeSingle();
+  if (!data) return null;
+  return {
+    id: data.id,
+    userId: data.user_id,
+    businessName: data.business_name,
+    gstin: data.gstin,
+    tier: data.tier as PartsSupplierProfile["tier"],
+    cities: data.cities ?? [],
+    isVerified: data.is_verified,
+  };
 }

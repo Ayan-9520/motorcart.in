@@ -7,3 +7,19 @@
 -- 00006_automotive_services.sql — Service hub, OTP, technician
 -- 00007_community_social.sql   — Social feed, moderation
 -- 00008_backend_completion.sql — vehicle_images, vehicle_specs, CRM, RLS fixes, realtime
+-- 00009a_app_role_super_admin.sql — commit super_admin enum (run before 00009)
+-- 00009_rbac_profiles_status_rls.sql — user_status, profiles view, finance/bookings RLS
+-- 00010_enterprise_auth_sessions_logs.sql — user_roles, device_sessions, activity_logs
+-- 00011_dealer_enterprise_os.sql — team, storefront, lead notes, auction entries, subscription plans
+-- 00012_auction_enterprise_realtime.sql — bid lock, finalize, notifications, anti-snipe
+-- 00013_finance_enterprise.sql — pipeline, leads, commissions, verifications, bank integrations
+-- 00014_automotive_ecosystem.sql — workshop, tracking, invoices, OEM parts, supplier profiles
+-- 00015_platform_admin.sql — CMS, banners, notifications, support tickets, fraud desk
+-- 00016_production_hardening.sql — support ticket policies, admin indexes
+-- 00017_ensure_device_session_rpc.sql — device_sessions RPC + RLS fallback
+-- 00018_profiles_table_to_view.sql — fix 42809 if profiles exists as TABLE
+-- 00019_fix_is_admin_super_admin.sql — fix 55P04 super_admin enum
+-- 00020_fix_generate_service_invoice.sql — fix 42601 INTO list in 00014
+-- 00021_fix_bookings_mechanic_columns.sql — fix 42703 mechanic_id if 00006 skipped
+-- 00022_signup_auth_trigger_fix.sql — fix "Database error saving new user" on signup
+-- 00023_community_full_social.sql — social profiles, community-media bucket

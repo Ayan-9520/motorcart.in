@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { useHeroSearch } from "@/features/home/components/hero-search-context";
-import { getHeroHubConfig, type HeroDashboardCard } from "@/features/home/data/hero-hub-config";
+import { getHeroHubConfig, getHomeHeroDashboard, type HeroDashboardCard } from "@/features/home/data/hero-hub-config";
 
 const fade = (delay: number) => ({
   initial: { opacity: 0, y: 14 },
@@ -103,7 +103,7 @@ function DashboardCard({ card, delay }: { card: HeroDashboardCard; delay: number
         </div>
         <p className="hero-dash-meta mt-2 line-clamp-2">{card.subtitle}</p>
         <Button variant="outline" size="sm" className="mt-auto w-full rounded-lg text-xs" asChild>
-          <Link to={card.href}>Ask AI</Link>
+          <Link to={card.href}>{card.href.includes("/community") ? "Open feed" : "Ask AI"}</Link>
         </Button>
       </motion.div>
     );
@@ -124,9 +124,14 @@ function DashboardCard({ card, delay }: { card: HeroDashboardCard; delay: number
 }
 
 export function HeroDashboardPanel() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
   const { mode } = useHeroSearch();
   const hub = getHeroHubConfig(mode);
-  const cards = hub.dashboard;
+  const homeDash = isHome ? getHomeHeroDashboard() : null;
+  const cards = homeDash?.cards ?? hub.dashboard;
+  const panelTitle = homeDash?.panelTitle ?? `${hub.label} dashboard`;
+  const dashboardTags = homeDash?.tags ?? hub.dashboardTags;
 
   return (
     <motion.div {...fade(0.1)} className="hero-intelligence-panel">
@@ -139,9 +144,7 @@ export function HeroDashboardPanel() {
             <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               Live intelligence
             </p>
-            <p className="text-sm font-bold tracking-tight text-foreground">
-              {hub.label} dashboard
-            </p>
+            <p className="text-sm font-bold tracking-tight text-foreground">{panelTitle}</p>
           </div>
         </div>
         <span className="hero-intelligence-live">
@@ -180,7 +183,7 @@ export function HeroDashboardPanel() {
       </div>
 
       <div className="hero-dashboard-tags">
-        {hub.dashboardTags.map((tag) => (
+        {dashboardTags.map((tag) => (
           <span key={tag} className="hero-dashboard-tag">
             {tag.includes("auction") ? <Gavel className="h-3 w-3" /> : null}
             {tag}
