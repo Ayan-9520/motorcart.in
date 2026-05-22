@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import type { HubCategorySlug } from "@/features/marketplace/types";
+import type { HubCategorySlug, VehicleConditionSlug } from "@/features/marketplace/types";
+import {
+  buyListingPath,
+  parseBuyMarketplaceRoute,
+  partsHubPath,
+  sellListingPath,
+  servicesHubPath,
+} from "@/features/marketplace/lib/route-utils";
 import { hubLandingPath } from "@/features/ecosystem/lib/hub-paths";
 import type { EcosystemHubSlug } from "@/features/ecosystem/types";
 
@@ -18,36 +25,67 @@ export function isPrimaryVehicleHub(hub: string): hub is EcosystemHubSlug {
   return PRIMARY_VEHICLE_HUBS.includes(hub as EcosystemHubSlug);
 }
 
-export function hubBuyPath(hub: HubCategorySlug): string {
-  return `/buy?hub=${hub}`;
+export function hubBuyPath(
+  hub: HubCategorySlug,
+  condition: VehicleConditionSlug = "used"
+): string {
+  return buyListingPath(hub, condition);
 }
 
 export function hubSellPath(hub: HubCategorySlug): string {
-  return `/sell?hub=${hub}`;
+  return sellListingPath(hub);
 }
 
-/** Dedicated ecosystem landing — Cars, Bikes, Trucks, etc. */
 export function hubEcosystemPath(hub: EcosystemHubSlug): string {
   return hubLandingPath(hub);
 }
 
-/** Buy/sell marketplace when already inside buy or sell flows */
-export function resolveHubMarketplacePath(pathname: string, hub: HubCategorySlug): string {
+/**
+ * Hub switch target — preserves new/used on buy flows and ?hub= on parts/services.
+ */
+export function resolveHubMarketplacePath(
+  pathname: string,
+  hub: HubCategorySlug,
+  condition?: VehicleConditionSlug,
+  search = ""
+): string {
+  const searchParams = search.startsWith("?")
+    ? new URLSearchParams(search.slice(1))
+    : new URLSearchParams(search);
+  const cond =
+    condition ??
+    parseBuyMarketplaceRoute(pathname, searchParams)?.condition ??
+    useVehicleHubStore.getState().activeCondition;
+
+  if (pathname.startsWith("/parts")) return partsHubPath(hub);
+  if (pathname.startsWith("/services")) return servicesHubPath(hub);
   if (pathname.startsWith("/sell")) return hubSellPath(hub);
-  if (pathname.startsWith("/buy")) return hubBuyPath(hub);
+  if (
+    pathname.startsWith("/buy") ||
+    pathname.startsWith("/new-cars") ||
+    pathname.startsWith("/used-cars")
+  ) {
+    return hubBuyPath(hub, cond);
+  }
   return hubEcosystemPath(hub as EcosystemHubSlug);
 }
 
 interface VehicleHubState {
   activeHub: HubCategorySlug;
+  activeCondition: VehicleConditionSlug;
   setActiveHub: (hub: HubCategorySlug) => void;
+  setActiveCondition: (condition: VehicleConditionSlug) => void;
+  setBuyContext: (hub: HubCategorySlug, condition: VehicleConditionSlug) => void;
 }
 
 export const useVehicleHubStore = create<VehicleHubState>()(
   persist(
     (set) => ({
       activeHub: "cars",
+      activeCondition: "used",
       setActiveHub: (activeHub) => set({ activeHub }),
+      setActiveCondition: (activeCondition) => set({ activeCondition }),
+      setBuyContext: (activeHub, activeCondition) => set({ activeHub, activeCondition }),
     }),
     { name: "motorcart-vehicle-hub" }
   )

@@ -89,12 +89,13 @@ export function HeroSearchModule() {
     hasFilters,
     clearFilters,
   } = useHeroSearch();
-  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const activeCondition = useVehicleHubStore((s) => s.activeCondition);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
 
   const hub = getHeroHubConfig(mode);
   const activeTab = HERO_SEARCH_TABS.find((t) => t.id === mode) ?? HERO_SEARCH_TABS[0];
   const searchPath = buildHeroSearchPath(mode, query, filters);
-  const buyHubPath = heroBuyHubHref(mode);
+  const buyHubPath = heroBuyHubHref(mode, activeCondition);
   const cities = SEARCH_CITY_SUGGESTIONS;
 
   const onSearch = (e?: React.FormEvent) => {
@@ -119,7 +120,7 @@ export function HeroSearchModule() {
               onClick={() => {
                 setMode(item.id);
                 const mapped = HERO_MODE_TO_HUB[item.id];
-                if (mapped) setActiveHub(mapped);
+                if (mapped) setBuyContext(mapped, activeCondition);
               }}
               className={cn("hero-vehicle-tab", isActive && "hero-vehicle-tab-active")}
             >
@@ -140,7 +141,7 @@ export function HeroSearchModule() {
             {quickSuggestions.map((pick) => (
               <Link
                 key={pick.id}
-                to={buildHeroBuyPath(pick.mode, pick.query, filters)}
+                to={buildHeroBuyPath(pick.mode, pick.query, filters, activeCondition)}
                 className="hero-suggestion-chip"
               >
                 {pick.title}

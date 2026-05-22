@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   BarChart3,
+  Bell,
   Car,
   Gavel,
   IndianRupee,
-  Landmark,
-  MessageCircle,
-  Phone,
+  Percent,
   TrendingUp,
   Users,
   ArrowRight,
-  Shield,
-  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "../components/StatCard";
 import { LeadTable } from "../components/LeadTable";
 import { DealerConsoleShell } from "../components/DealerConsoleShell";
+import { DealerNotificationsPanel } from "../components/DealerNotificationsPanel";
 import { useDealerCRM } from "../hooks/useDealerCRM";
 import { useDealer } from "../hooks/useDealer";
 import {
@@ -26,6 +24,7 @@ import {
   fetchDealerEnterprise,
   fetchDealerFinanceStats,
 } from "../services/dealer-enterprise.service";
+import { buildDealerNotifications, summarizeAnalytics } from "../lib/dealer-analytics";
 import { planFromTier } from "../data/subscription-plans";
 import { DEALER_TYPE_LABELS, type DealerType } from "../types";
 import { formatCurrency } from "@/lib/utils";
@@ -35,17 +34,27 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, L
 const QUICK_LINKS = [
   { label: "Inventory", href: "/dashboard/dealer/inventory", icon: Car },
   { label: "Lead CRM", href: "/dashboard/dealer/leads", icon: Users },
-  { label: "Finance", href: "/dashboard/dealer/finance", icon: Landmark },
   { label: "Auctions", href: "/dashboard/dealer/auctions", icon: Gavel },
-  { label: "Verification", href: "/dashboard/dealer/verification", icon: Shield },
-  { label: "Plans", href: "/dashboard/dealer/subscription", icon: Crown },
+  { label: "Analytics", href: "/dashboard/dealer/analytics", icon: BarChart3 },
 ];
 
 export function DealerOverviewPage() {
-  const { dealer: crmDealer, stats, leads, listingPerformance, loading, refetch } = useDealerCRM();
+  const { dealer: crmDealer, stats, leads, listingPerformance, loading, refetch, vehicles } = useDealerCRM();
   const { dealer } = useDealer();
   const [tier, setTier] = useState("free");
-  const [analytics, setAnalytics] = useState<ReturnType<typeof buildAnalyticsFromData> | null>(null);
+  const [auctionCount, setAuctionCount] = useState(0);
+  const [chartLeads, setChartLeads] = useState<{ month: string; leads: number }[]>([]);
+  const [chartRevenue, setChartRevenue] = useState<{ month: string; revenue: number }[]>([]);
+
+  const analytics = useMemo(
+    () => summarizeAnalytics(stats, listingPerformance, leads, vehicles),
+    [stats, listingPerformance, leads, vehicles]
+  );
+
+  const notifications = useMemo(
+    () => buildDealerNotifications(leads, auctionCount, stats.newLeads),
+    [leads, auctionCount, stats.newLeads]
+  );
 
   useEffect(() => {
     setPageMeta({ title: "Dealer OS" });
@@ -55,16 +64,17 @@ export function DealerOverviewPage() {
       if (ent) setTier(ent.subscriptionTier);
       const finance = await fetchDealerFinanceStats(dealer.id);
       const auctions = await fetchDealerAuctionEntries(dealer.id);
-      setAnalytics(
-        buildAnalyticsFromData(
-          leads.map((l) => ({ status: l.status, created_at: l.createdAt })),
-          [],
-          finance,
-          auctions.length
-        )
+      setAuctionCount(auctions.length);
+      const built = buildAnalyticsFromData(
+        leads.map((l) => ({ status: l.status, created_at: l.createdAt })),
+        [],
+        finance,
+        auctions.length
       );
+      setChartLeads(built.monthlyLeads);
+      setChartRevenue(built.monthlyRevenue);
     })();
-  }, [dealer, leads]);
+  }, [dealer, leads, listingPerformance]);
 
   if (loading) {
     return <p className="text-muted-foreground">Loading dealer OS…</p>;
@@ -74,24 +84,16 @@ export function DealerOverviewPage() {
     ? DEALER_TYPE_LABELS[crmDealer.dealerType as DealerType] ?? crmDealer.dealerType
     : "Dealer";
   const plan = planFromTier(tier);
-  const chartLeads = analytics?.monthlyLeads ?? [];
-  const chartRevenue = analytics?.monthlyRevenue ?? [];
 
   return (
     <DealerConsoleShell
       title={crmDealer?.name ?? "Dealer OS"}
       description={`${typeLabel} · ${crmDealer?.city}, ${crmDealer?.state} · ${plan.name} plan`}
+      crumbs={[{ label: "Overview" }]}
       actions={
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link to={`/dealers/${crmDealer?.slug ?? ""}`} target="_blank">
-              Storefront
-            </Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/dashboard/dealer/leads">Open CRM</Link>
-          </Button>
-        </div>
+        <Button size="sm" asChild>
+          <Link to="/dashboard/dealer/leads">Open CRM</Link>
+        </Button>
       }
     >
       <div className="dealer-os-quick-grid">
@@ -104,26 +106,34 @@ export function DealerOverviewPage() {
         ))}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active listings" value={stats.activeListings} icon={Car} change={`${stats.totalListings} total`} />
-        <StatCard label="New leads" value={stats.newLeads} icon={Users} trend="up" change={`${stats.conversionRate}% conv.`} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Revenue (MTD)" value={formatCurrency(stats.revenueMtd)} icon={IndianRupee} />
-        <StatCard label="Sold units" value={stats.soldListings} icon={TrendingUp} />
+        <StatCard label="Leads" value={stats.totalLeads} icon={Users} change={`${stats.newLeads} new`} />
+        <StatCard label="Vehicles live" value={stats.activeListings} icon={Car} change={`${stats.totalListings} total`} />
+        <StatCard label="Conversion" value={`${stats.conversionRate}%`} icon={Percent} trend="up" />
+        <StatCard label="Active auctions" value={auctionCount} icon={Gavel} />
+        <StatCard
+          label="Notifications"
+          value={notifications.length}
+          icon={Bell}
+          change={`${stats.whatsappChats} WA clicks`}
+        />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Finance in progress" value={analytics?.financePending ?? 0} icon={Landmark} />
-        <StatCard label="Loans approved" value={analytics?.financeApproved ?? 0} icon={Landmark} />
-        <StatCard label="Auction lots" value={analytics?.auctionActive ?? 0} icon={Gavel} />
-        <StatCard label="Calls tracked" value={stats.callsTracked} icon={Phone} />
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2 grid gap-4 sm:grid-cols-2">
+          <StatCard label="Follow-up pipeline" value={stats.followUpLeads} icon={TrendingUp} change={`${stats.lostLeads} lost`} />
+          <StatCard label="Sold units" value={stats.soldListings} icon={Car} change={`${stats.featuredListings} featured`} />
+        </div>
+        <DealerNotificationsPanel items={notifications} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="dealer-os-card">
-          <h2 className="font-semibold text-lg mb-4">Lead pipeline</h2>
+          <h2 className="font-semibold text-lg mb-4">Lead pipeline (6 mo)</h2>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartLeads}>
+              <BarChart data={chartLeads.length ? chartLeads : analytics.monthlyLeads}>
                 <XAxis dataKey="month" fontSize={11} />
                 <YAxis fontSize={11} />
                 <Tooltip />
@@ -133,10 +143,10 @@ export function DealerOverviewPage() {
           </div>
         </div>
         <div className="dealer-os-card">
-          <h2 className="font-semibold text-lg mb-4">Sales trend (₹ Lakhs)</h2>
+          <h2 className="font-semibold text-lg mb-4">Monthly sales (₹ Lakhs)</h2>
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={chartRevenue}>
+              <LineChart data={chartRevenue.length ? chartRevenue : analytics.monthlyRevenue}>
                 <XAxis dataKey="month" fontSize={11} />
                 <YAxis fontSize={11} />
                 <Tooltip />
@@ -149,18 +159,16 @@ export function DealerOverviewPage() {
 
       <div className="dealer-os-card">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-semibold flex items-center gap-2">
-            <BarChart3 className="h-5 w-5 text-primary" /> Recent leads
-          </h2>
+          <h2 className="font-semibold">Recent leads</h2>
           <Button variant="ghost" size="sm" asChild>
-            <Link to="/dashboard/dealer/leads">View pipeline</Link>
+            <Link to="/dashboard/dealer/leads">View CRM</Link>
           </Button>
         </div>
         <LeadTable leads={leads.slice(0, 6)} onStatusChange={() => refetch()} />
       </div>
 
       <div className="dealer-os-card">
-        <h2 className="font-semibold mb-3">Listing performance</h2>
+        <h2 className="font-semibold mb-3">Hot inventory</h2>
         <table className="dealer-os-table">
           <thead>
             <tr>
@@ -171,7 +179,7 @@ export function DealerOverviewPage() {
             </tr>
           </thead>
           <tbody>
-            {listingPerformance.slice(0, 5).map((p) => (
+            {analytics.hotInventory.slice(0, 5).map((p) => (
               <tr key={p.vehicleId}>
                 <td className="font-medium max-w-[200px] truncate">{p.title}</td>
                 <td>{p.views.toLocaleString()}</td>
@@ -181,16 +189,6 @@ export function DealerOverviewPage() {
             ))}
           </tbody>
         </table>
-      </div>
-
-      <div className="dealer-os-card flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2 text-sm">
-          <MessageCircle className="h-4 w-4 text-primary" />
-          <span>{stats.whatsappChats} WhatsApp conversations (est.)</span>
-        </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link to="/dashboard/dealer/whatsapp">WhatsApp desk</Link>
-        </Button>
       </div>
     </DealerConsoleShell>
   );

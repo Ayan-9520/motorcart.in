@@ -154,7 +154,7 @@ export const PHASE1_ECOSYSTEM_DASHBOARD: HeroDashboardCard[] = [
     price: 1485000,
     meta: "Certified · Mumbai",
     href: "/used-cars",
-    image: "https://images.unsplash.com/photo-1617788138017-80837c34d4af?w=400&q=80",
+    image: "https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800",
     badge: "Pre-owned",
   },
   {

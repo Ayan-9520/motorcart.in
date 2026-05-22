@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight } from "lucide-react";
@@ -27,6 +28,10 @@ export function PreownedCarsListingPage() {
     clearFilters,
     searchParams,
   } = usePreownedCarSearch();
+
+  useEffect(() => {
+    useVehicleHubStore.getState().setBuyContext("cars", "used");
+  }, []);
 
   useEffect(() => {
     setPageMeta({

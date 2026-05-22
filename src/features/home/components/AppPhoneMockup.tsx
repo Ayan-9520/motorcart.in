@@ -2,7 +2,7 @@ import { Bell, Car, Gavel, Home, Search, User } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 const CAR_IMG =
-  "https://images.unsplash.com/photo-1617788138017-80837c34d4af?auto=format&fit=crop&w=400&q=80";
+  "https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800";
 
 function PhoneFrame({
   children,

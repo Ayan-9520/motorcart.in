@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { formatCurrency } from "@/lib/utils";
 import { FinanceSubpageShell } from "../components/FinanceSubpageShell";
 import { FinanceSubpageQuickLinks } from "../components/FinanceSubpageQuickLinks";
+import { FeaturedPartnerBanksStrip } from "../components/FeaturedPartnerBanksStrip";
 import { financeCategoryLabel, parseFinanceType } from "../lib/finance-hub-routes";
 
 export function FinanceMarketplacePage() {
@@ -50,7 +51,9 @@ export function FinanceMarketplacePage() {
     >
       <FinanceSubpageQuickLinks active="offers" loanType={loanType} />
 
-      <div className="finance-offers-banner mb-6 flex flex-wrap items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
+      <FeaturedPartnerBanksStrip applyHref={applyHref} compact />
+
+      <div className="finance-offers-banner mb-6 mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
         <Building2 className="h-5 w-5 shrink-0 text-primary" />
         <p className="text-sm text-muted-foreground">
           {loanType ? (

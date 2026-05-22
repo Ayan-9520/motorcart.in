@@ -14,6 +14,8 @@ import { AIRecommendations } from "@/features/vehicles/components/AIRecommendati
 import { setPageMeta } from "@/utils/seo";
 import { BUY_HUB_CATEGORIES } from "../data/buy-hub-categories";
 import { buyListingPath, hubCategoryLabel } from "../lib/route-utils";
+import { VEHICLE_SEGMENT_LABELS } from "@/lib/media/vehicle-media-registry";
+import type { VehicleSegment } from "@/lib/media/vehicle-media-registry";
 import { useBuyCategoryListing } from "../hooks/useBuyCategoryListing";
 import type { VehicleConditionSlug } from "../types";
 
@@ -57,15 +59,26 @@ export function BuyCategoryListingPage() {
 
   const hubLabel = hubCategoryLabel(hub);
 
+  const segmentLabel = VEHICLE_SEGMENT_LABELS[hub as VehicleSegment] ?? hubLabel;
+
   return (
     <div className="marketplace-listing-page min-h-screen">
+      <div className="marketplace-listing-hero-band">
+        <div className="container py-8 md:py-10">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">{segmentLabel}</p>
+          <h1 className="marketplace-listing-hero-title mt-1">{title}</h1>
+          <p className="mt-2 max-w-xl text-sm text-muted-foreground">
+            {total}+ listings · verified dealers · filters for brand, budget, fuel, EMI & city
+          </p>
+        </div>
+      </div>
       <motion.div className="container py-6 md:py-8">
         <nav className="marketplace-breadcrumb mb-4 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
           <Link to="/buy" className="hover:text-primary">
             Buy
           </Link>
           <ChevronRight className="h-3 w-3" />
-          <Link to={buyListingPath(hub, "new")} className="hover:text-primary">
+          <Link to={buyListingPath(hub, condition)} className="hover:text-primary">
             {hubLabel}
           </Link>
           <ChevronRight className="h-3 w-3" />
@@ -74,8 +87,7 @@ export function BuyCategoryListingPage() {
 
         <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="marketplace-listing-title">{title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Premium listings · verified dealers · instant EMI
               {searchParams.get("q") ? (
                 <span className="text-foreground">
@@ -141,7 +153,12 @@ export function BuyCategoryListingPage() {
                 ← Back to results
               </button>
             )}
-            <VehicleFilters filters={filterRecord} onFilter={setFilter} onClear={resetHubFilters} />
+            <VehicleFilters
+              hub={hub}
+              filters={filterRecord}
+              onFilter={setFilter}
+              onClear={resetHubFilters}
+            />
           </aside>
 
           <div className="min-w-0 flex-1 space-y-5">

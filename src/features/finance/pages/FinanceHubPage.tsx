@@ -47,6 +47,24 @@ const QUICK_TOOLS = [
     href: "/finance/compare?type=refinance",
     icon: TrendingDown,
   },
+  {
+    title: "Track application",
+    desc: "Status & bank updates",
+    href: "/dashboard/customer/loans",
+    icon: Clock,
+  },
+  {
+    title: "Bank integrations",
+    desc: "Partner API status",
+    href: "/finance/integrations",
+    icon: ShieldCheck,
+  },
+  {
+    title: "Car & bike insurance",
+    desc: "Instant quote · 6 insurers",
+    href: "/insurance",
+    icon: ShieldCheck,
+  },
 ];
 
 export function FinanceHubPage() {
@@ -99,7 +117,7 @@ export function FinanceHubPage() {
       </section>
 
       <section className="container pb-4 pt-2">
-        <div className="finance-quick-tools grid gap-3 sm:grid-cols-3">
+        <div className="finance-quick-tools grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
           {QUICK_TOOLS.map((tool) => (
             <Link key={tool.href} to={tool.href} className="finance-quick-tool group">
               <tool.icon className="h-5 w-5 text-primary" />

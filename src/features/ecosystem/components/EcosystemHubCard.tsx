@@ -12,8 +12,11 @@ export function EcosystemHubCard({ hub }: EcosystemHubCardProps) {
 
   return (
     <Link to={hubLandingPath(hub.slug)} className="eco-hub-card group">
-      <span className="eco-hub-card-icon">
-        <Icon className="h-7 w-7" strokeWidth={1.65} />
+      <span className="eco-hub-card-thumb">
+        <img src={hub.heroImage} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />
+        <span className="eco-hub-card-thumb-icon">
+          <Icon className="h-6 w-6" strokeWidth={1.65} />
+        </span>
       </span>
       <span className="eco-hub-card-body">
         <span className="eco-hub-card-label">{hub.label}</span>

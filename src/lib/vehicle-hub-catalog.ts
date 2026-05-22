@@ -1,8 +1,5 @@
 import type { HubCategorySlug } from "@/features/marketplace/types";
-import { optimizeImageUrl, unsplash } from "@/lib/media-urls";
-
-const hero = (photoId: string) =>
-  optimizeImageUrl(unsplash(photoId, 900), { w: 480, h: 320, q: 82 });
+import { HUB_HERO_IMAGES } from "@/lib/media/india-media-catalog";
 
 /** Vehicle segments for parts & services — aligned with marketplace hubs */
 export const VEHICLE_HUB_ENTRIES: readonly {
@@ -15,43 +12,43 @@ export const VEHICLE_HUB_ENTRIES: readonly {
     id: "cars",
     label: "Cars",
     tagline: "Hatchback to SUV",
-    heroImage: hero("photo-1492144534655-ae79c964c9d7"),
+    heroImage: HUB_HERO_IMAGES.cars,
   },
   {
     id: "bikes",
     label: "Bikes",
     tagline: "2W & scooters",
-    heroImage: hero("photo-1558981806-6f4c4215d264"),
+    heroImage: HUB_HERO_IMAGES.bikes,
   },
   {
     id: "auto",
     label: "Auto",
     tagline: "Commercial & taxi",
-    heroImage: hero("photo-1544620347-c4fd4a3d5957"),
+    heroImage: HUB_HERO_IMAGES.auto,
   },
   {
     id: "trucks",
     label: "Trucks",
     tagline: "LCV & HCV",
-    heroImage: hero("photo-1586191582150-76830be2127c"),
+    heroImage: HUB_HERO_IMAGES.trucks,
   },
   {
     id: "buses",
     label: "Buses",
     tagline: "Fleet & coach",
-    heroImage: hero("photo-1533105079780-92b9be482077"),
+    heroImage: HUB_HERO_IMAGES.buses,
   },
   {
     id: "equipment",
     label: "Equipment",
     tagline: "Earthmoving & agri",
-    heroImage: hero("photo-1581094794329-c8112a89af12"),
+    heroImage: HUB_HERO_IMAGES.equipment,
   },
   {
     id: "ev",
     label: "EV",
     tagline: "Electric vehicles",
-    heroImage: hero("photo-1593941707879-2c2b2cd97e2a"),
+    heroImage: HUB_HERO_IMAGES.ev,
   },
 ] as const;
 

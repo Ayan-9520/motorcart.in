@@ -5,6 +5,9 @@ import type {
   VehicleListing,
   VehicleSortOption,
 } from "@/types/vehicle";
+import type { HubCategorySlug, VehicleConditionSlug } from "@/features/marketplace/types";
+import { buyDetailPath, buyListingPath } from "@/features/marketplace/lib/route-utils";
+import { inferVehicleSegment } from "@/lib/media/vehicle-media-registry";
 
 const CATEGORY_MAP: Record<VehicleCategory, { condition?: string; fuel?: string; bodyTypes?: string[] }> = {
   "new-cars": { condition: "new" },
@@ -29,10 +32,58 @@ export function preownedDetailPath(slug: string): string {
   return `/used-cars/${slug}`;
 }
 
-export function vehicleDetailPath(vehicle: Pick<VehicleListing, "slug" | "category">): string {
-  if (vehicle.category === "new-cars") return newCarDetailPath(vehicle.slug);
-  if (vehicle.category === "used-cars") return preownedDetailPath(vehicle.slug);
-  return `/vehicles/${vehicle.category}/${vehicle.slug}`;
+/** Map listing → canonical buy hub + condition */
+export function inferBuyHubFromVehicle(
+  vehicle: Pick<VehicleListing, "slug" | "category" | "bodyType" | "condition" | "fuelType">
+): { hub: HubCategorySlug; condition: VehicleConditionSlug } {
+  const seg = inferVehicleSegment({
+    brand: "",
+    model: "",
+    bodyType: vehicle.bodyType,
+    category: vehicle.category,
+    fuelType: vehicle.fuelType,
+  });
+
+  const hubMap: Record<string, HubCategorySlug> = {
+    cars: "cars",
+    bikes: "bikes",
+    trucks: "trucks",
+    buses: "buses",
+    ev: "ev",
+    auto: "auto",
+    equipment: "equipment",
+  };
+
+  const hub = hubMap[seg] ?? "cars";
+  let condition: VehicleConditionSlug =
+    vehicle.condition === "new" ? "new" : "used";
+
+  if (hub === "cars") {
+    if (vehicle.category === "new-cars") condition = "new";
+    else if (vehicle.category === "used-cars") condition = "used";
+  }
+
+  if (hub === "auto" || hub === "equipment") {
+    condition = "used";
+  }
+
+  return { hub, condition };
+}
+
+/** Canonical marketplace detail URL */
+export function vehicleDetailPath(
+  vehicle: Pick<VehicleListing, "slug" | "category" | "bodyType" | "condition" | "fuelType">
+): string {
+  const { hub, condition } = inferBuyHubFromVehicle(vehicle);
+  return buyDetailPath(hub, condition, vehicle.slug);
+}
+
+/** Listing index for breadcrumbs */
+export function vehicleListingPath(
+  vehicle: Pick<VehicleListing, "slug" | "category" | "bodyType" | "condition" | "fuelType">
+): string {
+  const { hub, condition } = inferBuyHubFromVehicle(vehicle);
+  return buyListingPath(hub, condition);
 }
 
 export function getFairPriceLabel(vehicle: VehicleListing): FairPriceLabel | undefined {
@@ -164,6 +215,9 @@ export function filterVehicles(
   if (filters.city) result = result.filter((v) => v.city.toLowerCase() === filters.city!.toLowerCase());
   if (filters.color) result = result.filter((v) => (v.color ?? "").toLowerCase() === filters.color!.toLowerCase());
   if (filters.bodyType) result = result.filter((v) => v.bodyType.toLowerCase() === filters.bodyType!.toLowerCase());
+  if (filters.emiMax != null) {
+    result = result.filter((v) => getVehicleEmi(v) <= filters.emiMax!);
+  }
   if (filters.q) {
     const q = filters.q.toLowerCase();
     result = result.filter(
@@ -279,6 +333,7 @@ export function filtersFromSearchParams(params: URLSearchParams): VehicleFilters
     city: params.get("city") ?? undefined,
     color: params.get("color") ?? undefined,
     bodyType: params.get("bodyType") ?? undefined,
+    emiMax: params.get("emiMax") ? Number(params.get("emiMax")) : undefined,
     q: params.get("q") ?? undefined,
   };
 }

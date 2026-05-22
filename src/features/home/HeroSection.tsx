@@ -79,7 +79,7 @@ export function HeroSection() {
                     className="h-10 rounded-xl px-5 font-semibold shadow-[var(--shadow-primary)]"
                     asChild
                   >
-                    <Link to="/buy#category-cars">
+                    <Link to="/buy/cars/used">
                       Explore vehicles <ArrowRight className="h-4 w-4" />
                     </Link>
                   </Button>

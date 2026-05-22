@@ -31,7 +31,10 @@ export function PartCard({ part, role: roleProp, index = 0 }: PartCardProps) {
       <Link to={path} className="block">
         <div className="premium-part-card-media">
           <PartImage
-            src={partImageSrc(part.images)}
+            src={partImageSrc(part.images, {
+              categorySlug: part.categorySlug,
+              slug: part.slug,
+            })}
             alt={part.name}
             className="transition-transform duration-500 group-hover:scale-105"
           />

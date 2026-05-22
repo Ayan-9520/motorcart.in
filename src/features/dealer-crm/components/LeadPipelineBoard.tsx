@@ -5,10 +5,10 @@ import type { LeadWithMeta } from "../types";
 import type { LeadStatus } from "@/types/database";
 
 const STAGES: { id: LeadStatus; label: string; color: string }[] = [
-  { id: "new", label: "New", color: "border-primary/40 bg-primary/5" },
-  { id: "contacted", label: "Contacted", color: "border-border bg-card" },
-  { id: "qualified", label: "Qualified", color: "border-amber-500/30 bg-amber-500/5" },
-  { id: "converted", label: "Won", color: "border-primary/50 bg-primary/10" },
+  { id: "new", label: "New leads", color: "border-primary/40 bg-primary/5" },
+  { id: "contacted", label: "Follow-up", color: "border-amber-500/30 bg-amber-500/5" },
+  { id: "qualified", label: "Qualified", color: "border-amber-500/20 bg-amber-500/5" },
+  { id: "converted", label: "Closed", color: "border-primary/50 bg-primary/10" },
   { id: "lost", label: "Lost", color: "border-border bg-muted/40" },
 ];
 

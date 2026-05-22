@@ -19,6 +19,16 @@ import {
   PHASE1_DASHBOARD_TAGS,
   PHASE1_ECOSYSTEM_DASHBOARD,
 } from "@/features/home/data/phase1-home-data";
+import { buyListingPath } from "@/features/marketplace/lib/route-utils";
+import { FEATURED_VEHICLE_IMAGES, getVehicleHero } from "@/lib/media/india-media-catalog";
+
+const HUB_BUY_USED = {
+  cars: buyListingPath("cars", "used"),
+  bikes: buyListingPath("bikes", "used"),
+  trucks: buyListingPath("trucks", "used"),
+  buses: buyListingPath("buses", "used"),
+  auto: buyListingPath("auto", "used"),
+} as const;
 
 export interface HeroHubQuickLink {
   label: string;
@@ -79,7 +89,7 @@ const CAR_QUICK: HeroHubQuickLink[] = [
 ];
 
 const BIKE_QUICK: HeroHubQuickLink[] = [
-  { label: "New Bikes", href: "/buy#category-bikes", icon: Bike, description: "Latest launches" },
+  { label: "New Bikes", href: HUB_BUY_USED.bikes, icon: Bike, description: "Latest launches" },
   { label: "Pre-Owned Bikes", href: "/buy/bikes/used", icon: Bike, description: "Verified listings" },
   { label: "Bike Parts", href: "/parts?category=accessories", icon: Package },
   { label: "Bike Finance", href: "/finance", icon: Landmark },
@@ -88,7 +98,7 @@ const BIKE_QUICK: HeroHubQuickLink[] = [
 ];
 
 const TRUCK_QUICK: HeroHubQuickLink[] = [
-  { label: "Commercial Trucks", href: "/buy#category-trucks", icon: Truck },
+  { label: "Commercial Trucks", href: HUB_BUY_USED.trucks, icon: Truck },
   { label: "Fleet Finance", href: "/finance", icon: Landmark },
   { label: "Spare Parts", href: "/parts", icon: Package },
   { label: "Commercial Auctions", href: "/auctions", icon: Gavel },
@@ -96,14 +106,14 @@ const TRUCK_QUICK: HeroHubQuickLink[] = [
 ];
 
 const AUTO_QUICK: HeroHubQuickLink[] = [
-  { label: "Passenger Auto", href: "/buy#category-auto", icon: CarTaxiFront },
-  { label: "Cargo Auto", href: "/buy#category-auto", icon: Truck },
+  { label: "Passenger Auto", href: HUB_BUY_USED.auto, icon: CarTaxiFront },
+  { label: "Cargo Auto", href: HUB_BUY_USED.auto, icon: Truck },
   { label: "Auto Finance", href: "/finance", icon: Landmark },
   { label: "Sell Auto", href: "/sell", icon: Store },
 ];
 
 const BUS_QUICK: HeroHubQuickLink[] = [
-  { label: "Staff Buses", href: "/buy#category-buses", icon: BusFront },
+  { label: "Staff Buses", href: HUB_BUY_USED.buses, icon: BusFront },
   { label: "Luxury Coaches", href: "/buy/buses/used", icon: BusFront },
   { label: "Fleet Loans", href: "/finance", icon: Landmark },
   { label: "Commercial Auctions", href: "/auctions", icon: Gavel },
@@ -128,7 +138,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   cars: {
     label: "Cars",
     headlineSuffix: "New & certified pre-owned cars",
-    primaryCta: { label: "Browse cars", href: "/buy#category-cars" },
+    primaryCta: { label: "Browse cars", href: HUB_BUY_USED.cars },
     secondaryCta: { label: "Sell your car", href: "/sell" },
     browseFooter: "New & pre-owned cars · parts · loans · auctions",
     insightsFoot: "Opens car marketplace — new, used, parts & finance",
@@ -150,7 +160,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     quickLinks: CAR_QUICK,
     dashboard: [
       { type: "auction", title: "2019 Honda City VX", price: 782000, meta: "04:22:18 left · 34 bids", href: "/auctions", badge: "LIVE", live: true },
-      { type: "listing", title: "Creta SX(O) 2024", price: 1485000, meta: "EMI ₹24,500/mo", href: "/buy#category-cars", image: "https://images.unsplash.com/photo-1617788138017-80837c34d4af?w=400&q=80", badge: "Verified" },
+      { type: "listing", title: "Creta SX(O) 2024", price: 1485000, meta: "EMI ₹24,500/mo", href: buyListingPath("cars", "used"), image: FEATURED_VEHICLE_IMAGES.creta, badge: "Verified" },
       { type: "loan", title: "Loan Pre-Approved", price: 1200000, meta: "HDFC · 8.9% p.a.", href: "/finance" },
       { type: "ai", title: "AI Car Assistant", subtitle: "12 SUVs under ₹15L in Mumbai", href: "/ai" },
     ],
@@ -161,7 +171,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   bikes: {
     label: "Bikes",
     headlineSuffix: "Scooters & motorcycles",
-    primaryCta: { label: "Browse bikes", href: "/buy#category-bikes" },
+    primaryCta: { label: "Browse bikes", href: HUB_BUY_USED.bikes },
     secondaryCta: { label: "Sell your bike", href: "/sell" },
     browseFooter: "New & pre-owned bikes · parts · finance",
     insightsFoot: "Opens bike marketplace — two-wheelers only",
@@ -181,8 +191,24 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     ],
     quickLinks: BIKE_QUICK,
     dashboard: [
-      { type: "listing", title: "Activa 6G 2024", price: 89000, meta: "5,200 km · Pune", href: "/buy#category-bikes", image: "https://images.unsplash.com/photo-1558981403-c5f9899a1482?w=400&q=80", badge: "Verified" },
-      { type: "listing", title: "Classic 350 Chrome", price: 215000, meta: "Tripper nav · Delhi", href: "/buy#category-bikes", badge: "Featured" },
+      {
+        type: "listing",
+        title: "Activa 6G 2024",
+        price: 89000,
+        meta: "5,200 km · Pune",
+        href: HUB_BUY_USED.bikes,
+        image: getVehicleHero({ brand: "Honda", model: "Activa", bodyType: "Scooter", category: "bikes" }),
+        badge: "Verified",
+      },
+      {
+        type: "listing",
+        title: "Classic 350 Chrome",
+        price: 215000,
+        meta: "Tripper nav · Delhi",
+        href: HUB_BUY_USED.bikes,
+        image: getVehicleHero({ brand: "Royal Enfield", model: "Classic 350", bodyType: "Bike", category: "bikes" }),
+        badge: "Featured",
+      },
       { type: "loan", title: "Two-wheeler loan", price: 150000, meta: "Bajaj Finance · 11.5%", href: "/finance" },
       { type: "ai", title: "AI Bike Picks", subtitle: "8 scooters under ₹1.2L", href: "/ai" },
     ],
@@ -193,7 +219,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   trucks: {
     label: "Trucks",
     headlineSuffix: "LCV & commercial vehicles",
-    primaryCta: { label: "Browse trucks", href: "/buy#category-trucks" },
+    primaryCta: { label: "Browse trucks", href: HUB_BUY_USED.trucks },
     secondaryCta: { label: "List commercial vehicle", href: "/sell" },
     browseFooter: "LCV · pickups · fleet finance",
     insightsFoot: "Commercial vehicle marketplace",
@@ -212,7 +238,15 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     ],
     quickLinks: TRUCK_QUICK,
     dashboard: [
-      { type: "listing", title: "Tata Ace HT+ CNG", price: 680000, meta: "42,000 km · Mumbai", href: "/buy#category-trucks", badge: "Certified" },
+      {
+        type: "listing",
+        title: "Tata Ace HT+ CNG",
+        price: 680000,
+        meta: "42,000 km · Mumbai",
+        href: HUB_BUY_USED.trucks,
+        image: getVehicleHero({ brand: "Tata", model: "Ace", bodyType: "Truck", category: "trucks" }),
+        badge: "Certified",
+      },
       { type: "auction", title: "Repo Tata 407", price: 920000, meta: "12 bids · ends 6h", href: "/auctions", badge: "LIVE", live: true },
       { type: "loan", title: "Commercial loan", price: 2500000, meta: "SBI · fleet rate", href: "/finance" },
       { type: "ai", title: "Fleet AI Advisor", subtitle: "Match payload to model", href: "/ai" },
@@ -224,7 +258,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   auto: {
     label: "Auto",
     headlineSuffix: "Passenger & cargo three-wheelers",
-    primaryCta: { label: "Browse autos", href: "/buy#category-auto" },
+    primaryCta: { label: "Browse autos", href: HUB_BUY_USED.auto },
     secondaryCta: { label: "Sell auto", href: "/sell" },
     browseFooter: "Passenger · cargo · CNG",
     insightsFoot: "Auto rickshaw marketplace",
@@ -242,8 +276,22 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     ],
     quickLinks: AUTO_QUICK,
     dashboard: [
-      { type: "listing", title: "Bajaj RE Compact CNG", price: 320000, meta: "28,000 km · Delhi", href: "/buy#category-auto" },
-      { type: "listing", title: "Piaggio Ape Xtra", price: 385000, meta: "Cargo · Ahmedabad", href: "/buy#category-auto" },
+      {
+        type: "listing",
+        title: "Bajaj RE Compact CNG",
+        price: 320000,
+        meta: "28,000 km · Delhi",
+        href: HUB_BUY_USED.auto,
+        image: getVehicleHero({ brand: "Bajaj", model: "RE", bodyType: "Auto", category: "auto" }),
+      },
+      {
+        type: "listing",
+        title: "Piaggio Ape Xtra",
+        price: 385000,
+        meta: "Cargo · Ahmedabad",
+        href: HUB_BUY_USED.auto,
+        image: getVehicleHero({ brand: "Piaggio", model: "Ape", bodyType: "Auto", category: "auto", seed: 1 }),
+      },
       { type: "loan", title: "Auto loan", price: 350000, meta: "Quick approval", href: "/finance" },
     ],
     dashboardTags: ["CNG autos · cargo variants"],
@@ -253,7 +301,7 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
   buses: {
     label: "Buses",
     headlineSuffix: "Staff transport & coaches",
-    primaryCta: { label: "Browse buses", href: "/buy#category-buses" },
+    primaryCta: { label: "Browse buses", href: HUB_BUY_USED.buses },
     secondaryCta: { label: "List bus", href: "/sell" },
     browseFooter: "Staff buses · luxury coaches",
     insightsFoot: "Bus & coach marketplace",
@@ -271,7 +319,14 @@ export const HERO_HUB_CONFIG: Record<HeroSearchMode, HeroHubConfig> = {
     ],
     quickLinks: BUS_QUICK,
     dashboard: [
-      { type: "listing", title: "Force Traveller 26", price: 1850000, meta: "1.2L km · Chennai", href: "/buy#category-buses" },
+      {
+        type: "listing",
+        title: "Force Traveller 26",
+        price: 1850000,
+        meta: "1.2L km · Chennai",
+        href: HUB_BUY_USED.buses,
+        image: getVehicleHero({ brand: "Force", model: "Traveller", bodyType: "Bus", category: "buses" }),
+      },
       { type: "loan", title: "Fleet lease", price: 3500000, meta: "NBFC · 48 months", href: "/finance" },
       { type: "auction", title: "Repo coach bus", price: 2200000, meta: "8 bids", href: "/auctions", badge: "LIVE", live: true },
     ],

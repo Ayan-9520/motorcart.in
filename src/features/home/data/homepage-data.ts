@@ -1,4 +1,6 @@
 import type { LucideIcon } from "lucide-react";
+import { buyListingPath } from "@/features/marketplace/lib/route-utils";
+import type { HubCategorySlug } from "@/features/marketplace/types";
 import {
   Bike,
   Bot,
@@ -37,26 +39,30 @@ export type HeroSearchMode =
   | "auctions"
   | "finance";
 
-const BUY_HUB_HASH: Record<"cars" | "bikes" | "trucks" | "auto" | "buses", string> = {
-  cars: "/buy#category-cars",
-  bikes: "/buy#category-bikes",
-  trucks: "/buy#category-trucks",
-  auto: "/buy#category-auto",
-  buses: "/buy#category-buses",
+const HERO_MODE_TO_HUB: Partial<Record<HeroSearchMode, HubCategorySlug>> = {
+  cars: "cars",
+  bikes: "bikes",
+  trucks: "trucks",
+  auto: "auto",
+  buses: "buses",
 };
 
-export function heroBuyHubHref(mode: HeroSearchMode): string {
+export function heroBuyHubHref(
+  mode: HeroSearchMode,
+  condition: "new" | "used" = "used"
+): string {
   if (mode === "auctions") return "/auctions";
   if (mode === "finance") return "/finance";
-  return BUY_HUB_HASH[mode];
+  const hub = HERO_MODE_TO_HUB[mode];
+  return hub ? buyListingPath(hub, condition) : "/buy";
 }
 
 export const HERO_SEARCH_TABS = [
-  { id: "cars" as const, label: "Cars", icon: Car, hubHref: BUY_HUB_HASH.cars },
-  { id: "bikes" as const, label: "Bikes", icon: Bike, hubHref: BUY_HUB_HASH.bikes },
-  { id: "trucks" as const, label: "Trucks", icon: Truck, hubHref: BUY_HUB_HASH.trucks },
-  { id: "auto" as const, label: "Auto", icon: CarTaxiFront, hubHref: BUY_HUB_HASH.auto },
-  { id: "buses" as const, label: "Bus", icon: BusFront, hubHref: BUY_HUB_HASH.buses },
+  { id: "cars" as const, label: "Cars", icon: Car, hubHref: heroBuyHubHref("cars", "used") },
+  { id: "bikes" as const, label: "Bikes", icon: Bike, hubHref: heroBuyHubHref("bikes", "used") },
+  { id: "trucks" as const, label: "Trucks", icon: Truck, hubHref: heroBuyHubHref("trucks", "used") },
+  { id: "auto" as const, label: "Auto", icon: CarTaxiFront, hubHref: heroBuyHubHref("auto", "used") },
+  { id: "buses" as const, label: "Bus", icon: BusFront, hubHref: heroBuyHubHref("buses", "used") },
   { id: "auctions" as const, label: "Auctions", icon: Gavel, hubHref: "/auctions" },
   { id: "finance" as const, label: "Finance", icon: Landmark, hubHref: "/finance" },
 ] as const;
@@ -144,11 +150,12 @@ function appendVehicleFilters(params: URLSearchParams, filters: HeroSearchFilter
   }
 }
 
-/** Buy hub / category links — not used-only listing pages */
+/** Buy listing with filters — canonical /buy/{hub}/{condition} */
 export function buildHeroBuyPath(
   mode: HeroSearchMode,
   query: string,
-  filters: HeroSearchFilters = {}
+  filters: HeroSearchFilters = {},
+  condition: "new" | "used" = "used"
 ): string {
   if (mode === "auctions") {
     return buildHeroSearchPath("auctions", query, filters);
@@ -157,11 +164,14 @@ export function buildHeroBuyPath(
     return buildHeroSearchPath("finance", query, filters);
   }
 
+  const hub = HERO_MODE_TO_HUB[mode];
+  if (!hub) return buildHeroSearchPath(mode, query, filters);
+
   const params = new URLSearchParams();
   appendVehicleFilters(params, filters, query);
+  const base = buyListingPath(hub, condition);
   const qs = params.toString();
-  const hash = `category-${mode}`;
-  return qs ? `/buy?${qs}#${hash}` : `/buy#${hash}`;
+  return qs ? `${base}?${qs}` : base;
 }
 
 export function buildHeroSearchPath(

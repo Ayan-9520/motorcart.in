@@ -121,3 +121,46 @@ export interface PlatformAnalytics {
   conversionRate: number;
   churnRate: number;
 }
+
+export interface AdminVehicleRow {
+  id: string;
+  title: string;
+  brand: string;
+  model: string;
+  price: number;
+  city: string;
+  status: string;
+  isFeatured: boolean;
+  platformFeatured: boolean;
+  dealerName: string | null;
+  createdAt: string;
+}
+
+export interface AdminAuctionRow {
+  id: string;
+  title: string;
+  status: string;
+  isFeatured: boolean;
+  currentBid: number;
+  reservePrice: number;
+  bidCount: number;
+  endsAt: string | null;
+}
+
+export interface PlatformTransactionRow {
+  id: string;
+  type: "loan" | "subscription" | "auction" | "parts" | "service";
+  reference: string;
+  party: string;
+  amount: number;
+  status: string;
+  createdAt: string;
+}
+
+export interface RevenueAnalytics extends PlatformAnalytics {
+  gmvTotal: number;
+  mrr: number;
+  loanDisbursed: number;
+  subscriptionRevenue: number;
+  auctionFees: number;
+}

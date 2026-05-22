@@ -10,6 +10,7 @@ const HUB_TO_HERO_MODE: Partial<Record<HubCategorySlug, HeroSearchMode>> = {
   trucks: "trucks",
   buses: "buses",
   auto: "auto",
+  ev: "cars",
 };
 
 type HeroSearchContextValue = {
@@ -65,8 +66,8 @@ export function HeroSearchProvider({ children }: { children: ReactNode }) {
   }, [mode]);
 
   const activeHub = useVehicleHubStore((s) => s.activeHub);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
 
-  /** Navbar vehicle hub must not override homepage hero — Phase 1 shows full ecosystem */
   useEffect(() => {
     if (isMarketingHome) return;
     const mapped = HUB_TO_HERO_MODE[activeHub];
@@ -76,13 +77,18 @@ export function HeroSearchProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (isMarketingHome) return;
     const onHubChange = (e: Event) => {
-      const hub = (e as CustomEvent<{ hub: HubCategorySlug }>).detail?.hub;
+      const detail = (e as CustomEvent<{ hub: HubCategorySlug; condition?: "new" | "used" }>)
+        .detail;
+      const hub = detail?.hub;
       const mapped = hub ? HUB_TO_HERO_MODE[hub] : undefined;
       if (mapped) setMode(mapped);
+      if (hub && detail?.condition) {
+        setBuyContext(hub, detail.condition);
+      }
     };
     window.addEventListener("motorcart:hub-change", onHubChange);
     return () => window.removeEventListener("motorcart:hub-change", onHubChange);
-  }, [isMarketingHome]);
+  }, [isMarketingHome, setBuyContext]);
 
   const value = useMemo(
     () => ({

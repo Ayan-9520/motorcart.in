@@ -52,17 +52,19 @@ export type VehicleTemplate = {
   imageKey: keyof typeof IMAGE_POOL;
 };
 
+/** Legacy keys — aligned with vehicle-media-registry segment pools (verified URLs only). */
 export const IMAGE_POOL = {
-  suv: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80",
-  sedan: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80",
-  hatch: "https://images.unsplash.com/photo-1494976388531-d105849445ff?w=800&q=80",
-  ev: "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=800&q=80",
-  bike: "https://images.unsplash.com/photo-1558981403-c5f9899a1482?w=800&q=80",
-  truck: "https://images.unsplash.com/photo-1601584111127-372f204f45a6?w=800&q=80",
-  bus: "https://images.unsplash.com/photo-1544626217-48d0c016a1df?w=800&q=80",
-  auto: "https://images.unsplash.com/photo-1583121274602-3f282f138f7d?w=800&q=80",
-  mpv: "https://images.unsplash.com/photo-1519641471654-76cebc7a341f?w=800&q=80",
-  luxury: "https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=800&q=80",
+  suv: "https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?w=800",
+  sedan: "https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?w=800",
+  hatch: "https://images.pexels.com/photos/1149137/pexels-photo-1149137.jpeg?w=800",
+  ev: "https://images.pexels.com/photos/9190737/pexels-photo-9190737.jpeg?w=800",
+  bike: "https://images.pexels.com/photos/2116473/pexels-photo-2116473.jpeg?w=800",
+  truck: "https://images.pexels.com/photos/4480506/pexels-photo-4480506.jpeg?w=800",
+  bus: "https://images.pexels.com/photos/2999064/pexels-photo-2999064.jpeg?w=800",
+  auto: "https://images.pexels.com/photos/1250892/pexels-photo-1250892.jpeg?w=800",
+  mpv: "https://images.pexels.com/photos/244206/pexels-photo-244206.jpeg?w=800",
+  luxury: "https://images.pexels.com/photos/112460/pexels-photo-112460.jpeg?w=800",
+  equipment: "https://images.pexels.com/photos/4480506/pexels-photo-4480506.jpeg?w=800",
 };
 
 export const VEHICLE_TEMPLATES: VehicleTemplate[] = [
@@ -146,6 +148,12 @@ export const VEHICLE_TEMPLATES: VehicleTemplate[] = [
   // —— Auto ——
   { brand: "Bajaj", model: "RE", variants: ["Compact", "Maxima"], bodyType: "Auto", category: "used-cars", fuels: ["CNG", "Petrol"], transmissions: ["Manual"], priceMin: 280000, priceMax: 420000, yearMin: 2022, yearMax: 2025, kmsMax: 65000, features: ["Passenger"], usedOnly: true, imageKey: "auto" },
   { brand: "Piaggio", model: "Ape", variants: ["City", "Xtra"], bodyType: "Auto", category: "used-cars", fuels: ["CNG", "Diesel"], transmissions: ["Manual"], priceMin: 320000, priceMax: 480000, yearMin: 2021, yearMax: 2025, kmsMax: 55000, features: ["Cargo"], usedOnly: true, imageKey: "auto" },
+  // —— Construction & farm equipment ——
+  { brand: "Mahindra", model: "275 DI", variants: ["SP Plus", "XP Plus"], bodyType: "Tractor", category: "trucks", fuels: ["Diesel"], transmissions: ["Manual"], priceMin: 580000, priceMax: 780000, yearMin: 2020, yearMax: 2024, kmsMax: 4500, features: ["42 HP", "2WD"], usedOnly: true, imageKey: "equipment" },
+  { brand: "Swaraj", model: "744 FE", variants: ["Standard", "XM"], bodyType: "Tractor", category: "trucks", fuels: ["Diesel"], transmissions: ["Manual"], priceMin: 620000, priceMax: 850000, yearMin: 2019, yearMax: 2024, kmsMax: 5000, features: ["45 HP"], usedOnly: true, imageKey: "equipment" },
+  { brand: "JCB", model: "3DX", variants: ["Super", "Xtra"], bodyType: "Excavator", category: "trucks", fuels: ["Diesel"], transmissions: ["Manual"], priceMin: 2800000, priceMax: 4200000, yearMin: 2018, yearMax: 2023, kmsMax: 12000, features: ["Backhoe Loader"], usedOnly: true, imageKey: "equipment" },
+  { brand: "Tata", model: "Hitachi EX70", variants: ["Standard"], bodyType: "Excavator", category: "trucks", fuels: ["Diesel"], transmissions: ["Manual"], priceMin: 3200000, priceMax: 4800000, yearMin: 2017, yearMax: 2022, kmsMax: 15000, features: ["7T Class"], usedOnly: true, imageKey: "equipment" },
+  { brand: "CAT", model: "950M", variants: ["Loader"], bodyType: "Loader", category: "trucks", fuels: ["Diesel"], transmissions: ["Automatic"], priceMin: 4500000, priceMax: 6500000, yearMin: 2016, yearMax: 2021, kmsMax: 18000, features: ["Wheel Loader"], usedOnly: true, imageKey: "equipment" },
 ];
 
 export const COLORS = [

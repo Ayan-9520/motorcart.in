@@ -1,27 +1,37 @@
 import { useState } from "react";
 import { Package } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { optimizeImageUrl } from "@/lib/media-urls";
+import { MEDIA_DEFAULTS } from "@/lib/media/india-media-catalog";
+import { resolvePartHero } from "@/lib/media/resolve-images";
 
-export const PART_IMAGE_FALLBACK = optimizeImageUrl(
-  "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3",
-  { w: 800, h: 600 }
-);
+export const PART_IMAGE_FALLBACK = MEDIA_DEFAULTS.part;
 
-export function partImageSrc(images?: string[]): string {
+export type PartImageMeta = {
+  categorySlug: string;
+  slug: string;
+};
+
+export function partImageSrc(
+  images?: string[] | null,
+  meta?: PartImageMeta,
+  seed = 0
+): string {
+  if (meta) return resolvePartHero(meta.categorySlug, meta.slug, images, seed);
   const src = images?.[0]?.trim();
-  return src && src.length > 4 ? src : PART_IMAGE_FALLBACK;
+  return src && src.length > 12 ? src : PART_IMAGE_FALLBACK;
 }
 
 interface PartImageProps {
   src?: string;
   alt: string;
   className?: string;
+  images?: string[] | null;
+  meta?: PartImageMeta;
 }
 
-export function PartImage({ src, alt, className }: PartImageProps) {
-  const initial = partImageSrc(src ? [src] : undefined);
-  const [current, setCurrent] = useState(initial);
+export function PartImage({ src, alt, className, images, meta }: PartImageProps) {
+  const resolved = partImageSrc(images ?? (src ? [src] : undefined), meta);
+  const [current, setCurrent] = useState(resolved);
   const [failed, setFailed] = useState(false);
 
   return (
@@ -34,7 +44,10 @@ export function PartImage({ src, alt, className }: PartImageProps) {
           loading="lazy"
           decoding="async"
           onError={() => {
-            if (current !== PART_IMAGE_FALLBACK) setCurrent(PART_IMAGE_FALLBACK);
+            const fallback = meta
+              ? resolvePartHero(meta.categorySlug, meta.slug, null)
+              : PART_IMAGE_FALLBACK;
+            if (current !== fallback) setCurrent(fallback);
             else setFailed(true);
           }}
         />

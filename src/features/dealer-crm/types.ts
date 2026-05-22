@@ -45,6 +45,9 @@ export interface CRMStats {
   whatsappChats: number;
   callsTracked: number;
   avgListingViews: number;
+  activeAuctions: number;
+  followUpLeads: number;
+  lostLeads: number;
 }
 
 export interface ParsedInventoryRow {

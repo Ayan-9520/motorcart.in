@@ -29,6 +29,7 @@ export const LENDER_LOGO_BY_ID: Record<string, string> = {
   bajaj: "/partners/banks/bajaj.svg",
   lic: "/partners/banks/lic.svg",
   vastu: "/partners/banks/tata-capital.svg",
+  "tata-capital": "/partners/banks/tata-capital.svg",
 };
 
 export function lenderLogoPath(idOrSlug: string): string {

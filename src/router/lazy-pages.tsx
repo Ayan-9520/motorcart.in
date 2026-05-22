@@ -31,6 +31,14 @@ export const FinanceManagerApplicationsPage = lazyNamed(() => import("@/features
 export const FinanceManagerCommissionsPage = lazyNamed(() => import("@/features/finance/pages/FinanceManagerCommissionsPage"), "FinanceManagerCommissionsPage");
 export const DsaPortalPage = lazyNamed(() => import("@/features/finance/pages/DsaPortalPage"), "DsaPortalPage");
 export const DsaApplicationsPage = lazyNamed(() => import("@/features/finance/pages/DsaApplicationsPage"), "DsaApplicationsPage");
+export const DsaLeadsPage = lazyNamed(() => import("@/features/finance/pages/DsaLeadsPage"), "DsaLeadsPage");
+export const DsaTeamPage = lazyNamed(() => import("@/features/finance/pages/DsaTeamPage"), "DsaTeamPage");
+export const DsaIntegrationsPage = lazyNamed(() => import("@/features/finance/pages/DsaIntegrationsPage"), "DsaIntegrationsPage");
+export const FinanceLoanCrmPage = lazyNamed(() => import("@/features/finance/pages/FinanceLoanCrmPage"), "FinanceLoanCrmPage");
+export const FinanceManagerIntegrationsPage = lazyNamed(
+  () => import("@/features/finance/pages/FinanceManagerIntegrationsPage"),
+  "FinanceManagerIntegrationsPage"
+);
 export const LenderDashboardPage = lazyNamed(() => import("@/features/finance/pages/LenderDashboardPage"), "LenderDashboardPage");
 export const LenderApplicationsPage = lazyNamed(() => import("@/features/finance/pages/LenderApplicationsPage"), "LenderApplicationsPage");
 
@@ -53,6 +61,10 @@ export const BannersPage = lazyNamed(() => import("@/features/platform-admin/pag
 export const SuperAdminAIPage = lazyNamed(() => import("@/features/platform-admin/pages/SuperAdminAIPage"), "SuperAdminAIPage");
 export const FraudDetectionPage = lazyNamed(() => import("@/features/platform-admin/pages/FraudDetectionPage"), "FraudDetectionPage");
 export const SupportTicketsPage = lazyNamed(() => import("@/features/platform-admin/pages/SupportTicketsPage"), "SupportTicketsPage");
+export const VehicleModerationPage = lazyNamed(() => import("@/features/platform-admin/pages/VehicleModerationPage"), "VehicleModerationPage");
+export const FeaturedInventoryPage = lazyNamed(() => import("@/features/platform-admin/pages/FeaturedInventoryPage"), "FeaturedInventoryPage");
+export const AuctionApprovalsPage = lazyNamed(() => import("@/features/platform-admin/pages/AuctionApprovalsPage"), "AuctionApprovalsPage");
+export const TransactionsPage = lazyNamed(() => import("@/features/platform-admin/pages/TransactionsPage"), "TransactionsPage");
 
 // Heavy marketplace
 export const VehicleDetailPage = lazyNamed(() => import("@/features/vehicles/pages/VehicleDetailPage"), "VehicleDetailPage");

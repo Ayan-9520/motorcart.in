@@ -53,16 +53,7 @@ export const PARTS_CATEGORY_ICONS: Record<PartCategorySlug, LucideIcon> = {
   "interior-parts": Wrench,
 };
 
-export const PARTS_HUB_BRANDS = [
-  { name: "Bosch", logo: "/partners/cars/bmw.svg" },
-  { name: "Michelin", logo: "/partners/cars/mercedes.svg" },
-  { name: "Exide", logo: "/partners/banks/hdfcbank.svg" },
-  { name: "Castrol", logo: "/partners/cars/tata.svg" },
-  { name: "Mann", logo: "/partners/cars/volkswagen.svg" },
-  { name: "Brembo", logo: "/partners/cars/porsche.svg" },
-  { name: "Apollo", logo: "/partners/cars/hyundai.svg" },
-  { name: "Amaron", logo: "/partners/banks/icicibank.svg" },
-] as const;
+export { PARTS_BRAND_TILES as PARTS_HUB_BRANDS } from "@/lib/media/india-media-catalog";
 
 export const PARTS_TRUST_STATS = [
   { label: "50K+", sub: "SKUs live" },

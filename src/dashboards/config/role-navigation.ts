@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   BarChart3,
   Bot,
+  Bell,
   Calendar,
   Car,
   FileQuestion,
@@ -22,6 +23,9 @@ import {
   Wrench,
   ClipboardList,
   Crown,
+  Plug,
+  Gauge,
+  UserPlus,
 } from "lucide-react";
 import type { AppRole } from "@/types/database";
 import { isDealerRole } from "@/permissions/role-matching";
@@ -40,40 +44,20 @@ export type RoleNavContext = {
 };
 
 export function getRoleNavContext(role: AppRole): RoleNavContext {
-  if (role === "super_admin") {
+  if (role === "super_admin" || role === "admin") {
     return {
-      title: "Motorcart Control",
-      subtitle: "Super admin",
+      title: "Admin ERP",
+      subtitle: role === "super_admin" ? "Super admin" : "Operations",
       items: [
-        { to: "/dashboard/super-admin", label: "Overview", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/super-admin", label: "Command center", icon: LayoutDashboard, end: true },
         { to: "/dashboard/super-admin/users", label: "Users", icon: Users },
         { to: "/dashboard/super-admin/dealers", label: "Dealers", icon: Store },
-        { to: "/dashboard/super-admin/kyc", label: "KYC", icon: Shield },
-        { to: "/dashboard/super-admin/analytics", label: "Analytics", icon: BarChart3 },
-        { to: "/dashboard/super-admin/subscriptions", label: "Subscriptions", icon: Crown },
-        { to: "/dashboard/super-admin/tickets", label: "Support", icon: MessageSquare },
+        { to: "/dashboard/super-admin/vehicles", label: "Listings", icon: Car },
         { to: "/dashboard/super-admin/fraud", label: "Fraud", icon: Shield },
-        { to: "/dashboard/super-admin/ai", label: "AI controls", icon: Bot },
-        { to: "/dashboard/auction", label: "Auctions", icon: Gavel },
-        { to: "/dashboard/admin/finance", label: "Finance OS", icon: Landmark },
-      ],
-    };
-  }
-
-  if (role === "admin") {
-    return {
-      title: "Operations",
-      subtitle: "Admin",
-      items: [
-        { to: "/dashboard/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
-        { to: "/dashboard/admin/users", label: "Users", icon: Users },
-        { to: "/dashboard/admin/dealers", label: "Dealers", icon: Store },
-        { to: "/dashboard/auction", label: "Auctions", icon: Gavel },
-        { to: "/dashboard/admin/finance", label: "Finance", icon: Landmark },
-        { to: "/dashboard/admin/crm", label: "CRM", icon: MessageSquare },
-        { to: "/dashboard/admin/analytics", label: "Analytics", icon: BarChart3 },
-        { to: "/dashboard/admin/ai", label: "AI agents", icon: Bot },
-        { to: "/dashboard/admin/settings", label: "Settings", icon: Settings },
+        { to: "/dashboard/super-admin/analytics", label: "Revenue", icon: BarChart3 },
+        { to: "/dashboard/super-admin/transactions", label: "Transactions", icon: Landmark },
+        { to: "/dashboard/super-admin/notifications", label: "Push", icon: MessageSquare },
+        { to: "/dashboard/auction", label: "Auction desk", icon: Gavel },
       ],
     };
   }
@@ -104,16 +88,14 @@ export function getRoleNavContext(role: AppRole): RoleNavContext {
 
   if (role === "customer") {
     return {
-      title: "My Motorcart",
-      subtitle: "Your activity",
+      title: "Motorcart",
+      subtitle: "Ownership OS",
       items: [
-        { to: "/dashboard/customer", label: "Overview", icon: LayoutDashboard, end: true },
-        { to: "/wishlist", label: "Wishlist", icon: Heart },
-        { to: "/search", label: "Saved search", icon: Search },
-        { to: "/dashboard/customer/loans", label: "Loan applications", icon: Landmark },
-        { to: "/services/my-bookings", label: "Service bookings", icon: Wrench },
-        { to: "/services/history", label: "Service history", icon: ClipboardList },
-        { to: "/auctions/browse", label: "Auction bids", icon: Gavel },
+        { to: "/dashboard/customer", label: "Dashboard Home", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/customer/garage", label: "My Garage", icon: Car },
+        { to: "/dashboard/customer/insights", label: "AI Insights", icon: Bot },
+        { to: "/dashboard/customer/notifications", label: "Notifications", icon: Bell },
+        { to: "/dashboard/customer/profile", label: "Profile", icon: Settings },
       ],
     };
   }
@@ -121,10 +103,14 @@ export function getRoleNavContext(role: AppRole): RoleNavContext {
   if (role === "dsa_agent") {
     return {
       title: "DSA workspace",
-      subtitle: "Finance leads",
+      subtitle: "Fintech desk",
       items: [
-        { to: "/dashboard/dsa", label: "Pipeline", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/dsa", label: "Overview", icon: LayoutDashboard, end: true },
         { to: "/dashboard/dsa/applications", label: "Applications", icon: Landmark },
+        { to: "/dashboard/dsa/leads", label: "Lead CRM", icon: Gauge },
+        { to: "/dashboard/dsa/integrations", label: "Bank APIs", icon: Plug },
+        { to: "/dashboard/dsa/team", label: "Team", icon: UserPlus },
+        { to: "/finance/offers", label: "Loan marketplace", icon: Store },
       ],
     };
   }
@@ -183,8 +169,11 @@ export function getRoleNavContext(role: AppRole): RoleNavContext {
       subtitle: "Command center",
       items: [
         { to: "/dashboard/finance-manager", label: "Overview", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/finance-manager/crm", label: "Loan CRM", icon: Gauge },
         { to: "/dashboard/finance-manager/applications", label: "Applications", icon: Landmark },
         { to: "/dashboard/finance-manager/commissions", label: "Commissions", icon: BarChart3 },
+        { to: "/dashboard/finance-manager/integrations", label: "Bank APIs", icon: Plug },
+        { to: "/finance/offers", label: "Marketplace", icon: Store },
         { to: "/finance/tools", label: "EMI & eligibility", icon: Search },
       ],
     };

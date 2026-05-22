@@ -16,11 +16,19 @@ import { WhatsAppCTA } from "../components/WhatsAppCTA";
 import { EnquiryForm } from "../components/EnquiryForm";
 import { TestDriveBooking } from "../components/TestDriveBooking";
 import { CompareFloatingBar } from "../components/CompareFloatingBar";
+import { MarketplaceVehicleTools } from "../components/MarketplaceVehicleTools";
 import { useVehicleDetail } from "@/hooks/useVehicleDetail";
 import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
 import { setPageMeta } from "@/utils/seo";
 import { formatCurrency } from "@/lib/utils";
-import { getDiscountedPrice, getVehicleEmi, categoryToPath } from "@/lib/vehicle-utils";
+import {
+  getDiscountedPrice,
+  getVehicleEmi,
+  inferBuyHubFromVehicle,
+  vehicleListingPath,
+} from "@/lib/vehicle-utils";
+import { buyListingPath, hubCategoryLabel } from "@/features/marketplace/lib/route-utils";
+import { resolveVehicleDetailGallery, resolveVehicleHero } from "@/lib/media/resolve-images";
 import toast from "react-hot-toast";
 
 export function VehicleDetailPage() {
@@ -37,7 +45,7 @@ export function VehicleDetailPage() {
       setPageMeta({
         title: `${vehicle.year} ${vehicle.brand} ${vehicle.model} — ${formatCurrency(vehicle.price)}`,
         description: `Buy ${vehicle.title} in ${vehicle.city}. EMI from ${formatCurrency(getVehicleEmi(vehicle))}/mo. Specs, inspection, finance & dealer on Motorcart.in`,
-        ogImage: vehicle.images[0],
+        ogImage: resolveVehicleHero(vehicle.brand, vehicle.model, vehicle.bodyType, vehicle.images),
       });
     }
   }, [vehicle]);
@@ -68,33 +76,43 @@ export function VehicleDetailPage() {
 
   const price = getDiscountedPrice(vehicle);
   const emi = getVehicleEmi(vehicle);
-  const listingPath =
-    vehicle.category === "new-cars"
-      ? "/new-cars"
-      : vehicle.category === "used-cars"
-        ? "/used-cars"
-        : category
-          ? `/vehicles/${category}`
-          : "/buy";
+  const { hub, condition } = inferBuyHubFromVehicle(vehicle);
+  const listingPath = vehicleListingPath(vehicle);
+  const hubLabel = hubCategoryLabel(hub);
+  const condLabel = condition === "new" ? "New" : "Pre-Owned";
+
+  const galleryImages = resolveVehicleDetailGallery({
+    brand: vehicle.brand,
+    model: vehicle.model,
+    bodyType: vehicle.bodyType,
+    category: vehicle.category,
+    fuelType: vehicle.fuelType,
+    images: vehicle.images,
+    seed: Math.abs(vehicle.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0)),
+  });
 
   return (
     <div className="vm-detail-page min-h-screen bg-background">
       <div className="container mx-auto space-y-6 px-4 py-6 md:py-8">
         <nav className="vm-breadcrumb">
-          <Link to={listingPath} className="hover:text-primary">
-            {vehicle.category === "new-cars" ? "New Cars" : vehicle.category === "used-cars" ? "Used Cars" : "Vehicles"}
+          <Link to="/buy" className="hover:text-primary">
+            Buy
           </Link>
           <ChevronRight className="h-4 w-4" />
-          <Link to={categoryToPath(vehicle.category)} className="hover:text-primary capitalize">
-            {vehicle.category.replace(/-/g, " ")}
+          <Link to={buyListingPath(hub, condition)} className="hover:text-primary">
+            {hubLabel}
+          </Link>
+          <ChevronRight className="h-4 w-4" />
+          <Link to={listingPath} className="hover:text-primary">
+            {condLabel}
           </Link>
           <ChevronRight className="h-4 w-4" />
           <span className="line-clamp-1 text-foreground font-medium">{vehicle.title}</span>
         </nav>
 
-        <div className="grid gap-8 lg:grid-cols-[1fr_22rem]">
+        <div className="grid gap-8 lg:grid-cols-[1fr_minmax(17.5rem,20rem)] xl:grid-cols-[1fr_22rem]">
           <div className="space-y-6 min-w-0">
-            <VehicleGallery images={vehicle.images} title={vehicle.title} />
+            <VehicleGallery images={galleryImages} title={vehicle.title} />
             {vehicle.metadata.viewer360 && (
               <Viewer360 images={vehicle.metadata.viewer360} title={vehicle.title} />
             )}
@@ -124,7 +142,25 @@ export function VehicleDetailPage() {
               )}
               <p className="mt-1 text-sm text-muted-foreground">
                 EMI from <strong className="text-foreground">{formatCurrency(emi)}/mo</strong>
+                <span className="text-muted-foreground"> · {vehicle.city}</span>
               </p>
+
+              <MarketplaceVehicleTools
+                variant="sidebar"
+                vehicle={vehicle}
+                emi={emi}
+                inCompare={inCompare}
+                onToggleCompare={() => {
+                  if (inCompare) {
+                    useVehicleMarketStore.getState().removeCompare(vehicle.id);
+                    toast.success("Removed from compare");
+                  } else {
+                    const ok = addCompare(vehicle.id);
+                    if (ok) toast.success("Added to compare");
+                    else toast.error("Compare list full (max 4)");
+                  }
+                }}
+              />
 
               <div className="mt-4 grid grid-cols-2 gap-2 text-sm">
                 <span className="vm-stat-pill">

@@ -10,6 +10,7 @@ import { auctionDetailPath, isReserveMet } from "../lib/auction-utils";
 import { AUCTION_TYPE_LABELS } from "../types";
 import type { AuctionListing } from "../types";
 import { cn } from "@/lib/utils";
+import { resolveAuctionImages } from "@/lib/media/resolve-images";
 
 interface AuctionCardProps {
   auction: AuctionListing;
@@ -30,7 +31,7 @@ export function AuctionCard({ auction, index = 0 }: AuctionCardProps) {
         <Link to={path} className="block">
           <figure className="relative aspect-[16/10] bg-muted overflow-hidden">
             <img
-              src={auction.images[0]}
+              src={resolveAuctionImages(auction.title, auction.images)[0]}
               alt={auction.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             />

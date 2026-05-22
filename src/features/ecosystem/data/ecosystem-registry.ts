@@ -27,6 +27,7 @@ import type {
   VehicleHubDefinition,
 } from "../types";
 import { hubBuyPath, hubSellPath } from "../lib/hub-paths";
+import { ECOSYSTEM_HERO_IMAGES } from "@/lib/media/india-media-catalog";
 
 const q = (hub: EcosystemHubSlug, path: string, extra?: Record<string, string>) => {
   const params = new URLSearchParams({ hub, ...extra });
@@ -36,8 +37,8 @@ const q = (hub: EcosystemHubSlug, path: string, extra?: Record<string, string>) 
 
 function carServices(): HubServiceItem[] {
   return [
-    { id: "new", label: "New Cars", description: "Latest models & on-road price", href: "/new-cars", icon: Car, featured: true },
-    { id: "used", label: "Used Cars", description: "Certified pre-owned", href: "/used-cars", icon: CarFront, featured: true },
+    { id: "new", label: "New Cars", description: "Latest models & on-road price", href: hubBuyPath("cars", "new"), icon: Car, featured: true },
+    { id: "used", label: "Used Cars", description: "Certified pre-owned", href: hubBuyPath("cars", "used"), icon: CarFront, featured: true },
     { id: "sell", label: "Sell Car", description: "AI valuation & instant offers", href: hubSellPath("cars"), icon: Store },
     { id: "loans", label: "Car Loans", description: "Compare 14+ lenders", href: q("cars", "/finance"), icon: Landmark, badge: "8.5%" },
     { id: "insurance", label: "Car Insurance", description: "Compare & renew online", href: q("cars", "/insurance"), icon: Shield },
@@ -47,7 +48,7 @@ function carServices(): HubServiceItem[] {
     { id: "compare", label: "Compare Cars", description: "Specs, price & variants", href: "/vehicles/compare", icon: GitCompare },
     { id: "reviews", label: "Reviews", description: "Owner reviews & ratings", href: q("cars", "/community"), icon: Star },
     { id: "dealers", label: "Dealers", description: "Verified showrooms", href: q("cars", "/dealers"), icon: Store },
-    { id: "emi", label: "EMI Calculator", description: "Plan your monthly budget", href: "/finance/compare", icon: Calculator },
+    { id: "emi", label: "EMI Calculator", description: "Plan your monthly budget", href: "/finance/tools", icon: Calculator },
   ];
 }
 
@@ -191,6 +192,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "Cars",
     tagline: "New & used cars — one ecosystem",
     description: "Browse, compare, finance, insure, service and sell cars — without leaving the Cars hub.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.cars,
     icon: HUB_ICONS.cars,
     stats: { listings: "2.1L+", dealers: "8.5K+" },
     searchPlaceholder: "Search cars — Creta, Swift, Mumbai…",
@@ -223,6 +225,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "Bikes",
     tagline: "Scooters & motorcycles",
     description: "Everything for two-wheelers — buy, sell, finance, parts and service in one place.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.bikes,
     icon: HUB_ICONS.bikes,
     stats: { listings: "85K+", dealers: "3.2K+" },
     searchPlaceholder: "Search bikes — Activa, Classic 350…",
@@ -238,6 +241,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "Trucks",
     tagline: "Commercial & logistics",
     description: "LCV, pickups and heavy commercial — built for fleet owners and operators.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.trucks,
     icon: HUB_ICONS.trucks,
     stats: { listings: "12K+", dealers: "1.1K+" },
     searchPlaceholder: "Search trucks — Tata Ace, 407, tonnage…",
@@ -253,6 +257,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "Buses",
     tagline: "Staff transport & coaches",
     description: "School, staff and tourist coaches — fleet finance and verified sellers.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.buses,
     icon: HUB_ICONS.buses,
     stats: { listings: "3K+", dealers: "420+" },
     searchPlaceholder: "Search buses — seats, Volvo, Traveller…",
@@ -268,6 +273,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "EV",
     tagline: "Electric cars & two-wheelers",
     description: "Battery health, charging fit and green finance — the EV-only ecosystem.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.ev,
     icon: HUB_ICONS.ev,
     stats: { listings: "28K+", dealers: "900+" },
     searchPlaceholder: "Search EVs — Nexon EV, Ola, range…",
@@ -306,6 +312,7 @@ export const VEHICLE_HUB_REGISTRY: Record<EcosystemHubSlug, VehicleHubDefinition
     shortLabel: "Auto",
     tagline: "Passenger & cargo three-wheelers",
     description: "Auto rickshaws — CNG, passenger and cargo variants with local demand.",
+    heroImage: ECOSYSTEM_HERO_IMAGES.auto,
     icon: HUB_ICONS.auto,
     stats: { listings: "18K+", dealers: "2.4K+" },
     searchPlaceholder: "Search autos — Bajaj RE, Piaggio Ape…",

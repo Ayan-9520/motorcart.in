@@ -53,7 +53,10 @@ export function AuthCallbackPage() {
         void registerDeviceTouch();
         void logAuthActivity("oauth_callback", { flow: "exchange_or_session" });
         const u = useAuthStore.getState().user;
-        navigate(u ? resolvePostLoginPath(u.role as AppRole) : "/dashboard/customer", { replace: true });
+        navigate(
+          u ? resolvePostLoginPath(u.role as AppRole, null, u) : "/dashboard/customer",
+          { replace: true }
+        );
       } else {
         setMessage("Could not complete sign-in. Try signing in manually.");
         setTimeout(() => navigate("/login", { replace: true }), 2000);

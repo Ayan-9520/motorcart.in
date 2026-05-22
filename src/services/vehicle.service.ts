@@ -4,6 +4,7 @@ import type { VehicleListing, VehicleFilters, VehicleEnquiry, TestDriveBooking }
 import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
 import { filterVehicles, sortVehicles, paginateVehicles, slugify } from "@/lib/vehicle-utils";
 import type { VehicleSortOption } from "@/types/vehicle";
+import { resolveVehicleGallery } from "@/lib/media/resolve-images";
 
 type VehicleMetaExtras = VehicleListing["metadata"] & {
   dealerName?: string;
@@ -55,7 +56,10 @@ export function mapDbToListing(v: DbVehicle, dealer?: DbDealer | null): VehicleL
     city: v.city,
     state: v.state,
     location: v.location ?? `${v.city}, ${v.state}`,
-    images: v.images?.length ? v.images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80"],
+    images: resolveVehicleGallery(v.brand, v.model, v.body_type, v.images, 0, {
+      category,
+      fuelType: v.fuel_type,
+    }),
     features: v.features ?? [],
     description: v.description ?? undefined,
     isCertified: v.is_certified,

@@ -1,102 +1,122 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import {
-  ArrowRight,
-  Car,
-  ClipboardList,
-  Gavel,
-  Heart,
-  Landmark,
-  Search,
-  Wrench,
-} from "lucide-react";
+import { Activity, ArrowRight, Car } from "lucide-react";
+import { VehicleCard } from "@/features/vehicles/components/VehicleCard";
+import { MOCK_VEHICLES } from "@/data/vehicle-catalog";
+import type { VehicleListing } from "@/types/vehicle";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useAuthStore } from "@/store/authStore";
 import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
-import { DashboardPageShell } from "@/shared/layout/DashboardPageShell";
+import { CustomerDashboardHero } from "@/features/customer-ecosystem/components/CustomerDashboardHero";
+import { CustomerWidgetGrid } from "@/features/customer-ecosystem/components/CustomerWidgetGrid";
+import { CustomerAiInsightList } from "@/features/customer-ecosystem/components/CustomerAiInsightList";
+import { CustomerVehicleCard } from "@/features/customer-ecosystem/components/CustomerVehicleCard";
+import { useCustomerEcosystem } from "@/features/customer-ecosystem/hooks/useCustomerEcosystem";
+import {
+  buildProfileChecklist,
+  computeProfileCompletion,
+  getCustomerDisplayName,
+} from "@/features/customer-ecosystem/lib/profile-utils";
 import { setPageMeta } from "@/utils/seo";
-
-const QUICK = [
-  { label: "Browse cars", href: "/buy?hub=cars", icon: Car, hint: "New & used" },
-  { label: "Wishlist", href: "/wishlist", icon: Heart, hint: "Saved vehicles" },
-  { label: "Loan applications", href: "/dashboard/customer/loans", icon: Landmark, hint: "Track EMI" },
-  { label: "Service bookings", href: "/services/my-bookings", icon: Wrench, hint: "Garage visits" },
-  { label: "Service history", href: "/services/history", icon: ClipboardList, hint: "Past jobs" },
-  { label: "Auction bids", href: "/auctions/browse", icon: Gavel, hint: "Live lots" },
-  { label: "Smart search", href: "/search", icon: Search, hint: "⌘K global" },
-];
 
 export function CustomerDashboardPage() {
   const user = useAuthStore((s) => s.user);
-  const wishlistCount = useVehicleMarketStore((s) => s.wishlist.length);
+  const { data, loading } = useCustomerEcosystem();
+  const recentlyViewed = useVehicleMarketStore((s) => s.recentlyViewed);
+  const recentListings = recentlyViewed
+    .map((id) => MOCK_VEHICLES.find((v) => v.id === id))
+    .filter((v): v is VehicleListing => Boolean(v))
+    .slice(0, 3);
+
+  const displayName = getCustomerDisplayName(user);
+  const primaryVehicle = data?.vehicles.find((v) => v.isPrimary) ?? data?.vehicles[0];
+
+  const checklist = useMemo(
+    () => buildProfileChecklist(user, data?.preferences ?? { profileCompletion: 0, loyaltyTier: "Bronze", rewardPointsBalance: 0 }, primaryVehicle),
+    [user, data?.preferences, primaryVehicle]
+  );
+
+  const profileCompletion = useMemo(() => computeProfileCompletion(checklist), [checklist]);
+
+  const preferences = useMemo(
+    () => ({
+      ...(data?.preferences ?? { loyaltyTier: "Bronze", rewardPointsBalance: 0 }),
+      profileCompletion,
+      city: data?.preferences.city ?? user?.city,
+    }),
+    [data?.preferences, profileCompletion, user?.city]
+  );
 
   useEffect(() => {
-    setPageMeta({ title: "My Motorcart", description: "Your vehicles, loans, services & bids." });
+    setPageMeta({
+      title: "My Motorcart",
+      description: "Premium ownership hub — garage, insurance, finance & AI insights.",
+    });
   }, []);
 
-  return (
-    <DashboardPageShell
-      title="My Motorcart"
-      description={
-        user
-          ? `Welcome back, ${user.fullName} — manage wishlist, loans, services & auctions.`
-          : "Your personal automotive hub."
-      }
-      actions={
-        <Button variant="outline" size="sm" className="rounded-xl" asChild>
-          <Link to="/?site=1">Browse marketplace</Link>
-        </Button>
-      }
-    >
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-border/80 shadow-card">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Wishlist</p>
-            <p className="mt-1 text-2xl font-bold tabular-nums">{wishlistCount}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/80 shadow-card">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">KYC</p>
-            <p className="mt-1 text-lg font-semibold capitalize">{user?.kycStatus ?? "—"}</p>
-          </CardContent>
-        </Card>
-        <Card className="border-border/80 shadow-card sm:col-span-2">
-          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Account</p>
-              <p className="mt-1 font-medium">{user?.email}</p>
-            </div>
-            <Button size="sm" className="rounded-xl" asChild>
-              <Link to="/profile">
-                Profile <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+  const topInsight = data?.insights.find((i) => i.severity === "warning") ?? data?.insights[0];
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-foreground">Quick actions</h2>
-        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {QUICK.map(({ label, href, icon: Icon, hint }) => (
-            <Link
-              key={href}
-              to={href}
-              className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/80 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
-            >
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-              </span>
-              <span className="min-w-0">
-                <span className="block font-medium">{label}</span>
-                <span className="text-xs text-muted-foreground">{hint}</span>
-              </span>
+  return (
+    <div className="cos-page space-y-8">
+      <CustomerDashboardHero
+        displayName={displayName}
+        preferences={preferences}
+        profileCompletion={profileCompletion}
+        checklist={checklist}
+        topInsight={topInsight}
+        rewardPoints={data?.preferences.rewardPointsBalance ?? 0}
+        unreadNotifications={data?.unreadNotifications ?? 0}
+      />
+
+      <section className="space-y-4">
+        <div className="cos-section-head">
+          <h2 className="cos-section-title cos-section-title--lg">
+            <Activity className="h-5 w-5 text-primary" />
+            Ownership pulse
+          </h2>
+          <p className="cos-section-desc">
+            {primaryVehicle
+              ? `Snapshot for ${primaryVehicle.brand} ${primaryVehicle.model}`
+              : "Add a vehicle to unlock your ownership dashboard"}
+          </p>
+          <Button variant="ghost" size="sm" className="cos-section-link rounded-lg" asChild>
+            <Link to="/dashboard/customer/garage">
+              My Garage <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
-          ))}
+          </Button>
         </div>
+        <CustomerWidgetGrid widgets={data?.widgets ?? []} loading={loading} />
       </section>
-    </DashboardPageShell>
+
+      {data?.vehicles.length ? (
+        <section className="space-y-4">
+          <div className="cos-section-head">
+            <h2 className="cos-section-title cos-section-title--lg">
+              <Car className="h-5 w-5 text-primary" />
+              Your garage
+            </h2>
+            <p className="cos-section-desc">{data.vehicles.length} vehicle{data.vehicles.length > 1 ? "s" : ""} in your wallet</p>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {data.vehicles.slice(0, 2).map((v) => (
+              <CustomerVehicleCard key={v.id} vehicle={v} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      <CustomerAiInsightList insights={data?.insights ?? []} compact />
+
+      {recentListings.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="cos-section-title cos-section-title--lg">Recently viewed</h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {recentListings.map((v, i) => (
+              <VehicleCard key={v.id} vehicle={v} index={i} compact />
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
   );
 }

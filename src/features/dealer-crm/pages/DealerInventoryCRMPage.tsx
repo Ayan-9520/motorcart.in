@@ -1,20 +1,21 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, Star, CheckCircle, Sparkles, Wand2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Star, CheckCircle, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { BulkUploadZone } from "../components/BulkUploadZone";
 import { InventoryOptimizer } from "../components/InventoryOptimizer";
+import { DealerConsoleShell } from "../components/DealerConsoleShell";
+import { CRMDataToolbar } from "../components/CRMDataToolbar";
+import { VehicleInventoryDrawer, type VehicleFormState } from "../components/VehicleInventoryDrawer";
 import { useDealer } from "../hooks/useDealer";
 import { useDealerCRM } from "../hooks/useDealerCRM";
-import { createVehicle, updateVehicle, deleteVehicle } from "@/services/vehicle.service";
+import { usePaginatedFilter } from "../hooks/usePaginatedFilter";
+import { createVehicle, updateVehicle, deleteVehicle, mapDbToListing } from "@/services/vehicle.service";
 import { fetchDealerVehiclesByDealerId } from "../services/dealer.service";
 import { generateAISpecs } from "../lib/excel-parser";
-import { mapDbToListing } from "@/services/vehicle.service";
+import { calculateEmiMonthly } from "../data/indian-automobile-catalog";
 import type { DbVehicle } from "@/types/database";
 import type { VehicleListing } from "@/types/vehicle";
 import { formatCurrency } from "@/lib/utils";
@@ -22,62 +23,58 @@ import { vehicleDetailPath } from "@/lib/vehicle-utils";
 import toast from "react-hot-toast";
 import { setPageMeta } from "@/utils/seo";
 import { suggestVehiclePrice } from "../services/dealer-enterprise.service";
-import { AIInventoryTips, AIPricingInsight } from "@/ai/ecosystem";
+import { AIInventoryTips } from "@/ai/ecosystem";
 
 export function DealerInventoryCRMPage() {
   const { dealer, user } = useDealer();
   const { refetch: refetchCRM } = useDealerCRM();
   const [vehicles, setVehicles] = useState<VehicleListing[]>([]);
-  const [showForm, setShowForm] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const [editing, setEditing] = useState<VehicleListing | null>(null);
-  const [form, setForm] = useState({
-    title: "", brand: "", model: "", variant: "", year: 2024, price: 500000,
-    fuelType: "Petrol", transmission: "Manual", bodyType: "SUV",
-    category: "used-cars", kmsDriven: 0, owners: 1, city: "Mumbai", state: "Maharashtra",
-    color: "", description: "", imageUrl: "",
-    condition: "used" as const, discount: 0,
-  });
+  const [statusTab, setStatusTab] = useState("all");
 
-  const load = async () => {
+  const load = useCallback(async () => {
     if (!dealer) return;
     const rows = await fetchDealerVehiclesByDealerId(dealer.id);
-    if (rows.length) {
-      setVehicles(rows.map((v) => mapDbToListing(v as DbVehicle)));
-    }
-  };
+    setVehicles(rows.length ? rows.map((v) => mapDbToListing(v as DbVehicle)) : []);
+  }, [dealer]);
 
   useEffect(() => {
     setPageMeta({ title: "Inventory Management" });
-    load();
-  }, [dealer]);
+    void load();
+  }, [load]);
 
-  const aiFillSpecs = () => {
-    if (!form.brand || !form.model) {
-      toast.error("Enter brand and model first");
-      return;
-    }
-    const specs = generateAISpecs({
-      rowNumber: 0,
-      brand: form.brand,
-      model: form.model,
-      year: form.year,
-      fuel: form.fuelType,
-      transmission: form.transmission,
-      kmsDriven: form.kmsDriven,
-      ownership: form.owners,
-      price: form.price,
-      registrationState: form.state,
-    });
-    setForm((f) => ({
-      ...f,
-      description: f.description || `${form.year} ${form.brand} ${form.model} — ${specs.mileage}, ${specs.engine}.`,
-    }));
-    toast.success("AI filled description & specs");
-  };
+  const filteredByStatus = useMemo(() => {
+    if (statusTab === "all") return vehicles;
+    return vehicles.filter((v) => v.status === statusTab);
+  }, [vehicles, statusTab]);
 
-  const save = async () => {
-    if (!user || !dealer) return;
-    const payload = {
+  const {
+    query,
+    setQuery,
+    page,
+    setPage,
+    pageItems,
+    totalPages,
+    totalCount,
+    resetPage,
+  } = usePaginatedFilter(
+    filteredByStatus,
+    (v, q) => {
+      const s = q.toLowerCase();
+      return (
+        v.title.toLowerCase().includes(s) ||
+        v.brand.toLowerCase().includes(s) ||
+        v.model.toLowerCase().includes(s)
+      );
+    },
+    6
+  );
+
+  const buildPayload = (form: VehicleFormState) => {
+    const images = form.imageUrls.map((u) => u.trim()).filter(Boolean);
+    const emiMonthly = calculateEmiMonthly(form.price, form.emiRate, form.emiTenure);
+    return {
       title: form.title || `${form.year} ${form.brand} ${form.model}`,
       brand: form.brand,
       model: form.model,
@@ -94,10 +91,11 @@ export function DealerInventoryCRMPage() {
       city: form.city,
       state: form.state,
       description: form.description,
-      images: form.imageUrl ? [form.imageUrl] : [],
+      images,
       condition: form.condition,
       metadata: {
         discountPercent: form.discount,
+        emiMonthly,
         specifications: generateAISpecs({
           rowNumber: 0,
           brand: form.brand,
@@ -112,50 +110,73 @@ export function DealerInventoryCRMPage() {
         }),
       },
     };
+  };
 
+  const saveVehicle = async (form: VehicleFormState) => {
+    if (!user || !dealer) return;
+    const payload = buildPayload(form);
     if (editing) {
-      await updateVehicle(editing.id, payload);
-      toast.success("Updated");
+      await updateVehicle(editing.id, {
+        ...payload,
+        status: form.status,
+        is_featured: form.featured,
+      } as never);
+      toast.success("Listing updated");
     } else {
       await createVehicle(payload, user.id, dealer.id);
-      toast.success("Vehicle added");
+      toast.success("Vehicle added to inventory");
     }
-    setShowForm(false);
     setEditing(null);
-    load();
+    await load();
     refetchCRM();
+  };
+
+  const openAdd = () => {
+    setEditing(null);
+    setDrawerOpen(true);
+  };
+
+  const openEdit = (v: VehicleListing) => {
+    setEditing(v);
+    setDrawerOpen(true);
   };
 
   const markSold = async (id: string) => {
     await updateVehicle(id, { status: "sold" });
     toast.success("Marked sold");
-    load();
+    await load();
   };
 
   const toggleFeatured = async (v: VehicleListing) => {
     await updateVehicle(v.id, { is_featured: !v.isFeatured } as never);
-    load();
+    await load();
   };
 
   const remove = async (id: string) => {
-    if (!confirm("Delete listing?")) return;
+    if (!confirm("Delete this listing?")) return;
     await deleteVehicle(id);
     toast.success("Deleted");
-    load();
+    await load();
   };
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Inventory Management</h1>
-          <p className="text-muted-foreground">Manual add, bulk upload, AI optimizer</p>
-        </div>
-        <Button variant="default" className="gap-1" onClick={() => { setEditing(null); setShowForm(true); }}>
-          <Plus className="h-4 w-4" /> Add manually
-        </Button>
-      </div>
+  const statusFilters = [
+    { value: "all", label: "All" },
+    { value: "available", label: "Live" },
+    { value: "reserved", label: "Reserved" },
+    { value: "sold", label: "Sold" },
+  ];
 
+  return (
+    <DealerConsoleShell
+      title="Inventory management"
+      description="Add & edit vehicles with Indian brand catalog, multi-image URLs, EMI and featured listings."
+      crumbs={[{ label: "Inventory" }]}
+      actions={
+        <Button className="gap-1 rounded-xl" onClick={openAdd}>
+          <Plus className="h-4 w-4" /> Add vehicle
+        </Button>
+      }
+    >
       <Tabs defaultValue="list">
         <TabsList>
           <TabsTrigger value="list">All inventory</TabsTrigger>
@@ -163,112 +184,108 @@ export function DealerInventoryCRMPage() {
           <TabsTrigger value="optimizer">AI optimizer</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="list" className="mt-4">
-          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(240px,280px)]">
-            <div className="space-y-4 min-w-0">
-          {showForm && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {editing ? "Edit vehicle" : "Add vehicle"}
-                  <Button type="button" variant="outline" size="sm" className="gap-1" onClick={aiFillSpecs}>
-                    <Wand2 className="h-4 w-4" /> AI auto-fill specs
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {(["brand", "model", "variant", "title", "city", "state", "color", "imageUrl", "description"] as const).map((k) => (
-                  <div key={k} className={k === "description" ? "sm:col-span-2 lg:col-span-3" : ""}>
-                    <Label className="capitalize">{k === "imageUrl" ? "Main image URL" : k}</Label>
-                    <Input
-                      className="mt-1"
-                      value={String(form[k] ?? "")}
-                      onChange={(e) => setForm({ ...form, [k]: e.target.value })}
-                    />
-                  </div>
-                ))}
-                <div><Label>Year</Label><Input type="number" className="mt-1" value={form.year} onChange={(e) => setForm({ ...form, year: Number(e.target.value) })} /></div>
-                <div>
-                  <Label>Price (₹)</Label>
-                  <Input type="number" className="mt-1" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="mt-1 h-8 text-xs text-primary"
-                    onClick={() => {
-                      const s = suggestVehiclePrice({
-                        year: form.year,
-                        kmsDriven: form.kmsDriven,
-                        listedPrice: form.price || 500000,
-                        brand: form.brand,
-                      });
-                      setForm({ ...form, price: s.suggested });
-                      toast.success(`${formatCurrency(s.suggested)} · ${s.confidence}% confidence`);
-                    }}
-                  >
-                    AI price suggestion
-                  </Button>
-                </div>
-                <div><Label>KM driven</Label><Input type="number" className="mt-1" value={form.kmsDriven} onChange={(e) => setForm({ ...form, kmsDriven: Number(e.target.value) })} /></div>
-                <div><Label>Discount %</Label><Input type="number" className="mt-1" value={form.discount} onChange={(e) => setForm({ ...form, discount: Number(e.target.value) })} /></div>
-                <div className="sm:col-span-2 lg:col-span-3 flex gap-2">
-                  <Button variant="default" onClick={save}>Save listing</Button>
-                  <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
-                </div>
-                {form.price > 0 && (
-                  <div className="sm:col-span-2 lg:col-span-3">
-                    <AIPricingInsight price={form.price} />
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
+        <TabsContent value="list" className="mt-4 space-y-4">
+          <CRMDataToolbar
+            search={query}
+            onSearchChange={(v) => {
+              setQuery(v);
+              resetPage();
+            }}
+            searchPlaceholder="Search Hyundai, Creta, Nexon…"
+            page={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={setPage}
+            filters={statusFilters}
+            activeFilter={statusTab}
+            onFilterChange={(v) => {
+              setStatusTab(v);
+              resetPage();
+            }}
+          />
 
-          <div className="grid gap-4">
-            {vehicles.map((v) => (
-              <Card key={v.id} className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
-                <img src={v.images[0]} alt="" className="h-24 w-36 rounded-lg object-cover bg-muted" />
-                <div className="flex-1">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant={v.status === "available" ? "success" : "secondary"}>{v.status}</Badge>
-                    {v.isFeatured && <Badge>Featured</Badge>}
-                    {v.metadata.discountPercent ? <Badge className="bg-destructive text-white">{v.metadata.discountPercent}% off</Badge> : null}
+          <div className="grid gap-4 lg:grid-cols-[1fr_minmax(240px,280px)]">
+            <div className="space-y-3 min-w-0">
+              {pageItems.map((v) => (
+                <article key={v.id} className="dealer-inventory-row">
+                  <img
+                    src={v.images[0]}
+                    alt=""
+                    className="dealer-inventory-thumb"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant={v.status === "available" ? "default" : "secondary"}>{v.status}</Badge>
+                      {v.isFeatured && <Badge>Featured</Badge>}
+                      <Badge variant="outline">{v.brand}</Badge>
+                    </div>
+                    <h3 className="mt-1 font-semibold truncate">{v.title}</h3>
+                    <p className="text-primary font-bold">{formatCurrency(v.price)}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {v.kmsDriven.toLocaleString()} km · {v.fuelType} · {v.transmission}
+                    </p>
                   </div>
-                  <h3 className="mt-1 font-semibold">{v.title}</h3>
-                  <p className="text-primary font-bold">{formatCurrency(v.price)}</p>
+                  <div className="flex flex-wrap gap-1 shrink-0">
+                    <Button size="sm" variant="outline" asChild>
+                      <Link to={vehicleDetailPath(v)}>View</Link>
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(v)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => toggleFeatured(v)}>
+                      <Star className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => markSold(v.id)}>
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => remove(v.id)}>
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </article>
+              ))}
+              {!pageItems.length && (
+                <div className="dealer-os-card py-16 text-center text-muted-foreground">
+                  <Sparkles className="h-10 w-10 mx-auto mb-3 text-primary opacity-50" />
+                  No listings match — add Hyundai, Tata, Maruti stock from Add vehicle.
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" asChild><Link to={vehicleDetailPath(v)}>View</Link></Button>
-                  <Button size="sm" variant="outline" onClick={() => { setEditing(v); setShowForm(true); }}><Pencil className="h-4 w-4" /></Button>
-                  <Button size="sm" variant="outline" onClick={() => toggleFeatured(v)}><Star className="h-4 w-4" /></Button>
-                  <Button size="sm" variant="outline" onClick={() => markSold(v.id)}><CheckCircle className="h-4 w-4" /></Button>
-                  <Button size="sm" variant="outline" onClick={() => remove(v.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                </div>
-              </Card>
-            ))}
-            {!vehicles.length && (
-              <Card className="p-12 text-center text-muted-foreground">
-                <Sparkles className="h-10 w-10 mx-auto mb-3 text-primary opacity-50" />
-                No inventory yet. Add manually or bulk upload Excel.
-              </Card>
-            )}
-          </div>
+              )}
             </div>
-            <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <aside className="lg:sticky lg:top-24 lg:self-start">
               <AIInventoryTips vehicles={vehicles} />
             </aside>
           </div>
         </TabsContent>
 
         <TabsContent value="upload" className="mt-4">
-          <BulkUploadZone dealer={dealer} sellerId={user?.id} onComplete={() => { load(); refetchCRM(); }} />
+          <BulkUploadZone dealer={dealer} sellerId={user?.id} onComplete={() => { void load(); refetchCRM(); }} />
         </TabsContent>
 
         <TabsContent value="optimizer" className="mt-4">
           <InventoryOptimizer vehicles={vehicles} />
         </TabsContent>
       </Tabs>
-    </div>
+
+      <VehicleInventoryDrawer
+        open={drawerOpen}
+        editing={editing}
+        defaultCity={dealer?.city ?? "Mumbai"}
+        defaultState={dealer?.state ?? "Maharashtra"}
+        onClose={() => {
+          setDrawerOpen(false);
+          setEditing(null);
+        }}
+        onSave={saveVehicle}
+        onAiPrice={(form) => {
+          const s = suggestVehiclePrice({
+            year: form.year,
+            kmsDriven: form.kmsDriven,
+            listedPrice: form.price || 500000,
+            brand: form.brand,
+          });
+          toast.success(`Suggested ${formatCurrency(s.suggested)} · ${s.confidence}% confidence`);
+        }}
+      />
+    </DealerConsoleShell>
   );
 }

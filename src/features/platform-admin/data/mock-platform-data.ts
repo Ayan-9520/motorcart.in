@@ -1,6 +1,8 @@
 import type {
+  AdminAuctionRow,
   AdminDealerRow,
   AdminUserRow,
+  AdminVehicleRow,
   AnalyticsSeriesPoint,
   CmsPageRow,
   FraudAlertRow,
@@ -10,6 +12,8 @@ import type {
   PlatformNotificationRow,
   PlatformOverview,
   PlatformReportRow,
+  PlatformTransactionRow,
+  RevenueAnalytics,
   SubscriptionPlanRow,
   SupportTicketRow,
 } from "../types";
@@ -182,3 +186,107 @@ export const MOCK_REPORTS: PlatformReportRow[] = [
     createdAt: new Date().toISOString(),
   },
 ];
+
+export const MOCK_VEHICLES: AdminVehicleRow[] = [
+  {
+    id: "v-1",
+    title: "2022 Hyundai Creta SX",
+    brand: "Hyundai",
+    model: "Creta",
+    price: 1280000,
+    city: "Mumbai",
+    status: "available",
+    isFeatured: false,
+    platformFeatured: true,
+    dealerName: "Velocity Motors",
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: "v-2",
+    title: "2020 Maruti Swift VDI",
+    brand: "Maruti",
+    model: "Swift",
+    price: 520000,
+    city: "Delhi",
+    status: "draft",
+    isFeatured: false,
+    platformFeatured: false,
+    dealerName: "Coastal Cars",
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+  {
+    id: "v-3",
+    title: "2019 Honda City ZX",
+    brand: "Honda",
+    model: "City",
+    price: 890000,
+    city: "Bengaluru",
+    status: "available",
+    isFeatured: true,
+    platformFeatured: false,
+    dealerName: "Prime Wheels",
+    createdAt: new Date(Date.now() - 172800000).toISOString(),
+  },
+];
+
+export const MOCK_AUCTIONS: AdminAuctionRow[] = [
+  {
+    id: "a-1",
+    title: "Fleet disposal — 12 sedans",
+    status: "upcoming",
+    isFeatured: false,
+    currentBid: 0,
+    reservePrice: 4500000,
+    bidCount: 0,
+    endsAt: new Date(Date.now() + 86400000 * 2).toISOString(),
+  },
+  {
+    id: "a-2",
+    title: "Damaged stock — insurance lot",
+    status: "live",
+    isFeatured: true,
+    currentBid: 2100000,
+    reservePrice: 2500000,
+    bidCount: 14,
+    endsAt: new Date(Date.now() + 3600000 * 6).toISOString(),
+  },
+];
+
+export const MOCK_TRANSACTIONS: PlatformTransactionRow[] = [
+  {
+    id: "tx-1",
+    type: "loan",
+    reference: "FIN-8821",
+    party: "HDFC · Rahul S.",
+    amount: 850000,
+    status: "disbursed",
+    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+  },
+  {
+    id: "tx-2",
+    type: "subscription",
+    reference: "SUB-pro-441",
+    party: "Velocity Motors",
+    amount: 4999,
+    status: "paid",
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: "tx-3",
+    type: "auction",
+    reference: "AUC-2201",
+    party: "Buyer #882",
+    amount: 125000,
+    status: "settled",
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+  },
+];
+
+export const MOCK_REVENUE: RevenueAnalytics = {
+  ...MOCK_ANALYTICS,
+  gmvTotal: 42800000,
+  mrr: MOCK_OVERVIEW.mrrEstimate,
+  loanDisbursed: 12400000,
+  subscriptionRevenue: 2840000,
+  auctionFees: 890000,
+};

@@ -1,6 +1,7 @@
 import type { HubCategorySlug } from "@/features/marketplace/types";
 import { supabase } from "@/integrations/supabase/client";
 import { partMatchesVehicleHub } from "@/lib/vehicle-hub-catalog";
+import { resolvePartGallery } from "@/lib/media/resolve-images";
 import type { DbPart, DbReview } from "@/types/database";
 import { MOCK_PARTS_CATALOG } from "../data/mock-parts-catalog";
 import type {
@@ -53,7 +54,7 @@ export function mapDbPart(row: DbPart & { description?: string; sku?: string; gs
     bulkMinQty: row.bulk_min_qty ?? 1,
     rating: Number(row.rating),
     reviewCount: row.review_count,
-    images: row.images?.length ? row.images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80"],
+    images: resolvePartGallery(cat, row.slug, row.images),
     compatibility: row.compatibility ?? [],
     vehicleHubs: (row as { vehicle_hubs?: HubCategorySlug[] }).vehicle_hubs,
     isFeatured: row.is_featured,

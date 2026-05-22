@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { BrandLogo } from "@/components/ui/BrandLogo";
 import { PARTS_HUB_BRANDS } from "../data/parts-hub-data";
 
 export function PartsBrandStrip() {
@@ -11,8 +10,15 @@ export function PartsBrandStrip() {
       <ul className="parts-brands-row">
         {PARTS_HUB_BRANDS.map((b) => (
           <li key={b.name}>
-            <Link to="/parts/browse" className="parts-brand-tile group" title={b.name}>
-              <BrandLogo src={b.logo} alt={b.name} size="sm" className="opacity-80 group-hover:opacity-100" />
+            <Link to="/parts/browse" className="parts-brand-tile group overflow-hidden" title={b.name}>
+              <img
+                src={b.image}
+                alt={b.name}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <span className="parts-brand-tile-label">{b.name}</span>
             </Link>
           </li>
         ))}

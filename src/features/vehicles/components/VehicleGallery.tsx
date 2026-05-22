@@ -2,6 +2,8 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { cleanImageUrls } from "@/lib/media/vehicle-media-registry";
+import { VEHICLE_IMAGE_FALLBACK } from "./VehicleImage";
 
 interface VehicleGalleryProps {
   images: string[];
@@ -10,7 +12,8 @@ interface VehicleGalleryProps {
 
 export function VehicleGallery({ images, title }: VehicleGalleryProps) {
   const [active, setActive] = useState(0);
-  const list = images.length ? images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=1200&q=80"];
+  const safe = cleanImageUrls(images);
+  const list = safe.length ? safe : [VEHICLE_IMAGE_FALLBACK];
 
   const prev = () => setActive((i) => (i === 0 ? list.length - 1 : i - 1));
   const next = () => setActive((i) => (i === list.length - 1 ? 0 : i + 1));
@@ -19,7 +22,12 @@ export function VehicleGallery({ images, title }: VehicleGalleryProps) {
     <>
       <div className="space-y-3">
         <div className="relative aspect-[16/10] overflow-hidden rounded-2xl bg-muted">
-          <img src={list[active]} alt={`${title} - ${active + 1}`} className="h-full w-full object-cover" />
+          <img
+            src={list[active]}
+            alt={`${title} - ${active + 1}`}
+            className="h-full w-full object-cover object-center"
+            referrerPolicy="no-referrer"
+          />
           {list.length > 1 && (
             <>
               <Button type="button" size="icon" variant="secondary" className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full border border-border bg-card" onClick={prev}>
@@ -48,7 +56,7 @@ export function VehicleGallery({ images, title }: VehicleGalleryProps) {
                 i === active ? "border-primary ring-2 ring-primary/30" : "border-transparent opacity-70 hover:opacity-100"
               )}
             >
-              <img src={img} alt="" className="h-full w-full object-cover" />
+              <img src={img} alt="" className="h-full w-full object-cover object-center" referrerPolicy="no-referrer" />
             </button>
           ))}
         </div>

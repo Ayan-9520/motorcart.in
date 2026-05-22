@@ -43,6 +43,8 @@ export interface VehicleHubDefinition {
   shortLabel: string;
   tagline: string;
   description: string;
+  /** Hero background — premium automotive photography */
+  heroImage: string;
   icon: LucideIcon;
   stats: { listings: string; dealers: string };
   searchPlaceholder: string;

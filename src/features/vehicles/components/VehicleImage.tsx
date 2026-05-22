@@ -1,43 +1,115 @@
-import { useState } from "react";
-import { Car } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Car, Bike, Bus, Truck, Zap } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getVehicleHero, inferVehicleSegment, SEGMENT_DEFAULTS } from "@/lib/media/vehicle-media-registry";
+import { resolveVehicleGalleryFromListing, type VehicleResolveInput } from "@/lib/media/resolve-images";
+import { VehicleImageSkeleton } from "./VehicleImageSkeleton";
 
-/** Reliable fallback when CDN / external image fails */
-import { optimizeImageUrl } from "@/lib/media-urls";
+export type VehicleImageMeta = VehicleResolveInput;
 
-export const VEHICLE_IMAGE_FALLBACK = optimizeImageUrl(
-  "https://images.unsplash.com/photo-1617788138017-80837c34d4af",
-  { w: 1200, h: 800, q: 85 }
-);
+export const VEHICLE_IMAGE_FALLBACK = SEGMENT_DEFAULTS.cars;
 
-export function vehicleImageSrc(images?: string[]): string {
-  const src = images?.[0]?.trim();
-  return src && src.length > 4 ? src : VEHICLE_IMAGE_FALLBACK;
+/** Card/detail hero — segment + brand/model correct; safe uploads first */
+export function vehicleImageSrc(images?: string[] | null, meta?: VehicleImageMeta, seed = 0): string {
+  if (!meta) {
+    return images?.[0] && images[0].length > 20 ? images[0] : VEHICLE_IMAGE_FALLBACK;
+  }
+  const gallery = resolveVehicleGalleryFromListing({
+    ...meta,
+    images,
+    seed,
+  });
+  return gallery[0] ?? getVehicleHero({
+    brand: meta.brand,
+    model: meta.model,
+    bodyType: meta.bodyType,
+    category: meta.category,
+    fuelType: meta.fuelType,
+    seed,
+  });
+}
+
+function segmentIcon(meta?: VehicleImageMeta) {
+  if (!meta) return Car;
+  const seg = inferVehicleSegment(meta);
+  if (seg === "bikes") return Bike;
+  if (seg === "trucks" || seg === "equipment") return Truck;
+  if (seg === "buses") return Bus;
+  if (seg === "ev") return Zap;
+  return Car;
 }
 
 interface VehicleImageProps {
   src?: string;
   alt: string;
   className?: string;
+  meta?: VehicleImageMeta;
+  images?: string[] | null;
+  sizes?: string;
 }
 
-export function VehicleImage({ src, alt, className }: VehicleImageProps) {
-  const initial = src?.trim() && src.length > 4 ? src : VEHICLE_IMAGE_FALLBACK;
-  const [current, setCurrent] = useState(initial);
+export function VehicleImage({
+  src,
+  alt,
+  className,
+  meta,
+  images,
+  sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
+}: VehicleImageProps) {
+  const resolved = meta ? vehicleImageSrc(images, meta) : src && src.length > 20 ? src : VEHICLE_IMAGE_FALLBACK;
+
+  const fallback = meta
+    ? getVehicleHero({
+        brand: meta.brand,
+        model: meta.model,
+        bodyType: meta.bodyType,
+        category: meta.category,
+        fuelType: meta.fuelType,
+      })
+    : VEHICLE_IMAGE_FALLBACK;
+
+  const [current, setCurrent] = useState(resolved);
+  const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    setLoaded(false);
+    setFailed(false);
+    setCurrent(resolved);
+  }, [resolved]);
+
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img?.complete && img.naturalWidth > 0) {
+      setLoaded(true);
+    }
+  }, [current]);
+
+  const PlaceholderIcon = segmentIcon(meta);
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full overflow-hidden bg-muted">
+      {!loaded && !failed && <VehicleImageSkeleton />}
       {!failed ? (
         <img
+          ref={imgRef}
           src={current}
           alt={alt}
-          className={cn("h-full w-full", className)}
+          sizes={sizes}
+          referrerPolicy="no-referrer"
+          className={cn(
+            "h-full w-full object-cover object-center transition-opacity duration-300",
+            loaded ? "opacity-100" : "opacity-0",
+            className
+          )}
           loading="lazy"
           decoding="async"
+          onLoad={() => setLoaded(true)}
           onError={() => {
-            if (current !== VEHICLE_IMAGE_FALLBACK) {
-              setCurrent(VEHICLE_IMAGE_FALLBACK);
+            if (current !== fallback) {
+              setCurrent(fallback);
+              setLoaded(false);
             } else {
               setFailed(true);
             }
@@ -50,7 +122,7 @@ export function VehicleImage({ src, alt, className }: VehicleImageProps) {
             className
           )}
         >
-          <Car className="h-10 w-10 opacity-35" strokeWidth={1.25} />
+          <PlaceholderIcon className="h-10 w-10 opacity-35" strokeWidth={1.25} />
           <span className="text-[10px] font-medium">No image</span>
         </div>
       )}

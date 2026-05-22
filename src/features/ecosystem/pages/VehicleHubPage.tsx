@@ -14,12 +14,12 @@ import { HubServiceGrid } from "../components/HubServiceGrid";
 export function VehicleHubPage() {
   const { pathname } = useLocation();
   const slug = parseEcosystemHubFromPath(pathname);
-  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
   const hub = slug ? getVehicleHub(slug) : null;
 
   useEffect(() => {
-    if (slug) setActiveHub(slug as HubCategorySlug);
-  }, [slug, setActiveHub]);
+    if (slug) setBuyContext(slug as HubCategorySlug, "used");
+  }, [slug, setBuyContext]);
 
   useEffect(() => {
     if (!hub) return;

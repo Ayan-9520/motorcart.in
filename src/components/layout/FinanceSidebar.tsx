@@ -1,17 +1,32 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, FileText, Users, Building2, ChevronLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  FileText,
+  Users,
+  Building2,
+  ChevronLeft,
+  Gauge,
+  Plug,
+  Shield,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUIStore } from "@/store/uiStore";
 import { Button } from "@/components/ui/button";
 
 const customerLinks = [
   { to: "/dashboard/customer/loans", label: "My loans", icon: FileText },
-  { to: "/finance", label: "Marketplace", icon: Building2 },
+  { to: "/dashboard/customer/insurance", label: "My insurance", icon: Shield },
+  { to: "/insurance", label: "Buy insurance", icon: Shield },
+  { to: "/finance", label: "Finance hub", icon: Building2 },
 ];
 
 const dsaLinks = [
   { to: "/dashboard/dsa", label: "DSA overview", icon: LayoutDashboard },
   { to: "/dashboard/dsa/applications", label: "Applications", icon: FileText },
+  { to: "/dashboard/dsa/leads", label: "Lead CRM", icon: Gauge },
+  { to: "/dashboard/dsa/integrations", label: "Bank APIs", icon: Plug },
+  { to: "/dashboard/dsa/team", label: "Team", icon: Users },
+  { to: "/finance/offers", label: "Loan marketplace", icon: Building2 },
 ];
 
 const lenderLinks = [

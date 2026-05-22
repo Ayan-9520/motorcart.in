@@ -2,6 +2,7 @@ import { supabase } from "@/shared/api/client";
 import type { AppRole, KycStatus, UserStatus } from "@/types/database";
 import {
   MOCK_ANALYTICS,
+  MOCK_AUCTIONS,
   MOCK_BANNERS,
   MOCK_CMS,
   MOCK_DEALERS,
@@ -11,12 +12,17 @@ import {
   MOCK_OVERVIEW,
   MOCK_PLANS,
   MOCK_REPORTS,
+  MOCK_REVENUE,
   MOCK_TICKETS,
+  MOCK_TRANSACTIONS,
   MOCK_USERS,
+  MOCK_VEHICLES,
 } from "../data/mock-platform-data";
 import type {
+  AdminAuctionRow,
   AdminDealerRow,
   AdminUserRow,
+  AdminVehicleRow,
   CmsPageRow,
   FraudAlertRow,
   KycQueueRow,
@@ -27,6 +33,8 @@ import type {
   PlatformReportRow,
   PlatformFraudStatus,
   PlatformTicketStatus,
+  PlatformTransactionRow,
+  RevenueAnalytics,
   SubscriptionPlanRow,
   SupportTicketRow,
 } from "../types";
@@ -151,7 +159,201 @@ export async function fetchKycQueue(): Promise<KycQueueRow[]> {
 }
 
 export async function fetchPlatformAnalytics(): Promise<PlatformAnalytics> {
-  return MOCK_ANALYTICS;
+  return fetchRevenueAnalytics();
+}
+
+export async function fetchRevenueAnalytics(): Promise<RevenueAnalytics> {
+  try {
+    const { data: disbursed } = await supabase
+      .from("finance_applications")
+      .select("loan_amount")
+      .eq("status", "disbursed")
+      .limit(500);
+    const loanTotal = (disbursed ?? []).reduce((s, r) => s + Number(r.loan_amount ?? 0), 0);
+    if (loanTotal > 0) {
+      return {
+        ...MOCK_REVENUE,
+        loanDisbursed: loanTotal,
+        gmvTotal: loanTotal + MOCK_REVENUE.subscriptionRevenue + MOCK_REVENUE.auctionFees,
+      };
+    }
+  } catch {
+    /* mock */
+  }
+  return MOCK_REVENUE;
+}
+
+export async function fetchPlatformTransactions(): Promise<PlatformTransactionRow[]> {
+  try {
+    const { data } = await supabase
+      .from("finance_applications")
+      .select("id, loan_amount, status, created_at, users(full_name), banks(name)")
+      .in("status", ["approved", "disbursed"])
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (data?.length) {
+      return data.map((r) => {
+        const row = r as unknown as Record<string, unknown> & {
+          users?: { full_name: string } | null;
+          banks?: { name: string } | null;
+        };
+        return {
+          id: String(row.id),
+          type: "loan" as const,
+          reference: `FIN-${String(row.id).slice(0, 8)}`,
+          party: `${row.banks?.name ?? "Bank"} · ${row.users?.full_name ?? "Applicant"}`,
+          amount: Number(row.loan_amount),
+          status: String(row.status),
+          createdAt: String(row.created_at),
+        };
+      });
+    }
+  } catch {
+    /* mock */
+  }
+  return MOCK_TRANSACTIONS;
+}
+
+export async function fetchAdminVehicles(): Promise<AdminVehicleRow[]> {
+  const { data, error } = await supabase
+    .from("vehicles")
+    .select("id, title, brand, model, price, city, status, is_featured, metadata, created_at, dealers(name)")
+    .order("created_at", { ascending: false })
+    .limit(150);
+
+  if (error || !data?.length) return useMock(MOCK_VEHICLES, error);
+
+  return data.map((v) => {
+    const row = v as unknown as Record<string, unknown> & { dealers?: { name: string } | null };
+    const meta = (row.metadata as Record<string, unknown>) ?? {};
+    return {
+      id: String(row.id),
+      title: String(row.title),
+      brand: String(row.brand),
+      model: String(row.model),
+      price: Number(row.price),
+      city: String(row.city),
+      status: String(row.status),
+      isFeatured: Boolean(row.is_featured),
+      platformFeatured: Boolean(meta.platform_featured),
+      dealerName: row.dealers?.name ?? null,
+      createdAt: String(row.created_at),
+    };
+  });
+}
+
+export async function moderateVehicle(
+  id: string,
+  patch: Partial<{ status: string; is_featured: boolean; platform_featured: boolean }>
+): Promise<{ error: string | null }> {
+  const update: Record<string, unknown> = {};
+  if (patch.status) update.status = patch.status;
+  if (patch.is_featured != null) update.is_featured = patch.is_featured;
+
+  if (patch.platform_featured != null) {
+    const { data: current } = await supabase.from("vehicles").select("metadata").eq("id", id).maybeSingle();
+    const meta = ((current?.metadata as Record<string, unknown>) ?? {}) as Record<string, unknown>;
+    update.metadata = { ...meta, platform_featured: patch.platform_featured };
+  }
+
+  const { error } = await supabase.from("vehicles").update(update).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function fetchAdminAuctions(): Promise<AdminAuctionRow[]> {
+  const { data, error } = await supabase
+    .from("auctions")
+    .select("id, title, status, is_featured, current_bid, reserve_price, bid_count, ends_at")
+    .order("created_at", { ascending: false })
+    .limit(80);
+
+  if (error || !data?.length) return useMock(MOCK_AUCTIONS, error);
+
+  return data.map((a) => ({
+    id: a.id,
+    title: a.title,
+    status: a.status,
+    isFeatured: a.is_featured,
+    currentBid: Number(a.current_bid ?? 0),
+    reservePrice: Number(a.reserve_price ?? 0),
+    bidCount: a.bid_count ?? 0,
+    endsAt: a.ends_at,
+  }));
+}
+
+export async function updateAdminAuction(
+  id: string,
+  patch: Partial<{ status: string; is_featured: boolean }>
+): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("auctions").update(patch).eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function createPlatformNotification(payload: {
+  title: string;
+  body: string;
+  channel: string;
+  audience: string;
+}): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("platform_notifications").insert({
+    title: payload.title,
+    body: payload.body,
+    channel: payload.channel,
+    audience: payload.audience,
+    status: "scheduled",
+    scheduled_at: new Date(Date.now() + 3600000).toISOString(),
+  });
+  if (error) return { error: error.message };
+  return { error: null };
+}
+
+export async function sendPlatformNotification(id: string): Promise<{ error: string | null }> {
+  const { error } = await supabase
+    .from("platform_notifications")
+    .update({ status: "sent", sent_at: new Date().toISOString() })
+    .eq("id", id);
+  return { error: error?.message ?? null };
+}
+
+export async function upsertCmsPage(payload: {
+  id?: string;
+  slug: string;
+  title: string;
+  body: string;
+  status: "draft" | "published" | "archived";
+}): Promise<{ error: string | null }> {
+  if (payload.id) {
+    const { error } = await supabase
+      .from("platform_cms_pages")
+      .update({
+        slug: payload.slug,
+        title: payload.title,
+        body: payload.body,
+        status: payload.status,
+        updated_at: new Date().toISOString(),
+        published_at: payload.status === "published" ? new Date().toISOString() : null,
+      })
+      .eq("id", payload.id);
+    return { error: error?.message ?? null };
+  }
+  const { error } = await supabase.from("platform_cms_pages").insert({
+    slug: payload.slug,
+    title: payload.title,
+    body: payload.body,
+    status: payload.status,
+  });
+  return { error: error?.message ?? null };
+}
+
+export async function generatePlatformReport(reportKey: string, title: string): Promise<{ error: string | null }> {
+  const { error } = await supabase.from("platform_report_snapshots").insert({
+    report_key: reportKey,
+    title,
+    period_label: new Date().toLocaleString("en-IN", { month: "long", year: "numeric" }),
+    payload: { generatedAt: new Date().toISOString(), source: "admin_erp" },
+  });
+  return { error: error?.message ?? null };
 }
 
 export async function fetchSubscriptionPlans(): Promise<SubscriptionPlanRow[]> {

@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Flame, MapPin, Sparkles, Trophy, Users, Zap } from "lucide-react";
+import { COMMUNITY_AVATARS } from "@/lib/media/india-media-catalog";
 
 export const COMMUNITY_LIVE_STATS = [
   { label: "Active members", value: "128K+", icon: Users },
@@ -26,7 +27,7 @@ export const COMMUNITY_SPOTLIGHT: CommunitySpotlight[] = [
     role: "Enthusiast",
     followers: "12.4K",
     badge: "Top reviewer",
-    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&q=80",
+    avatarUrl: COMMUNITY_AVATARS[0],
   },
   {
     id: "s2",
@@ -35,7 +36,7 @@ export const COMMUNITY_SPOTLIGHT: CommunitySpotlight[] = [
     role: "Creator",
     followers: "28K",
     badge: "Verified",
-    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&q=80",
+    avatarUrl: COMMUNITY_AVATARS[1],
   },
   {
     id: "s3",
@@ -44,7 +45,7 @@ export const COMMUNITY_SPOTLIGHT: CommunitySpotlight[] = [
     role: "Dealer",
     followers: "41K",
     badge: "OEM partner",
-    avatarUrl: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=120&q=80",
+    avatarUrl: COMMUNITY_AVATARS[2],
   },
   {
     id: "s4",
@@ -53,7 +54,7 @@ export const COMMUNITY_SPOTLIGHT: CommunitySpotlight[] = [
     role: "Influencer",
     followers: "19K",
     badge: "EV expert",
-    avatarUrl: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&q=80",
+    avatarUrl: COMMUNITY_AVATARS[3],
   },
 ];
 

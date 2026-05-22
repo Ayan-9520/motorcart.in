@@ -1,8 +1,16 @@
 import type { AuctionListing, AuctionBid, AuctionMessage } from "../types";
+import { AUCTION_LISTING_IMAGES, getModelImages } from "@/lib/media/india-media-catalog";
+import { resolveAuctionImages } from "@/lib/media/resolve-images";
 
-const img = "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80";
-const img2 = "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80";
-const img3 = "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=800&q=80";
+const img = AUCTION_LISTING_IMAGES[0];
+const img2 = AUCTION_LISTING_IMAGES[1];
+const img3 = AUCTION_LISTING_IMAGES[2];
+const img4 = AUCTION_LISTING_IMAGES[3];
+const imgEv = getModelImages("Tata", "Nexon EV", "SUV", 0, {
+  category: "ev",
+  fuelType: "Electric",
+})[0]!;
+const imgBike = getModelImages("Royal Enfield", "Classic 350", "Bike", 0, { category: "bikes" })[0]!;
 
 const endsIn = (hours: number) => new Date(Date.now() + hours * 3600000).toISOString();
 const startsIn = (hours: number) => new Date(Date.now() + hours * 3600000).toISOString();
@@ -137,6 +145,10 @@ export const MOCK_BIDS: Record<string, AuctionBid[]> = {
     { id: "b5", auctionId: "a2", bidderId: "u1", bidderName: "Rahul M.", amount: 1075000, isAutoBid: false, createdAt: new Date(Date.now() - 180000).toISOString() },
   ],
 };
+
+for (const auction of MOCK_AUCTIONS) {
+  auction.images = resolveAuctionImages(auction.title, auction.images);
+}
 
 export const MOCK_MESSAGES: Record<string, AuctionMessage[]> = {
   a1: [

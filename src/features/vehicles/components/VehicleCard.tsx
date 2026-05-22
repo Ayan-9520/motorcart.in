@@ -31,7 +31,7 @@ import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
 import type { FairPriceLabel, VehicleListing } from "@/types/vehicle";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
-import { VehicleImage, vehicleImageSrc } from "./VehicleImage";
+import { VehicleImage } from "./VehicleImage";
 
 interface VehicleCardProps {
   vehicle: VehicleListing;
@@ -117,7 +117,14 @@ export function VehicleCard({ vehicle, index = 0, layout = "grid", compact = tru
               className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-muted sm:w-56 md:w-64"
             >
               <VehicleImage
-                src={vehicleImageSrc(vehicle.images)}
+                images={vehicle.images}
+                meta={{
+                  brand: vehicle.brand,
+                  model: vehicle.model,
+                  bodyType: vehicle.bodyType,
+                  category: vehicle.category,
+                  fuelType: vehicle.fuelType,
+                }}
                 alt={vehicle.title}
                 className="relative h-full w-full object-cover"
               />
@@ -178,7 +185,14 @@ export function VehicleCard({ vehicle, index = 0, layout = "grid", compact = tru
         <Link to={detailPath} className="block">
           <div className={cn("relative overflow-hidden bg-muted", compact ? "aspect-[16/10]" : "aspect-[16/11]")}>
             <VehicleImage
-              src={vehicleImageSrc(vehicle.images)}
+              images={vehicle.images}
+              meta={{
+                brand: vehicle.brand,
+                model: vehicle.model,
+                bodyType: vehicle.bodyType,
+                category: vehicle.category,
+                fuelType: vehicle.fuelType,
+              }}
               alt={vehicle.title}
               className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
             />

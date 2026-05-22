@@ -38,7 +38,7 @@ export function HomePage() {
       title: "Motorcart.in — India's AI Automobile Ecosystem",
       description: SITE_TAGLINE,
     });
-    useVehicleHubStore.getState().setActiveHub("cars");
+    useVehicleHubStore.getState().setBuyContext("cars", "used");
   }, []);
 
   return (

@@ -15,6 +15,7 @@ import {
   resolveHubMarketplacePath,
   useVehicleHubStore,
 } from "@/store/vehicleHubStore";
+import { parseBuyMarketplaceRoute } from "../lib/route-utils";
 import type { EcosystemHubSlug } from "@/features/ecosystem/types";
 import type { HubCategorySlug } from "../types";
 import { hubCategoryLabel } from "../lib/route-utils";
@@ -27,11 +28,10 @@ const HUB_ICONS: Record<HubCategorySlug, LucideIcon> = {
   buses: Bus,
   auto: CarTaxiFront,
   equipment: Truck,
-  ev: Car,
+  ev: Zap,
 };
 
 type VehicleHubIconBarProps = {
-  /** inline = compact strip beside logo in navbar row 1 */
   variant?: "nav" | "page" | "inline";
   className?: string;
   onNavigate?: () => void;
@@ -43,22 +43,34 @@ export function VehicleHubIconBar({
   onNavigate,
 }: VehicleHubIconBarProps) {
   const activeHub = useVehicleHubStore((s) => s.activeHub);
-  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const activeCondition = useVehicleHubStore((s) => s.activeCondition);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
+
+  const route = parseBuyMarketplaceRoute(pathname, new URLSearchParams(search));
 
   const onSelect = (hub: EcosystemHubSlug) => {
-    setActiveHub(hub);
-    const target = pathname.startsWith("/buy") || pathname.startsWith("/sell")
-      ? resolveHubMarketplacePath(pathname, hub)
-      : hubEcosystemPath(hub);
+    const condition = route?.condition ?? activeCondition;
+    setBuyContext(hub, condition);
+    const target =
+      pathname.startsWith("/buy") ||
+      pathname.startsWith("/sell") ||
+      pathname.startsWith("/parts") ||
+      pathname.startsWith("/services") ||
+      pathname.startsWith("/new-cars") ||
+      pathname.startsWith("/used-cars")
+        ? resolveHubMarketplacePath(pathname, hub, condition, search)
+        : hubEcosystemPath(hub);
     navigate(target);
-    window.dispatchEvent(new CustomEvent("motorcart:hub-change", { detail: { hub } }));
+    window.dispatchEvent(
+      new CustomEvent("motorcart:hub-change", { detail: { hub, condition } })
+    );
     onNavigate?.();
   };
 
   const isSellContext = pathname.startsWith("/sell");
-  const activeFromPath = pathname.split("/")[1] as EcosystemHubSlug | undefined;
+  const condLabel = activeCondition === "new" ? "New" : "Pre-owned";
 
   return (
     <nav
@@ -73,11 +85,11 @@ export function VehicleHubIconBar({
     >
       {PRIMARY_VEHICLE_HUBS.map((hub) => {
         const Icon = HUB_ICONS[hub];
-        const isActive = activeHub === hub || activeFromPath === hub;
+        const isActive = route?.hub === hub || activeHub === hub;
         const copy = getHubCopy(hub);
         const title = isSellContext
           ? `Sell ${copy.plural.toLowerCase()} — Motorcart`
-          : `Buy ${copy.plural.toLowerCase()} — new & pre-owned`;
+          : `Buy ${condLabel.toLowerCase()} ${copy.plural.toLowerCase()} — Motorcart`;
 
         return (
           <button

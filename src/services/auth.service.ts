@@ -62,6 +62,12 @@ export type SignUpPayload = {
   fullName: string;
   phone?: string;
   role?: AppRole;
+  /** Business registration — sets pending_verification via DB trigger */
+  businessSignup?: boolean;
+  companyName?: string;
+  city?: string;
+  state?: string;
+  businessMeta?: Record<string, unknown>;
 };
 
 /** PostgREST: .single() returns 406 when 0 rows — use maybeSingle() */
@@ -154,8 +160,13 @@ export async function signUpWithEmail(payload: SignUpPayload) {
       emailRedirectTo: authRedirectUrl(),
       data: {
         full_name: payload.fullName.trim(),
-        role: payload.role,
+        role: payload.role ?? "customer",
         phone: phoneDigits,
+        business_signup: payload.businessSignup ?? false,
+        company_name: payload.companyName?.trim(),
+        city: payload.city?.trim(),
+        state: payload.state?.trim(),
+        business: payload.businessMeta ?? undefined,
       },
     },
   });

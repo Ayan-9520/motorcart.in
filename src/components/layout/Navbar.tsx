@@ -16,9 +16,17 @@ import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { VehicleHubIconBar } from "@/features/marketplace/components/VehicleHubIconBar";
 
+function isInsuranceNavPath(pathname: string): boolean {
+  return pathname === "/insurance" || pathname.startsWith("/insurance/");
+}
+
 function navMenuLinkClass(linkHref: string, isActive: boolean, pathname: string) {
   const active =
-    linkHref === VEHICLE_HUB_NAV.href ? isVehicleHubNavPath(pathname) : isActive;
+    linkHref === VEHICLE_HUB_NAV.href
+      ? isVehicleHubNavPath(pathname)
+      : linkHref === "/insurance"
+        ? isInsuranceNavPath(pathname)
+        : isActive;
   return cn("nav-menu-link whitespace-nowrap", active && "nav-menu-link-active");
 }
 
@@ -220,7 +228,9 @@ export function Navbar() {
                     const active =
                       link.href === VEHICLE_HUB_NAV.href
                         ? isVehicleHubNavPath(pathname)
-                        : isActive;
+                        : link.href === "/insurance"
+                          ? isInsuranceNavPath(pathname)
+                          : isActive;
                     return cn("nav-mobile-link", active && "nav-mobile-link-active");
                   }}
                 >

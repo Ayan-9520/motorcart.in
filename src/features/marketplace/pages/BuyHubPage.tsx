@@ -5,7 +5,11 @@ import { ArrowRight, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { setPageMeta } from "@/utils/seo";
 import { useVehicleHubStore } from "@/store/vehicleHubStore";
-import { parseHubCategorySlug, buyListingPath } from "../lib/route-utils";
+import {
+  parseHubCategorySlug,
+  parseConditionSlug,
+  buyListingPath,
+} from "../lib/route-utils";
 import { BUY_HUB_CATEGORIES } from "../data/buy-hub-categories";
 import { getHubCopy } from "../data/marketplace-hub-config";
 import { HubCategoryCard } from "../components/HubCategoryCard";
@@ -16,14 +20,21 @@ export function BuyHubPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const activeHub = useVehicleHubStore((s) => s.activeHub);
-  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const activeCondition = useVehicleHubStore((s) => s.activeCondition);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
   const copy = getHubCopy(activeHub);
 
   const hubParam = searchParams.get("hub");
+  const conditionParam = searchParams.get("condition");
+
   useEffect(() => {
-    const parsed = parseHubCategorySlug(hubParam ?? undefined);
-    if (parsed) setActiveHub(parsed);
-  }, [hubParam, setActiveHub]);
+    const hub = parseHubCategorySlug(hubParam ?? undefined);
+    if (!hub) return;
+    const condition =
+      parseConditionSlug(conditionParam ?? undefined) ?? activeCondition;
+    setBuyContext(hub, condition);
+    navigate(buyListingPath(hub, condition), { replace: true });
+  }, [hubParam, conditionParam, activeCondition, navigate, setBuyContext]);
 
   const activeCategory = useMemo(
     () => BUY_HUB_CATEGORIES.find((c) => c.id === activeHub) ?? BUY_HUB_CATEGORIES[0],
@@ -126,15 +137,15 @@ export function BuyHubPage() {
                 className="w-full cursor-pointer text-left"
                 onClick={() => {
                   const hub = item.id as HubCategorySlug;
-                  setActiveHub(hub);
-                  navigate(`/buy?hub=${hub}`, { replace: true });
+                  setBuyContext(hub, activeCondition);
+                  navigate(buyListingPath(hub, activeCondition), { replace: true });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const hub = item.id as HubCategorySlug;
-                    setActiveHub(hub);
-                    navigate(`/buy?hub=${hub}`, { replace: true });
+                    setBuyContext(hub, activeCondition);
+                    navigate(buyListingPath(hub, activeCondition), { replace: true });
                   }
                 }}
               >

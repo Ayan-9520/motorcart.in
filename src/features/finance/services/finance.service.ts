@@ -1,6 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { DbBank, DbFinanceApplication, FinanceStatus } from "@/types/database";
 import { MOCK_LENDERS } from "../data/lenders";
+import { buildMockBankIntegrations } from "../data/mock-bank-integrations";
+import {
+  buildDsaDemoApplications,
+  buildDsaDemoCommissions,
+  buildDsaDemoLeads,
+  buildDsaDemoTeam,
+  type DsaTeamMember,
+} from "../data/dsa-desk-data";
 import { mapDbBank, mergeLenders } from "../lib/lender-mapper";
 import type {
   Lender,
@@ -132,7 +140,39 @@ export async function fetchDsaApplications(dsaAgentId: string): Promise<LoanAppl
     .eq("dsa_agent_id", dsaAgentId)
     .order("created_at", { ascending: false });
 
-  return (data ?? []).map((r) => mapApplication(r as DbFinanceApplication & { banks?: { name: string } }));
+  const rows = (data ?? []).map((r) => mapApplication(r as DbFinanceApplication & { banks?: { name: string } }));
+  if (rows.length) return rows;
+  return buildDsaDemoApplications();
+}
+
+export async function fetchDsaDeskLeads(dsaAgentId?: string): Promise<FinanceLead[]> {
+  let q = supabase.from("finance_leads").select("*").order("created_at", { ascending: false }).limit(50);
+  if (dsaAgentId) q = q.eq("assigned_dsa_id", dsaAgentId);
+  const { data } = await q;
+  if (data?.length) {
+    return data.map((r) => ({
+      id: r.id,
+      userId: r.user_id,
+      source: r.source,
+      productType: r.product_type,
+      loanAmount: r.loan_amount != null ? Number(r.loan_amount) : null,
+      monthlyIncome: r.monthly_income != null ? Number(r.monthly_income) : null,
+      cibilScore: r.cibil_score,
+      city: r.city,
+      phone: r.phone,
+      email: r.email,
+      assignedDsaId: r.assigned_dsa_id,
+      assignedBankId: r.assigned_bank_id,
+      applicationId: r.application_id,
+      status: r.status as FinanceLead["status"],
+      createdAt: r.created_at,
+    }));
+  }
+  return buildDsaDemoLeads();
+}
+
+export async function fetchDsaTeam(): Promise<DsaTeamMember[]> {
+  return buildDsaDemoTeam();
 }
 
 export async function fetchLenderApplications(): Promise<LoanApplication[]> {
@@ -229,7 +269,10 @@ export async function fetchCommissions(dsaAgentId?: string): Promise<FinanceComm
   let q = supabase.from("finance_commissions").select("*").order("created_at", { ascending: false });
   if (dsaAgentId) q = q.eq("dsa_agent_id", dsaAgentId);
   const { data } = await q.limit(100);
-  if (!data?.length) return [];
+  if (!data?.length) {
+    if (dsaAgentId) return buildDsaDemoCommissions(buildDsaDemoApplications());
+    return [];
+  }
   return data.map((r) => ({
     id: r.id,
     applicationId: r.application_id,
@@ -300,7 +343,7 @@ export async function fetchBankIntegrations(): Promise<BankIntegrationConfig[]> 
     .from("bank_integration_configs")
     .select("*, banks(name)")
     .order("created_at", { ascending: false });
-  if (!data?.length) return [];
+  if (!data?.length) return buildMockBankIntegrations();
   return data.map((r) => {
     const row = r as Record<string, unknown> & { banks?: { name: string } };
     return {

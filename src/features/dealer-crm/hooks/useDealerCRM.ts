@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDealer } from "./useDealer";
 import { fetchDealerLeads, fetchDealerVehiclesByDealerId } from "../services/dealer.service";
-import { MOCK_CALLS, mockListingPerformance } from "../services/crm-mock";
+import { MOCK_CALLS } from "../services/crm-mock";
+import { buildListingPerformance } from "../lib/dealer-analytics";
 import { fetchLeadCalls, subscribeDealerLeads } from "../services/crm.service";
 import type { CRMStats, LeadWithMeta } from "../types";
 import type { DbLead } from "@/types/database";
@@ -96,6 +97,8 @@ export function useDealerCRM() {
     const sold = vehicles.filter((v) => v.status === "sold").length;
     const featured = vehicles.filter((v) => v.is_featured).length;
     const newLeads = leads.filter((l) => l.status === "new").length;
+    const followUpLeads = leads.filter((l) => l.status === "contacted" || l.status === "qualified").length;
+    const lostLeads = leads.filter((l) => l.status === "lost").length;
     const converted = leads.filter((l) => l.status === "converted").length;
     const testDrives = leadsWithMeta.filter((l) => l.type === "test_drive").length;
     const enquiries = leadsWithMeta.filter((l) => l.type === "enquiry").length;
@@ -112,20 +115,36 @@ export function useDealerCRM() {
       testDriveRequests: testDrives,
       enquiries,
       revenueMtd,
-      conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 12,
-      whatsappChats: 47,
+      conversionRate: leads.length ? Math.round((converted / leads.length) * 100) : 0,
+      followUpLeads,
+      lostLeads,
+      whatsappChats: 0,
       callsTracked: calls.length,
-      avgListingViews: 890,
+      avgListingViews: 0,
+      activeAuctions: 0,
     };
   }, [vehicles, leads, leadsWithMeta, calls.length]);
 
-  const listingPerformance = useMemo(() => mockListingPerformance(vehicles), [vehicles]);
+  const listingPerformance = useMemo(() => buildListingPerformance(vehicles), [vehicles]);
+
+  const statsWithMetrics = useMemo(() => {
+    const perf = listingPerformance;
+    const wa = perf.reduce((s, p) => s + p.whatsappClicks, 0);
+    const avgViews = perf.length
+      ? Math.round(perf.reduce((s, p) => s + p.views, 0) / perf.length)
+      : 0;
+    return {
+      ...stats,
+      whatsappChats: wa,
+      avgListingViews: avgViews,
+    };
+  }, [stats, listingPerformance]);
 
   return {
     dealer,
     dealerLoading,
     loading,
-    stats,
+    stats: statsWithMetrics,
     leads: leadsWithMeta,
     vehicles,
     listingPerformance,

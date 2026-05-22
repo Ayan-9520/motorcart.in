@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useVehicleMarketStore } from "@/store/vehicleMarketStore";
 import { SectionHeader } from "./SectionHeader";
+import { VehicleImage } from "@/features/vehicles/components/VehicleImage";
 import toast from "react-hot-toast";
 
 const featured = sortVehicles(
@@ -95,10 +96,17 @@ function FeaturedVehicleCard({
     >
       <Link to={detailPath} className="block">
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
-          <img
-            src={vehicle.images[0]}
+          <VehicleImage
+            images={vehicle.images}
+            meta={{
+              brand: vehicle.brand,
+              model: vehicle.model,
+              bodyType: vehicle.bodyType,
+              category: vehicle.category,
+              fuelType: vehicle.fuelType,
+            }}
             alt={vehicle.title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+            className="transition-transform duration-500 group-hover:scale-[1.04]"
           />
           <div className="vehicle-card-overlay opacity-60" aria-hidden />
           <div className="absolute left-2 top-2 flex flex-wrap gap-1">

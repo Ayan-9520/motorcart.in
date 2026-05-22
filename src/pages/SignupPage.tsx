@@ -84,7 +84,9 @@ export function SignupPage() {
       if (authData?.session) {
         const u = useAuthStore.getState().user;
         navigate(
-          u ? resolvePostLoginPath(u.role as AppRole) : getRoleDashboardPath(data.role as AppRole),
+          u
+            ? resolvePostLoginPath(u.role as AppRole, null, u)
+            : getRoleDashboardPath(data.role as AppRole),
           { replace: true }
         );
         return;
@@ -224,6 +226,15 @@ export function SignupPage() {
           </Button>
         </form>
         <p className="mt-4 text-center text-sm text-muted-foreground">
+          <Link to="/signup/customer" className="text-primary hover:underline">
+            Customer signup
+          </Link>
+          {" · "}
+          <Link to="/signup/business" className="font-medium text-primary hover:underline">
+            Full business form
+          </Link>
+        </p>
+        <p className="mt-2 text-center text-sm text-muted-foreground">
           Have an account?{" "}
           <Link to="/login" className="font-medium text-primary hover:underline">
             Sign in

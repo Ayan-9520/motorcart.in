@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
 import { Link, Navigate, useParams } from "react-router-dom";
 import {
   ChevronRight,
@@ -37,6 +38,11 @@ export function SellListingPage() {
   const { category: catParam } = useParams<{ category: string }>();
   const hub = parseHubCategorySlug(catParam);
   const defaults = hub ? hubToSellFormDefaults(hub) : null;
+  const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+
+  useEffect(() => {
+    if (hub) setActiveHub(hub);
+  }, [hub, setActiveHub]);
 
   const { user, isAuthenticated } = useAuth();
   const setLoginModalOpen = useUIStore((s) => s.setLoginModalOpen);

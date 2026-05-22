@@ -40,19 +40,19 @@ export type UserRole = (typeof USER_ROLES)[number];
 
 export const DASHBOARD_ROUTES: Partial<Record<UserRole, string>> = {
   customer: "/dashboard/customer",
-  dealer: "/dealer/dashboard",
-  used_car_dealer: "/dealer/dashboard",
-  new_car_dealer: "/dealer/dashboard",
-  bike_dealer: "/dealer/dashboard",
-  truck_dealer: "/dealer/dashboard",
-  dsa_agent: "/finance/dashboard",
+  dealer: "/dashboard/dealer",
+  used_car_dealer: "/dashboard/dealer",
+  new_car_dealer: "/dashboard/dealer",
+  bike_dealer: "/dashboard/dealer",
+  truck_dealer: "/dashboard/dealer",
+  dsa_agent: "/dashboard/dsa",
   bank_nbfc: "/dashboard/finance",
   finance_manager: "/dashboard/finance-manager",
-  service_center: "/service-partner/dashboard",
+  service_center: "/dashboard/service",
   service_technician: "/dashboard/technician",
   super_admin: "/dashboard/super-admin",
-  parts_seller: "/parts-seller/dashboard",
-  admin: "/admin/dashboard",
+  parts_seller: "/dashboard/parts",
+  admin: "/dashboard/super-admin",
   auction_partner: "/dashboard/auction",
 };
 
@@ -66,6 +66,10 @@ export const VEHICLE_HUB_PATH_PREFIXES = [
   "/buses",
   "/ev",
   "/auto",
+  "/buy",
+  "/sell",
+  "/new-cars",
+  "/used-cars",
 ] as const;
 
 export function isVehicleHubNavPath(pathname: string): boolean {
@@ -80,6 +84,7 @@ export const NAV_LINKS = [
   { label: "Sell", href: "/sell" },
   { label: "Auctions", href: "/auctions" },
   { label: "Finance", href: "/finance" },
+  { label: "Insurance", href: "/insurance" },
   { label: "Parts", href: "/parts" },
   { label: "Services", href: "/services" },
   { label: "Community", href: "/community" },

@@ -1,6 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
-import { getRoleDashboardPath } from "@/auth/get-role-dashboard-path";
+import { getPostLoginDashboardPath } from "@/auth/post-login-path";
 import type { AppRole } from "@/types/database";
 import { PageSpinner } from "@/shared/ui/loading/PageSpinner";
 
@@ -16,5 +16,5 @@ export function RoleDashboardRedirect() {
     return <Navigate to="/login" replace />;
   }
 
-  return <Navigate to={getRoleDashboardPath(user.role as AppRole)} replace />;
+  return <Navigate to={getPostLoginDashboardPath(user.role as AppRole, user)} replace />;
 }

@@ -17,37 +17,12 @@ import { getDealerBySlug } from "../hooks/useDealerDirectory";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { formatCurrency } from "@/lib/utils";
 import { VehicleCard } from "@/features/vehicles/components/VehicleCard";
+import { mapDbToListing } from "@/services/vehicle.service";
+import type { DbVehicle } from "@/types/database";
 import type { VehicleListing } from "@/types/vehicle";
 
 function mapVehicle(row: Record<string, unknown>): VehicleListing {
-  const images = (row.images as string[]) ?? [];
-  return {
-    id: row.id as string,
-    slug: row.slug as string,
-    title: row.title as string,
-    brand: row.brand as string,
-    model: row.model as string,
-    year: row.year as number,
-    price: Number(row.price),
-    fuelType: "Petrol",
-    transmission: "Manual",
-    bodyType: "Sedan",
-    category: "used-cars",
-    kmsDriven: 0,
-    owners: 1,
-    city: (row.city as string) ?? "",
-    state: "",
-    images,
-    isCertified: Boolean(row.is_certified),
-    dealerName: "",
-    location: row.city as string,
-    status: "available",
-    condition: "used",
-    features: [],
-    isFeatured: false,
-    metadata: {},
-    createdAt: (row.created_at as string) ?? new Date().toISOString(),
-  };
+  return mapDbToListing(row as unknown as DbVehicle);
 }
 
 export function DealerProfilePage() {
@@ -79,134 +54,102 @@ export function DealerProfilePage() {
 
   const name = dealer?.name ?? mockFallback?.name ?? "Dealer";
   const city = dealer?.city ?? mockFallback?.city ?? "";
-  const state = dealer?.state ?? mockFallback?.state ?? "";
-  const phone = storefront?.contact_phone ?? dealer?.phone ?? mockFallback?.phone ?? "";
-  const waNum = (storefront?.contact_whatsapp ?? phone).replace(/\D/g, "").slice(-10);
-  const wa = waNum
-    ? `https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${name}, I found you on Motorcart`)}`
-    : null;
-  const tel = waNum ? `tel:+91${waNum}` : null;
-  const rating = Number(dealer?.rating ?? mockFallback?.rating ?? 0);
-  const reviewCount = Number(dealer?.review_count ?? mockFallback?.reviewCount ?? 0);
-  const verified = Boolean(dealer?.is_verified ?? mockFallback?.isVerified);
-  const tagline = storefront?.hero_tagline ?? `Trusted dealer in ${city}`;
-  const showInventory = storefront?.show_inventory !== false;
-  const showFinance = storefront?.show_finance_offers !== false;
-  const showReviews = storefront?.show_reviews !== false;
+  const phone = dealer?.phone ?? mockFallback?.phone;
+  const rating = dealer?.rating ?? mockFallback?.rating ?? 4.5;
+  const verified = dealer?.is_verified ?? mockFallback?.isVerified ?? false;
 
   return (
-    <div className="dealers-hub-page min-h-screen">
-      <section className="dealers-profile-hero">
-        <div className="container">
-          <Button variant="ghost" size="sm" className="mb-4 -ml-2 rounded-lg text-primary-foreground/90 hover:bg-white/10 hover:text-white" asChild>
+    <div className="min-h-screen bg-background">
+      <div className="border-b border-border/80 bg-card/50">
+        <div className="container flex flex-wrap items-center gap-4 px-4 py-8">
+          <Button variant="ghost" size="sm" asChild>
             <Link to="/dealers/browse">
-              <ArrowLeft className="mr-1 h-4 w-4" />
-              Directory
+              <ArrowLeft className="mr-1 h-4 w-4" /> All dealers
             </Link>
           </Button>
-          <div className="dealers-profile-head max-w-3xl">
-            <h1 className="text-2xl font-bold text-white md:text-3xl">{name}</h1>
-            {verified && (
-              <Badge className="mt-2 gap-1 border-0 bg-primary text-primary-foreground">
-                <BadgeCheck className="h-3 w-3" />
-                Verified dealer
-              </Badge>
-            )}
-            <p className="mt-2 text-white/85">{tagline}</p>
-            {(city || state) && (
-              <p className="mt-1 flex items-center gap-1 text-sm text-white/80">
-                <MapPin className="h-4 w-4" />
-                {[city, state].filter(Boolean).join(", ")}
-              </p>
-            )}
-            <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-white/90">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                <strong>{rating.toFixed(1)}</strong> ({reviewCount.toLocaleString("en-IN")})
-              </span>
-              <span className="flex items-center gap-1">
-                <Store className="h-4 w-4" />
-                {vehicles.length || (mockFallback?.listingCount ?? 0)} listings
-              </span>
+        </div>
+      </div>
+
+      <div className="container px-4 py-8">
+        <div className="flex flex-col gap-6 md:flex-row md:items-start">
+          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-primary/10">
+            <Store className="h-10 w-10 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <h1 className="text-2xl font-bold md:text-3xl">{name}</h1>
+              {verified && (
+                <Badge className="gap-1 border-0 bg-primary/15 text-primary">
+                  <BadgeCheck className="h-3.5 w-3.5" /> Verified
+                </Badge>
+              )}
+            </div>
+            <p className="mt-1 flex items-center gap-1 text-muted-foreground">
+              <MapPin className="h-4 w-4" />
+              {city}
+              {dealer?.state ? `, ${dealer.state}` : ""}
+            </p>
+            <div className="mt-2 flex items-center gap-1 text-sm">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+              <span className="font-semibold">{Number(rating).toFixed(1)}</span>
+              <span className="text-muted-foreground">({reviews.length} reviews)</span>
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {phone && (
+                <Button variant="outline" size="sm" className="gap-1" asChild>
+                  <a href={`tel:${phone}`}>
+                    <Phone className="h-4 w-4" /> Call
+                  </a>
+                </Button>
+              )}
+              <Button size="sm" className="gap-1" asChild>
+                <a
+                  href={`https://wa.me/91${(phone ?? "9876543210").replace(/\D/g, "").slice(-10)}`}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <MessageCircle className="h-4 w-4" /> WhatsApp
+                </a>
+              </Button>
             </div>
           </div>
         </div>
-      </section>
 
-      <section className="container py-8">
-        <div className="grid gap-6 lg:grid-cols-3">
-          <div className="lg:col-span-2 space-y-6">
-            {showInventory && (
-              <div className="dealers-profile-panel">
-                <h2 className="text-lg font-bold">Inventory</h2>
-                {vehicles.length > 0 ? (
-                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                    {vehicles.map((v) => (
-                      <VehicleCard key={v.id} vehicle={v} />
-                    ))}
+        <section className="mt-10">
+          <h2 className="text-lg font-semibold">Inventory ({vehicles.length})</h2>
+          <p className="text-sm text-muted-foreground">
+            Cars, bikes, trucks & more — segment-correct images from dealer listings
+          </p>
+          {vehicles.length > 0 ? (
+            <div className="vehicle-listing-grid marketplace-results-grid mt-4">
+              {vehicles.map((v, i) => (
+                <VehicleCard key={v.id} vehicle={v} index={i} />
+              ))}
+            </div>
+          ) : (
+            <p className="mt-6 rounded-xl border border-dashed p-10 text-center text-muted-foreground">
+              No live listings — contact dealer for stock.
+            </p>
+          )}
+        </section>
+
+        {reviews.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-lg font-semibold">Customer reviews</h2>
+            <ul className="mt-4 space-y-3">
+              {reviews.slice(0, 5).map((r) => (
+                <li key={r.id as string} className="rounded-xl border border-border/80 bg-card p-4">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                    <span className="font-medium">{String(r.rating ?? 5)}</span>
                   </div>
-                ) : (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Listings coming soon — contact the dealer directly.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {showReviews && reviews.length > 0 && (
-              <div className="dealers-profile-panel">
-                <h2 className="text-lg font-bold">Reviews</h2>
-                <ul className="mt-3 space-y-3">
-                  {reviews.map((r) => (
-                    <li key={r.id as string} className="text-sm border-b border-border/60 pb-3">
-                      <span className="font-semibold">{Number(r.rating)}★</span>
-                      <p className="text-muted-foreground mt-1">{r.comment as string}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-
-          <aside className="dealers-profile-panel h-fit space-y-4">
-            <h2 className="text-lg font-bold">Contact</h2>
-            {wa ? (
-              <Button className="w-full rounded-xl" asChild>
-                <a href={wa} target="_blank" rel="noreferrer">
-                  <MessageCircle className="mr-2 h-4 w-4" />
-                  WhatsApp
-                </a>
-              </Button>
-            ) : (
-              <p className="text-sm text-muted-foreground">
-                Add phone in{" "}
-                <Link to="/dashboard/dealer/storefront" className="font-medium text-primary">
-                  Storefront settings
-                </Link>{" "}
-                to enable WhatsApp &amp; call.
-              </p>
-            )}
-            {tel ? (
-              <Button variant="outline" className="w-full rounded-xl" asChild>
-                <a href={tel}>
-                  <Phone className="mr-2 h-4 w-4" />
-                  Call dealer
-                </a>
-              </Button>
-            ) : null}
-            {showFinance && (
-              <Button variant="secondary" className="w-full rounded-xl" asChild>
-                <Link to="/finance">View finance offers</Link>
-              </Button>
-            )}
-            {vehicles[0] && (
-              <p className="text-xs text-muted-foreground">
-                From {formatCurrency(vehicles[0].price)} on showroom stock
-              </p>
-            )}
-          </aside>
-        </div>
-      </section>
+                  <p className="mt-2 text-sm text-muted-foreground">{String(r.comment ?? "")}</p>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

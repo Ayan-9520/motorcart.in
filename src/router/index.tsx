@@ -6,6 +6,9 @@ import { ProtectedRoute } from "@/guards/ProtectedRoute";
 import { HomePage } from "@/pages/HomePage";
 import { LoginPage } from "@/pages/LoginPage";
 import { SignupPage } from "@/pages/SignupPage";
+import { CustomerSignupPage } from "@/pages/auth/CustomerSignupPage";
+import { BusinessSignupPage } from "@/pages/auth/BusinessSignupPage";
+import { PendingApprovalPage } from "@/pages/PendingApprovalPage";
 import { ForgotPasswordPage } from "@/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "@/pages/ResetPasswordPage";
 import { ProfilePage } from "@/pages/ProfilePage";
@@ -24,7 +27,19 @@ import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 import { AccountSuspendedPage } from "@/pages/AccountSuspendedPage";
 import { RoleDashboardRedirect } from "@/components/routing/RoleDashboardRedirect";
 import { CustomerDashboardPage } from "@/pages/dashboard/CustomerDashboardPage";
-import { AdminOpsHomePage } from "@/pages/dashboard/AdminOpsHomePage";
+import {
+  CustomerGaragePage,
+  CustomerAddVehiclePage,
+  CustomerDocumentsPage,
+  CustomerInsuranceWalletPage,
+  CustomerInsightsPage,
+  CustomerNotificationsPage,
+  CustomerRewardsPage,
+  CustomerProfileCenterPage,
+  CustomerFastagPage,
+  CustomerServiceRecordsPage,
+  CustomerVehicleHealthPage,
+} from "@/features/customer-ecosystem";
 import { VehicleListingPage } from "@/features/vehicles/pages/VehicleListingPage";
 import { BuyHubPage } from "@/features/marketplace/pages/BuyHubPage";
 import { SellHubPage } from "@/features/marketplace/pages/SellHubPage";
@@ -66,14 +81,25 @@ import { LoanApplyPage } from "@/features/finance/pages/LoanApplyPage";
 import { CustomerLoansPage } from "@/features/finance/pages/CustomerLoansPage";
 import { LoanDetailPage } from "@/features/finance/pages/LoanDetailPage";
 import { FinanceToolsPage } from "@/features/finance/pages/FinanceToolsPage";
+import { FinanceIntegrationsPage } from "@/features/finance/pages/FinanceIntegrationsPage";
+import { InsuranceHubPage } from "@/features/insurance/pages/InsuranceHubPage";
+import { InsuranceQuotePage } from "@/features/insurance/pages/InsuranceQuotePage";
+import { InsuranceComparePage } from "@/features/insurance/pages/InsuranceComparePage";
+import { InsuranceApplyPage } from "@/features/insurance/pages/InsuranceApplyPage";
+import { CustomerInsurancePage } from "@/features/insurance/pages/CustomerInsurancePage";
 import {
   DsaPortalPage,
   DsaApplicationsPage,
+  DsaLeadsPage,
+  DsaTeamPage,
+  DsaIntegrationsPage,
   LenderDashboardPage,
   LenderApplicationsPage,
   FinanceManagerDashboardPage,
   FinanceManagerApplicationsPage,
   FinanceManagerCommissionsPage,
+  FinanceLoanCrmPage,
+  FinanceManagerIntegrationsPage,
 } from "@/router/lazy-pages";
 import { FinanceDashboardLayout } from "@/layouts/FinanceDashboardLayout";
 import { PartsHubPage } from "@/features/parts/pages/PartsHubPage";
@@ -127,6 +153,10 @@ import {
   SuperAdminAIPage,
   FraudDetectionPage,
   SupportTicketsPage,
+  VehicleModerationPage,
+  FeaturedInventoryPage,
+  AuctionApprovalsPage,
+  TransactionsPage,
   AIControlCenterPage,
   CommunityModerationPage,
 } from "@/router/lazy-pages";
@@ -151,12 +181,13 @@ export const router = createBrowserRouter([
       { path: "ev", element: <VehicleHubPage /> },
       { path: "auto", element: <VehicleHubPage /> },
       { path: "new-cars", element: <NewCarsHubPage /> },
-      { path: "new-cars/browse", element: <NewCarsListingPage /> },
+      { path: "new-cars/browse", element: <Navigate to="/buy/cars/new" replace /> },
       { path: "new-cars/:slug", element: <VehicleDetailPage /> },
       { path: "used-cars", element: <PreownedCarsHubPage /> },
-      { path: "used-cars/browse", element: <PreownedCarsListingPage /> },
+      { path: "used-cars/browse", element: <Navigate to="/buy/cars/used" replace /> },
       { path: "used-cars/:slug", element: <VehicleDetailPage /> },
       { path: "buy", element: <BuyHubPage /> },
+      { path: "buy/:category/:condition/:slug", element: <VehicleDetailPage /> },
       { path: "buy/:category/:condition", element: <BuyCategoryListingPage /> },
       { path: "vehicles", element: <Navigate to="/buy" replace /> },
       { path: "wishlist", element: <WishlistPage /> },
@@ -174,9 +205,13 @@ export const router = createBrowserRouter([
       { path: "finance/compare", element: <LoanComparePage /> },
       { path: "finance/apply", element: <LoanApplyPage /> },
       { path: "finance/tools", element: <FinanceToolsPage /> },
+      { path: "finance/integrations", element: <FinanceIntegrationsPage /> },
       { path: "finance/eligibility", element: <Navigate to="/finance/tools" replace /> },
       { path: "finance/emi", element: <Navigate to="/finance/tools" replace /> },
-      { path: "insurance", element: ph("Insurance", "Compare and buy car insurance") },
+      { path: "insurance", element: <InsuranceHubPage /> },
+      { path: "insurance/quote", element: <InsuranceQuotePage /> },
+      { path: "insurance/compare", element: <InsuranceComparePage /> },
+      { path: "insurance/apply", element: <InsuranceApplyPage /> },
       { path: "parts", element: <PartsHubPage /> },
       { path: "parts/browse", element: <PartsListingPage /> },
       { path: "parts/:category", element: <PartsListingPage /> },
@@ -299,6 +334,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
+      { path: "signup/customer", element: <CustomerSignupPage /> },
+      { path: "signup/business", element: <BusinessSignupPage /> },
       { path: "forgot-password", element: <ForgotPasswordPage /> },
       { path: "reset-password", element: <ResetPasswordPage /> },
       { path: "auth/callback", element: <AuthCallbackPage /> },
@@ -374,12 +411,108 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: "dashboard", element: <RoleDashboardRedirect /> },
-      { path: "dashboard/customer", element: <CustomerDashboardPage /> },
+      { path: "pending-approval", element: <PendingApprovalPage /> },
+      {
+        path: "dashboard/customer",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerDashboardPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/garage",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerGaragePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/garage/add",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerAddVehiclePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/documents",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerDocumentsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/insurance-wallet",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerInsuranceWalletPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/fastag",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerFastagPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/service-records",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerServiceRecordsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/vehicle-health",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerVehicleHealthPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/insights",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerInsightsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/notifications",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerNotificationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/rewards",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerRewardsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/profile",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerProfileCenterPage />
+          </ProtectedRoute>
+        ),
+      },
       {
         path: "dashboard/admin",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            <AdminOpsHomePage />
+            <Navigate to="/dashboard/super-admin" replace />
           </ProtectedRoute>
         ),
       },
@@ -403,7 +536,7 @@ export const router = createBrowserRouter([
         path: "dashboard/admin/users",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            {ph("User management", "Directory, roles, KYC & access reviews")}
+            <Navigate to="/dashboard/super-admin/users" replace />
           </ProtectedRoute>
         ),
       },
@@ -411,7 +544,7 @@ export const router = createBrowserRouter([
         path: "dashboard/admin/dealers",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            {ph("Dealer approvals", "Verification queue & storefront governance")}
+            <Navigate to="/dashboard/super-admin/dealers" replace />
           </ProtectedRoute>
         ),
       },
@@ -427,7 +560,7 @@ export const router = createBrowserRouter([
         path: "dashboard/admin/crm",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            {ph("CRM", "Support queues & escalation workflows")}
+            <Navigate to="/dashboard/super-admin/tickets" replace />
           </ProtectedRoute>
         ),
       },
@@ -435,7 +568,7 @@ export const router = createBrowserRouter([
         path: "dashboard/admin/analytics",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            {ph("Analytics", "Revenue, funnels & cohort intelligence")}
+            <Navigate to="/dashboard/super-admin/analytics" replace />
           </ProtectedRoute>
         ),
       },
@@ -443,7 +576,7 @@ export const router = createBrowserRouter([
         path: "dashboard/admin/settings",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            {ph("Platform settings", "Feature flags, integrations & compliance")}
+            <Navigate to="/dashboard/super-admin" replace />
           </ProtectedRoute>
         ),
       },
@@ -459,7 +592,7 @@ export const router = createBrowserRouter([
   },
   {
     element: (
-      <ProtectedRoute roles={["super_admin"]}>
+      <ProtectedRoute roles={["super_admin", "admin"]}>
         <SuperAdminLayout />
       </ProtectedRoute>
     ),
@@ -468,7 +601,11 @@ export const router = createBrowserRouter([
       { path: "dashboard/super-admin/users", element: <UsersManagementPage /> },
       { path: "dashboard/super-admin/dealers", element: <DealerApprovalsPage /> },
       { path: "dashboard/super-admin/kyc", element: <KycVerificationPage /> },
+      { path: "dashboard/super-admin/vehicles", element: <VehicleModerationPage /> },
+      { path: "dashboard/super-admin/featured", element: <FeaturedInventoryPage /> },
+      { path: "dashboard/super-admin/auctions", element: <AuctionApprovalsPage /> },
       { path: "dashboard/super-admin/analytics", element: <PlatformAnalyticsPage /> },
+      { path: "dashboard/super-admin/transactions", element: <TransactionsPage /> },
       { path: "dashboard/super-admin/subscriptions", element: <SubscriptionsPage /> },
       { path: "dashboard/super-admin/reports", element: <ReportsPage /> },
       { path: "dashboard/super-admin/cms", element: <CmsPage /> },
@@ -488,6 +625,7 @@ export const router = createBrowserRouter([
     children: [
       { path: "dashboard/customer/loans", element: <CustomerLoansPage /> },
       { path: "dashboard/customer/loans/:id", element: <LoanDetailPage /> },
+      { path: "dashboard/customer/insurance", element: <CustomerInsurancePage /> },
       {
         path: "dashboard/dsa",
         element: (
@@ -501,6 +639,30 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={["dsa_agent", "admin"]}>
             <DsaApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/dsa/leads",
+        element: (
+          <ProtectedRoute roles={["dsa_agent", "admin"]}>
+            <DsaLeadsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/dsa/team",
+        element: (
+          <ProtectedRoute roles={["dsa_agent", "admin"]}>
+            <DsaTeamPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/dsa/integrations",
+        element: (
+          <ProtectedRoute roles={["dsa_agent", "admin"]}>
+            <DsaIntegrationsPage />
           </ProtectedRoute>
         ),
       },
@@ -552,6 +714,22 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: "dashboard/finance-manager/crm",
+        element: (
+          <ProtectedRoute roles={["finance_manager", "admin", "super_admin"]}>
+            <FinanceLoanCrmPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/finance-manager/integrations",
+        element: (
+          <ProtectedRoute roles={["finance_manager", "admin", "super_admin"]}>
+            <FinanceManagerIntegrationsPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   {
@@ -592,6 +770,22 @@ export const router = createBrowserRouter([
       <ProtectedRoute
         roles={["dealer", "used_car_dealer", "new_car_dealer", "bike_dealer", "truck_dealer", "admin"]}
       >
+        <Navigate to="/dashboard/dealer" replace />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "dashboard/preowned-dealer",
+    element: (
+      <ProtectedRoute roles={["used_car_dealer", "admin", "super_admin"]}>
+        <Navigate to="/dashboard/dealer" replace />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "dashboard/newcar-dealer",
+    element: (
+      <ProtectedRoute roles={["new_car_dealer", "admin", "super_admin"]}>
         <Navigate to="/dashboard/dealer" replace />
       </ProtectedRoute>
     ),

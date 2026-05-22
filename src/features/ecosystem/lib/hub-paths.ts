@@ -1,5 +1,9 @@
 import type { EcosystemHubSlug } from "../types";
 import { ECOSYSTEM_HUB_SLUGS } from "../types";
+import {
+  buyListingPath,
+  parseHubCategorySlug,
+} from "@/features/marketplace/lib/route-utils";
 
 export function hubLandingPath(slug: EcosystemHubSlug): string {
   return `/${slug}`;
@@ -11,10 +15,11 @@ export function hubSearchPath(slug: EcosystemHubSlug, query?: string): string {
   return `/search?${params.toString()}`;
 }
 
+/** Canonical buy listing — same as marketplace `buyListingPath` */
 export function hubBuyPath(slug: EcosystemHubSlug, condition: "new" | "used" = "used"): string {
-  if (slug === "cars" && condition === "new") return "/new-cars";
-  if (slug === "cars" && condition === "used") return "/used-cars";
-  return `/buy/${slug}/${condition}`;
+  const hub = parseHubCategorySlug(slug);
+  if (!hub) return buyListingPath("cars", condition);
+  return buyListingPath(hub, condition);
 }
 
 export function hubSellPath(slug: EcosystemHubSlug): string {

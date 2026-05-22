@@ -3,6 +3,11 @@ import { extractHashtags } from "../lib/hashtags";
 import { scoreSpamContent, shouldQueueForReview } from "../lib/spam-detection";
 import { detectEmbedProvider } from "../lib/embed-utils";
 import { enrichAuthors, fetchFollowingUserIds } from "./community-profile.service";
+import {
+  COMMUNITY_POST_IMAGES,
+  MEDIA_DEFAULTS,
+  getModelImages,
+} from "@/lib/media/india-media-catalog";
 import type {
   CommunityComment,
   CommunityGroup,
@@ -48,7 +53,7 @@ const MOCK_GROUPS: CommunityGroup[] = [
     ruleKey: "city",
     ruleValue: "Bangalore",
     dealerId: null,
-    coverUrl: null,
+    coverUrl: COMMUNITY_POST_IMAGES.roadTrip,
     memberCount: 12800,
     createdAt: new Date().toISOString(),
   },
@@ -61,7 +66,7 @@ const MOCK_GROUPS: CommunityGroup[] = [
     ruleKey: "topic",
     ruleValue: "ev",
     dealerId: null,
-    coverUrl: null,
+    coverUrl: COMMUNITY_POST_IMAGES.ev,
     memberCount: 9400,
     createdAt: new Date().toISOString(),
   },
@@ -74,7 +79,7 @@ const MOCK_GROUPS: CommunityGroup[] = [
     ruleKey: null,
     ruleValue: null,
     dealerId: null,
-    coverUrl: null,
+    coverUrl: MEDIA_DEFAULTS.communityCover,
     memberCount: 50000,
     createdAt: new Date().toISOString(),
   },
@@ -88,7 +93,7 @@ const MOCK_POSTS: CommunityPost[] = [
     authorId: "00000000-0000-0000-0000-000000000099",
     authorName: "Priya K",
     body: "Weekend Western Ghats run — #mile munching with the new #suv. What's your favourite stretch?",
-    mediaUrls: ["https://images.unsplash.com/photo-1503376780353-7e6692761b02?w=800&q=80"],
+    mediaUrls: [COMMUNITY_POST_IMAGES.roadTrip],
     vehicleId: null,
     dealerId: null,
     groupId: "g-blr",

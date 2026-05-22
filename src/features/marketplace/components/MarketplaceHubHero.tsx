@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Bike,
   Bot,
@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useVehicleHubStore } from "@/store/vehicleHubStore";
 import { getHubCopy } from "../data/marketplace-hub-config";
-import { buyListingPath, sellListingPath } from "../lib/route-utils";
+import { buyListingPath, parseBuyMarketplaceRoute, sellListingPath } from "../lib/route-utils";
 import type { HubCategorySlug } from "../types";
 import { VehicleHubIconBar } from "./VehicleHubIconBar";
 
@@ -39,10 +39,26 @@ type HubTab = "new" | "used" | "sell" | "auction" | "finance";
 
 export function MarketplaceHubHero({ mode }: MarketplaceHubHeroProps) {
   const activeHub = useVehicleHubStore((s) => s.activeHub);
+  const activeCondition = useVehicleHubStore((s) => s.activeCondition);
+  const setActiveCondition = useVehicleHubStore((s) => s.setActiveCondition);
   const copy = getHubCopy(activeHub);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [query, setQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<HubTab>(mode === "sell" ? "sell" : "used");
+  const [activeTab, setActiveTab] = useState<HubTab>(
+    mode === "sell" ? "sell" : activeCondition
+  );
+
+  useEffect(() => {
+    const route = parseBuyMarketplaceRoute(pathname);
+    if (route) setActiveCondition(route.condition);
+  }, [pathname, setActiveCondition]);
+
+  useEffect(() => {
+    if (mode === "buy" && (activeCondition === "new" || activeCondition === "used")) {
+      setActiveTab(activeCondition);
+    }
+  }, [activeCondition, mode]);
 
   const HeroIcon = HERO_ICONS[activeHub];
 
@@ -50,8 +66,17 @@ export function MarketplaceHubHero({ mode }: MarketplaceHubHeroProps) {
     e.preventDefault();
     const q = query.trim();
     const cond = activeTab === "new" ? "new" : "used";
+    setActiveCondition(cond);
     const path = buyListingPath(activeHub, cond);
     navigate(q ? `${path}?q=${encodeURIComponent(q)}` : path);
+  };
+
+  const selectCondition = (cond: "new" | "used") => {
+    setActiveCondition(cond);
+    setActiveTab(cond);
+    if (mode === "buy") {
+      navigate(buyListingPath(activeHub, cond));
+    }
   };
 
   const tabs: { id: HubTab; label: string; href?: string }[] =
@@ -104,7 +129,11 @@ export function MarketplaceHubHero({ mode }: MarketplaceHubHeroProps) {
                     type="button"
                     role="tab"
                     aria-selected={isActive}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      if (tab.id === "new") selectCondition("new");
+                      else if (tab.id === "used") selectCondition("used");
+                      else setActiveTab(tab.id);
+                    }}
                     className={className}
                   >
                     {tab.label}
@@ -152,11 +181,19 @@ export function MarketplaceHubHero({ mode }: MarketplaceHubHeroProps) {
             )}
 
             <div className="marketplace-hub-quicklinks">
-              <Link to={buyListingPath(activeHub, "new")} className="marketplace-hub-quicklink">
+              <Link
+                to={buyListingPath(activeHub, "new")}
+                className="marketplace-hub-quicklink"
+                onClick={() => selectCondition("new")}
+              >
                 <Sparkles className="h-3.5 w-3.5" />
                 New
               </Link>
-              <Link to={buyListingPath(activeHub, "used")} className="marketplace-hub-quicklink">
+              <Link
+                to={buyListingPath(activeHub, "used")}
+                className="marketplace-hub-quicklink"
+                onClick={() => selectCondition("used")}
+              >
                 Pre-Owned
               </Link>
               <Link to="/auctions" className="marketplace-hub-quicklink">

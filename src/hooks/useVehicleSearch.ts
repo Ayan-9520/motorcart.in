@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { searchVehicles } from "@/services/vehicle.service";
+import { preserveListingRouteParams } from "@/features/marketplace/lib/route-utils";
 import { filtersFromSearchParams } from "@/lib/vehicle-utils";
 import type { VehicleFilters, VehicleListing, VehicleSortOption } from "@/types/vehicle";
 import { parseCategoryParam } from "@/lib/vehicle-utils";
@@ -61,9 +62,7 @@ export function useVehicleSearch(categoryParam?: string) {
   };
 
   const clearFilters = () => {
-    const next = new URLSearchParams();
-    if (category) next.set("type", category);
-    setSearchParams(next, { replace: true });
+    setSearchParams(preserveListingRouteParams(searchParams, category), { replace: true });
   };
 
   return {

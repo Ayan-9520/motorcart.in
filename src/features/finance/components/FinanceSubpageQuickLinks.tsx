@@ -40,6 +40,18 @@ export function FinanceSubpageQuickLinks({ active, loanType }: FinanceSubpageQui
         );
       })}
       <Link
+        to="/finance/tools"
+        className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-primary/40"
+      >
+        EMI & eligibility
+      </Link>
+      <Link
+        to="/finance/integrations"
+        className="rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground hover:border-primary/40"
+      >
+        Bank APIs
+      </Link>
+      <Link
         to="/finance"
         className="rounded-full border border-dashed border-primary/30 px-4 py-2 text-xs font-semibold text-primary hover:bg-primary/5"
       >

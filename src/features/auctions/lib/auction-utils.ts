@@ -1,5 +1,6 @@
 import type { AuctionListing, AuctionType } from "../types";
 import type { DbAuction } from "@/types/database";
+import { resolveAuctionImages } from "@/lib/media/resolve-images";
 
 export function slugifyAuction(title: string): string {
   return title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
@@ -12,7 +13,7 @@ export function mapDbAuction(a: DbAuction): AuctionListing {
     vehicleId: a.vehicle_id,
     organizerId: a.organizer_id,
     title: a.title,
-    images: a.images?.length ? a.images : ["https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=800&q=80"],
+    images: resolveAuctionImages(a.title, a.images),
     startingBid: Number(a.starting_bid),
     currentBid: a.current_bid != null ? Number(a.current_bid) : null,
     reservePrice: a.reserve_price != null ? Number(a.reserve_price) : null,

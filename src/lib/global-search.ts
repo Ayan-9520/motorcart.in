@@ -4,6 +4,7 @@ import { MOCK_PARTS_CATALOG } from "@/features/parts/data/mock-parts-catalog";
 import { filterVehicles, vehicleDetailPath } from "@/lib/vehicle-utils";
 import type { VehicleListing } from "@/types/vehicle";
 import type { PartProduct } from "@/features/parts/types";
+import { resolvePartHero, resolveVehicleHero } from "@/lib/media/resolve-images";
 
 export type GlobalSearchResultType = "vehicle" | "part" | "page";
 
@@ -51,7 +52,10 @@ function vehicleToResult(v: VehicleListing): GlobalSearchResult {
     title: v.title,
     subtitle: `${v.city} · ${v.dealerName ?? "Motorcart"}`,
     href: vehicleDetailPath(v),
-    image: v.images[0],
+    image: resolveVehicleHero(v.brand, v.model, v.bodyType, v.images, 0, {
+      category: v.category,
+      fuelType: v.fuelType,
+    }),
     badge: `${hub} · ${condition}`,
   };
 }
@@ -63,7 +67,7 @@ function partToResult(p: PartProduct): GlobalSearchResult {
     title: p.name,
     subtitle: `${p.brand ?? "Aftermarket"} · ₹${p.price.toLocaleString("en-IN")}`,
     href: `/parts/browse?q=${encodeURIComponent(p.name)}`,
-    image: p.images[0],
+    image: resolvePartHero(p.categorySlug, p.slug, p.images),
     badge: "Parts",
   };
 }

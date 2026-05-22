@@ -1,32 +1,37 @@
 import type { Vehicle, AuctionItem } from "@/types";
+import {
+  AUCTION_LISTING_IMAGES,
+  FEATURED_VEHICLE_IMAGES,
+  getModelImages,
+} from "@/lib/media/india-media-catalog";
 
 export const featuredVehicles: Vehicle[] = [
   {
     id: "1", slug: "2023-hyundai-creta", title: "2023 Hyundai Creta SX(O) Diesel",
     brand: "Hyundai", model: "Creta", year: 2023, price: 1485000, emi: 24500,
     fuelType: "Diesel", transmission: "Automatic", kms: 18500, location: "Mumbai",
-    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80",
+    image: FEATURED_VEHICLE_IMAGES.creta,
     dealerName: "AutoMax Motors", isVerified: true, isFeatured: true, category: "used-cars", aiScore: 94,
   },
   {
     id: "2", slug: "2024-tata-nexon-ev", title: "2024 Tata Nexon EV Max",
     brand: "Tata", model: "Nexon EV", year: 2024, price: 1699000, emi: 28900,
     fuelType: "Electric", transmission: "Automatic", kms: 8200, location: "Bangalore",
-    image: "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=600&q=80",
+    image: FEATURED_VEHICLE_IMAGES.nexonEv,
     dealerName: "GreenDrive EV", isVerified: true, isFeatured: true, category: "ev", aiScore: 91,
   },
   {
     id: "3", slug: "2024-royal-enfield", title: "2024 Royal Enfield Himalayan 450",
     brand: "Royal Enfield", model: "Himalayan", year: 2024, price: 289000, emi: 5200,
     fuelType: "Petrol", transmission: "Manual", kms: 3200, location: "Delhi",
-    image: "https://images.unsplash.com/photo-1558981403-c5f9899a1482?w=600&q=80",
+    image: FEATURED_VEHICLE_IMAGES.himalayan,
     dealerName: "BikeHub", isVerified: true, isFeatured: false, category: "bikes", aiScore: 88,
   },
   {
     id: "4", slug: "2022-tata-407", title: "2022 Tata 407 Gold SFC",
     brand: "Tata", model: "407", year: 2022, price: 1250000, emi: 22000,
     fuelType: "Diesel", transmission: "Manual", kms: 45000, location: "Pune",
-    image: "https://images.unsplash.com/photo-1601584111127-372f204f45a6?w=600&q=80",
+    image: FEATURED_VEHICLE_IMAGES.tata407,
     dealerName: "Commercial Motors", isVerified: true, isFeatured: true, category: "trucks", aiScore: 86,
   },
 ];
@@ -34,25 +39,25 @@ export const featuredVehicles: Vehicle[] = [
 export const liveAuctions: AuctionItem[] = [
   {
     id: "1", title: "2019 Honda City VX CVT",
-    image: "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&q=80",
+    image: AUCTION_LISTING_IMAGES[0],
     currentBid: 782000, startingBid: 650000, bidCount: 34,
     endsAt: new Date(Date.now() + 3600000 * 4).toISOString(), location: "Mumbai", status: "live",
   },
   {
     id: "2", title: "2020 Kia Seltos HTX Plus",
-    image: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80",
+    image: AUCTION_LISTING_IMAGES[1],
     currentBid: 1085000, startingBid: 950000, bidCount: 28,
     endsAt: new Date(Date.now() + 3600000 * 6).toISOString(), location: "Delhi", status: "live",
   },
   {
     id: "3", title: "2018 Maruti Swift ZXI",
-    image: "https://images.unsplash.com/photo-1494976388531-d1058498ceb8?w=600&q=80",
+    image: AUCTION_LISTING_IMAGES[2],
     currentBid: 485000, startingBid: 420000, bidCount: 19,
     endsAt: new Date(Date.now() + 3600000 * 3).toISOString(), location: "Bangalore", status: "live",
   },
   {
     id: "4", title: "2021 Hyundai Creta SX",
-    image: "https://images.unsplash.com/photo-1619767886554-ef1d35eaa7f2?w=600&q=80",
+    image: AUCTION_LISTING_IMAGES[3],
     currentBid: 1240000, startingBid: 1100000, bidCount: 41,
     endsAt: new Date(Date.now() + 3600000 * 5).toISOString(), location: "Pune", status: "live",
   },
@@ -78,10 +83,9 @@ export const aiAgents = [
   { name: "DealerBot", desc: "Inventory & operations" },
   { name: "SupportBot", desc: "24/7 customer support" },
   { name: "SocialBot", desc: "Social media automation" },
-  { name: "InventoryBot", desc: "Listings & pricing optimization" },
-  { name: "AnalyticsBot", desc: "KPIs & daily reports" },
-  { name: "RecommendationBot", desc: "Personalized picks" },
-  { name: "NotificationBot", desc: "Multi-channel alerts" },
-  { name: "DsaBot", desc: "DSA routing & follow-ups" },
-  { name: "CommunityBot", desc: "Moderation & trends" },
 ];
+
+/** Legacy helper — prefer getModelImages from @/lib/media */
+export function vehicleImageFor(brand: string, model: string, body = "SUV"): string {
+  return getModelImages(brand, model, body, 0)[0]!;
+}

@@ -38,8 +38,11 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
       ? redirectParam
       : null;
 
+  const user = useAuthStore((s) => s.user);
+
   const postLoginDest = (role?: AppRole) =>
-    redirectTo ?? (role ? resolvePostLoginPath(role, from) : "/dashboard/customer");
+    redirectTo ??
+    (role ? resolvePostLoginPath(role, from, user ?? undefined) : "/dashboard/customer");
 
   const {
     loginEmail,
@@ -120,7 +123,10 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
 
     onSuccess?.();
     const u = useAuthStore.getState().user;
-    navigate(postLoginDest(u?.role as AppRole | undefined), { replace: true });
+    navigate(
+      u ? resolvePostLoginPath(u.role as AppRole, from, u) : redirectTo ?? "/dashboard/customer",
+      { replace: true }
+    );
   };
 
   const onResendVerification = async () => {
@@ -156,13 +162,18 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
     if (!error) {
       onSuccess?.();
       const u = useAuthStore.getState().user;
-      navigate(postLoginDest(u?.role as AppRole | undefined), { replace: true });
+      navigate(
+        u ? resolvePostLoginPath(u.role as AppRole, from, u) : redirectTo ?? "/dashboard/customer",
+        { replace: true }
+      );
     }
   };
 
   const busy = submitting || isLoading;
   const signedInUser = useAuthStore((s) => s.user);
-  const dashboardHref = postLoginDest(signedInUser?.role as AppRole | undefined);
+  const dashboardHref = signedInUser
+    ? resolvePostLoginPath(signedInUser.role as AppRole, from, signedInUser)
+    : redirectTo ?? "/dashboard/customer";
 
   return (
     <Tabs defaultValue={defaultTab} className="w-full">
@@ -368,12 +379,12 @@ export function AuthForm({ onSuccess, defaultTab = "email" }: AuthFormProps) {
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
         No account?{" "}
-        <Link
-          to="/signup"
-          className="font-medium text-primary hover:underline"
-          onClick={onSuccess}
-        >
-          Sign up
+        <Link to="/signup/customer" className="font-medium text-primary hover:underline" onClick={onSuccess}>
+          Customer
+        </Link>
+        {" · "}
+        <Link to="/signup/business" className="font-medium text-primary hover:underline" onClick={onSuccess}>
+          Business
         </Link>
       </p>
 

@@ -53,7 +53,7 @@ function DashboardCard({ card, delay }: { card: HeroDashboardCard; delay: number
     return (
       <motion.div {...fade(delay)} className="hero-dash-card hero-dash-card-listing overflow-hidden p-0">
         {card.image ? (
-          <img src={card.image} alt="" className="hero-dash-listing-img" />
+          <img src={card.image} alt="" className="hero-dash-listing-img" referrerPolicy="no-referrer" loading="lazy" />
         ) : (
           <div className="hero-dash-listing-img bg-muted" />
         )}

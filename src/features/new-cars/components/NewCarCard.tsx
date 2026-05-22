@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency, cn } from "@/lib/utils";
+import { VehicleImage } from "@/features/vehicles/components/VehicleImage";
 import { getDiscountedPrice, getVehicleEmi, newCarDetailPath } from "@/lib/vehicle-utils";
 import type { NewCarListing } from "../types";
 
@@ -40,10 +41,17 @@ export function NewCarCard({ vehicle, index = 0, compact = false }: NewCarCardPr
       <Card className={cn("premium-card group overflow-hidden border-border p-0", compact && "rounded-xl")}>
         <Link to={path} className="block">
           <div className={cn("relative overflow-hidden bg-muted", compact ? "aspect-[16/10]" : "aspect-[16/11]")}>
-            <img
-              src={vehicle.images[0]}
+            <VehicleImage
+              images={vehicle.images}
+              meta={{
+                brand: vehicle.brand,
+                model: vehicle.model,
+                bodyType: vehicle.bodyType,
+                category: vehicle.category,
+                fuelType: vehicle.fuelType,
+              }}
               alt={vehicle.title}
-              className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+              className="transition-transform duration-500 group-hover:scale-[1.02]"
             />
             <div className="vehicle-card-overlay opacity-70" aria-hidden />
             <div className="absolute left-2 top-2 flex flex-wrap gap-1">

@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { useVehicleSearch } from "@/hooks/useVehicleSearch";
+import { useVehicleHubStore } from "@/store/vehicleHubStore";
 import {
   hubCategoryToFilters,
   listingPageTitle,
@@ -26,6 +27,12 @@ export function useBuyCategoryListing() {
   }, [hub, condition]);
 
   const vehicleCategory = hubFilters?.category;
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
+
+  useEffect(() => {
+    if (!hub || !condition) return;
+    setBuyContext(hub, condition);
+  }, [hub, condition, setBuyContext]);
 
   useEffect(() => {
     if (!hub || !condition) return;

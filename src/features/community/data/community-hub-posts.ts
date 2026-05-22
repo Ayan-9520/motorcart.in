@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Car, Star, Megaphone } from "lucide-react";
+import { COMMUNITY_POST_IMAGES } from "@/lib/media/india-media-catalog";
 
 export type HubPostTagVariant = "purchase" | "review" | "promotion";
 
@@ -29,7 +30,7 @@ export const COMMUNITY_HUB_POSTS: CommunityHubPost[] = [
     verified: true,
     tag: { label: "New Purchase", variant: "purchase", icon: Car },
     body: "Just picked up this beauty! 2024 BMW M3 Competition. The performance is absolutely incredible. Special thanks to @AutoHub for the seamless buying experience! 🏎️💨",
-    imageUrl: "https://images.unsplash.com/photo-1555215695-3004980ad54e?w=900&q=80",
+    imageUrl: COMMUNITY_POST_IMAGES.luxury,
     likes: 234,
     comments: 45,
     shares: 12,
@@ -44,7 +45,7 @@ export const COMMUNITY_HUB_POSTS: CommunityHubPost[] = [
     verified: true,
     tag: { label: "Review", variant: "review", icon: Star },
     body: "Honest long-term review of the 2023 Hyundai Creta — mileage, comfort, and service costs after 18 months. Would I buy again? Read my full take below. ⭐",
-    imageUrl: "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=900&q=80",
+    imageUrl: COMMUNITY_POST_IMAGES.suv,
     likes: 189,
     comments: 62,
     shares: 28,
@@ -73,7 +74,7 @@ export const COMMUNITY_HUB_POSTS: CommunityHubPost[] = [
     verified: true,
     tag: { label: "Review", variant: "review", icon: Star },
     body: "Tata Nexon EV long-range test — real-world 412 km in city mix. Charging infra in Pune has improved massively. Full breakdown in comments ⚡",
-    imageUrl: "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=900&q=80",
+    imageUrl: COMMUNITY_POST_IMAGES.ev,
     likes: 312,
     comments: 88,
     shares: 34,

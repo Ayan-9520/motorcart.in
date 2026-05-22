@@ -4,6 +4,11 @@ import { useAuthStore } from "@/store/authStore";
 import type { UserRole } from "@/lib/constants";
 import type { AppRole } from "@/types/database";
 import { userHasAnyRole } from "@/permissions/role-matching";
+import {
+  isAccountPendingApproval,
+  isPendingApprovalAllowedPath,
+  PENDING_APPROVAL_PATH,
+} from "@/auth/ecosystem-roles";
 import { PageSpinner } from "@/shared/ui/loading/PageSpinner";
 
 interface ProtectedRouteProps {
@@ -41,6 +46,14 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
 
   if (roles && user && !userHasAnyRole(user.role as AppRole, roles as AppRole[])) {
     return <Navigate to="/unauthorized" replace />;
+  }
+
+  if (
+    user &&
+    isAccountPendingApproval(user) &&
+    !isPendingApprovalAllowedPath(location.pathname)
+  ) {
+    return <Navigate to={PENDING_APPROVAL_PATH} replace />;
   }
 
   return <>{children}</>;

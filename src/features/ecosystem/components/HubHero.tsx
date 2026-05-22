@@ -10,6 +10,11 @@ export function HubHero({ hub }: HubHeroProps) {
 
   return (
     <header className="hub-hero">
+      <div
+        className="hub-hero-bg"
+        style={{ backgroundImage: `url(${hub.heroImage})` }}
+        aria-hidden
+      />
       <div className="hub-hero-inner container">
         <div className="hub-hero-badge">
           <span className="hub-hero-icon">

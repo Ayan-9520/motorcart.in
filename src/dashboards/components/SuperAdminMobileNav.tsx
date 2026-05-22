@@ -3,7 +3,7 @@ import { NavLink } from "react-router-dom";
 import { LayoutGrid, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { SUPER_ADMIN_NAV } from "@/features/platform-admin/config/super-admin-nav";
+import { ADMIN_ERP_NAV_FLAT } from "@/features/platform-admin/config/admin-erp-nav";
 import { cn } from "@/lib/utils";
 
 export function SuperAdminMobileNav() {
@@ -20,18 +20,18 @@ export function SuperAdminMobileNav() {
         aria-expanded={open}
       >
         <LayoutGrid className="h-4 w-4" aria-hidden />
-        Platform menu
+        Admin ERP
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="dashboard-mobile-sheet left-0 top-0 h-full max-h-none w-[min(100vw,320px)] translate-x-0 translate-y-0 rounded-none border-r p-0">
           <div className="flex items-center justify-between border-b px-4 py-3">
-            <DialogTitle className="text-base font-semibold">Super Admin</DialogTitle>
+            <DialogTitle className="text-base font-semibold">Admin ERP</DialogTitle>
             <Button variant="ghost" size="icon" onClick={() => setOpen(false)} aria-label="Close">
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <nav className="flex flex-col gap-0.5 p-3">
-            {SUPER_ADMIN_NAV.map(({ to, label, icon: Icon, end }) => (
+          <nav className="flex flex-col gap-0.5 p-3 max-h-[calc(100vh-4rem)] overflow-y-auto">
+            {ADMIN_ERP_NAV_FLAT.map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
                 to={to}

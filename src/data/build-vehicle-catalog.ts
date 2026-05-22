@@ -7,7 +7,7 @@ import {
   VEHICLE_TEMPLATES,
   type VehicleTemplate,
 } from "@/data/india-vehicle-master";
-import { getModelImages } from "@/data/vehicle-model-images";
+import { resolveVehicleDetailGallery } from "@/lib/media/resolve-images";
 import { computeListingPrice, computeOriginalPrice } from "@/data/vehicle-pricing";
 
 function pick<T>(arr: readonly T[], seed: number): T {
@@ -57,7 +57,14 @@ function buildListing(
   const id = `v-${listingSeed}-${slugify(`${template.brand}-${template.model}-${variant}`).slice(0, 24)}`;
   const slug = slugify(`${year}-${template.brand}-${template.model}-${variant}-${city.city}-${listingSeed}`);
 
-  const images = getModelImages(template.brand, template.model, template.bodyType, listingSeed);
+  const images = resolveVehicleDetailGallery({
+    brand: template.brand,
+    model: template.model,
+    bodyType: template.bodyType,
+    category,
+    fuelType: fuel,
+    seed: listingSeed,
+  });
   const aiScore = randBetween(78, 98, listingSeed + 6);
   const isFeatured = listingSeed % 11 === 0;
   const isCertified = condition === "used" ? listingSeed % 4 !== 0 : true;

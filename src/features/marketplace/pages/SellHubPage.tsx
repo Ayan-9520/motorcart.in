@@ -23,6 +23,7 @@ export function SellHubPage() {
   const navigate = useNavigate();
   const activeHub = useVehicleHubStore((s) => s.activeHub);
   const setActiveHub = useVehicleHubStore((s) => s.setActiveHub);
+  const setBuyContext = useVehicleHubStore((s) => s.setBuyContext);
   const copy = getHubCopy(activeHub);
 
   const hubParam = searchParams.get("hub");
@@ -30,8 +31,18 @@ export function SellHubPage() {
 
   useEffect(() => {
     const parsed = parseHubCategorySlug(hubParam ?? undefined);
-    if (parsed) setActiveHub(parsed);
-  }, [hubParam, setActiveHub]);
+    if (parsed) {
+      setActiveHub(parsed);
+      setBuyContext(parsed, "used");
+    }
+  }, [hubParam, setActiveHub, setBuyContext]);
+
+  useEffect(() => {
+    const hub = parseHubCategorySlug(hubParam ?? undefined);
+    if (hub) {
+      navigate(sellListingPath(hub), { replace: true });
+    }
+  }, [hubParam, navigate]);
 
   useEffect(() => {
     const hub = parseHubCategorySlug(typeParam ?? undefined);
@@ -116,15 +127,15 @@ export function SellHubPage() {
                 className="w-full cursor-pointer text-left"
                 onClick={() => {
                   const hub = item.id as HubCategorySlug;
-                  setActiveHub(hub);
-                  navigate(`/sell?hub=${hub}`, { replace: true });
+                  setBuyContext(hub, "used");
+                  navigate(sellListingPath(hub), { replace: true });
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     const hub = item.id as HubCategorySlug;
-                    setActiveHub(hub);
-                    navigate(`/sell?hub=${hub}`, { replace: true });
+                    setBuyContext(hub, "used");
+                    navigate(sellListingPath(hub), { replace: true });
                   }
                 }}
               >

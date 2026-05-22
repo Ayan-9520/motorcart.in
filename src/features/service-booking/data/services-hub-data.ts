@@ -14,6 +14,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
+import { SERVICE_CATEGORY_IMAGES } from "@/lib/media/india-media-catalog";
 import { SERVICE_CATEGORIES, type ServiceCategorySlug } from "../types";
 
 export interface ServicesHubFeature {
@@ -43,41 +44,33 @@ export const SERVICES_TRUST_STATS = [
   { label: "Live", sub: "Job tracking" },
 ];
 
-export const SERVICE_CATEGORY_IMAGES: Partial<Record<ServiceCategorySlug, string>> = {
-  "car-servicing": "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&q=80",
-  "denting-painting": "https://images.unsplash.com/photo-1609521263047-f8f205293f24?w=600&q=80",
-  "car-wash": "https://images.unsplash.com/photo-1607860108855-645f04393433?w=600&q=80",
-  "ppf-coating": "https://images.unsplash.com/photo-1619642751034-765df43d58c9?w=600&q=80",
-  "ceramic-coating": "https://images.unsplash.com/photo-1601362840469-51e4d8d229a0?w=600&q=80",
-  "ac-repair": "https://images.unsplash.com/photo-1625047509168-1e3c2c7e0b8a?w=600&q=80",
-  "battery-replacement": "https://images.unsplash.com/photo-1593941707879-2c2b2cd97e2a?w=600&q=80",
-  "tyre-replacement": "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=600&q=80",
-  "insurance-renewal": "https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=600&q=80",
-  "rc-transfer": "https://images.unsplash.com/photo-1580674285054-bed31e145f59?w=600&q=80",
-};
+export { SERVICE_CATEGORY_IMAGES };
 
 export const HOW_IT_WORKS = [
   { step: "1", title: "Pick service & center", desc: "Compare prices, ratings & pickup options" },
-  { step: "2", title: "Lock a slot", desc: "Choose date/time — instant confirmation" },
-  { step: "3", title: "Track & pay", desc: "OTP handover, live status, secure checkout" },
+  { step: "2", title: "Book a slot", desc: "Live calendar · OTP handover at bay" },
+  { step: "3", title: "Track & pay", desc: "WhatsApp updates · UPI or COD" },
 ];
 
 export function servicesBrowsePath(params?: {
-  city?: string;
-  category?: ServiceCategorySlug | string;
-  pickup?: boolean;
+  q?: string;
+  category?: ServiceCategorySlug;
   hub?: HubCategorySlug | null;
+  city?: string;
 }): string {
   const s = new URLSearchParams();
-  if (params?.city) s.set("city", params.city);
+  if (params?.q) s.set("q", params.q);
   if (params?.category) s.set("category", params.category);
-  if (params?.pickup) s.set("pickup", "1");
   if (params?.hub) s.set("hub", params.hub);
+  if (params?.city) s.set("city", params.city);
   const qs = s.toString();
   return qs ? `/services/browse?${qs}` : "/services/browse";
 }
 
-export function servicesCategoryPath(slug: ServiceCategorySlug, hub?: HubCategorySlug | null): string {
+export function servicesCategoryPath(
+  slug: ServiceCategorySlug,
+  hub?: HubCategorySlug | null
+): string {
   return servicesBrowsePath({ category: slug, hub: hub ?? undefined });
 }
 

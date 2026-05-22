@@ -118,6 +118,8 @@ export interface VehicleFilters {
   city?: string;
   color?: string;
   bodyType?: string;
+  /** Max monthly EMI (₹) */
+  emiMax?: number;
   q?: string;
 }
 
