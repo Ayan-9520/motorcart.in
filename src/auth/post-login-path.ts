@@ -14,5 +14,6 @@ export function getPostLoginDashboardPath(
   if (user && isAccountPendingApproval(user)) {
     return PENDING_APPROVAL_PATH;
   }
+  if (user) return getRoleDashboardPath(user);
   return getRoleDashboardPath(role);
 }

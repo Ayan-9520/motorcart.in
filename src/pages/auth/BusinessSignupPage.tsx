@@ -17,6 +17,8 @@ import type { AppRole } from "@/types/database";
 import { useAuthStore } from "@/store/authStore";
 import { resolvePostLoginPath } from "@/auth/resolve-post-login";
 import { PENDING_APPROVAL_PATH } from "@/auth/ecosystem-roles";
+import { resolveBusinessSignupRole } from "@/auth/resolve-business-signup-role";
+import { enrichUserWithDealerContext } from "@/auth/enrich-user-dealer";
 import {
   DEFAULT_SIGNUP_ROLE,
   SIGNUP_ROLE_OPTIONS,
@@ -104,12 +106,14 @@ export function BusinessSignupPage() {
         documents: docNames,
       };
 
+      const signupRole = resolveBusinessSignupRole(data.role as AppRole, data.businessCategory);
+
       const { error, needsEmailConfirmation, data: authData, errorUI } = await registerUser({
         email,
         password: data.password,
         fullName: data.ownerName.trim(),
         phone: data.mobile.replace(/\D/g, ""),
-        role: data.role as AppRole,
+        role: signupRole,
         businessSignup: true,
         companyName: data.companyName.trim(),
         city: data.city.trim(),
@@ -125,7 +129,7 @@ export function BusinessSignupPage() {
       const sessionUser = authData?.session?.user;
       if (sessionUser) {
         await persistBusinessSignupProfile(sessionUser.id, {
-          role: data.role as AppRole,
+          role: signupRole,
           ownerName: data.ownerName,
           email,
           password: data.password,
@@ -140,7 +144,8 @@ export function BusinessSignupPage() {
         });
         const row = await fetchUserProfile(sessionUser.id);
         if (row) {
-          useAuthStore.getState().setUser(mapDbUserToAppUser(row));
+          const enriched = await enrichUserWithDealerContext(mapDbUserToAppUser(row));
+          useAuthStore.getState().setUser(enriched);
           useAuthStore.getState().setProfileHydrated(true);
         }
       }

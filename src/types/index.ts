@@ -9,6 +9,10 @@ export interface User {
   fullName: string;
   avatarUrl?: string;
   role: UserRole;
+  /** From `dealers.dealer_type` — used when `role` is generic `dealer`. */
+  dealerType?: UserRole;
+  /** From signup metadata — e.g. `new_car_showroom`. */
+  businessCategory?: string;
   accountStatus: UserStatus;
   kycStatus: KycStatus;
   isVerified: boolean;

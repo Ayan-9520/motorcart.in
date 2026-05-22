@@ -12,3 +12,5 @@ export { CustomerProfileCenterPage } from "./pages/CustomerProfileCenterPage";
 export { CustomerFastagPage } from "./pages/CustomerFastagPage";
 export { CustomerServiceRecordsPage } from "./pages/CustomerServiceRecordsPage";
 export { CustomerVehicleHealthPage } from "./pages/CustomerVehicleHealthPage";
+export { CustomerRecentlyViewedPage } from "./pages/CustomerRecentlyViewedPage";
+export { previewAutomationForUser } from "./services/customer-automation.service";

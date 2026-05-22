@@ -42,7 +42,7 @@ export const DASHBOARD_ROUTES: Partial<Record<UserRole, string>> = {
   customer: "/dashboard/customer",
   dealer: "/dashboard/dealer",
   used_car_dealer: "/dashboard/dealer",
-  new_car_dealer: "/dashboard/dealer",
+  new_car_dealer: "/dashboard/new-car",
   bike_dealer: "/dashboard/dealer",
   truck_dealer: "/dashboard/dealer",
   dsa_agent: "/dashboard/dsa",

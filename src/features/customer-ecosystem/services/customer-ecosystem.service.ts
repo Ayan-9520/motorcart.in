@@ -156,11 +156,14 @@ export async function fetchCustomerEcosystemSnapshot(
     vehicles,
     documents,
     insurance,
+    insuranceClaims: mock.insuranceClaims,
     serviceRecords,
     notifications,
     insights,
     preferences,
     widgets,
+    timeline: mock.timeline,
+    campaigns: mock.campaigns,
     unreadNotifications: notifications.filter((n) => !n.read).length,
   };
 }

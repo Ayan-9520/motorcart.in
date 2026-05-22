@@ -46,6 +46,8 @@ export const PENDING_APPROVAL_ALLOWED_PREFIXES = [
   PENDING_APPROVAL_PATH,
   "/profile",
   "/dashboard/dealer/verification",
+  "/dashboard/new-car",
+  "/dashboard/parts",
 ] as const;
 
 export function isPendingApprovalAllowedPath(pathname: string): boolean {

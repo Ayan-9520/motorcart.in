@@ -11,6 +11,7 @@ import { CustomerDashboardHero } from "@/features/customer-ecosystem/components/
 import { CustomerWidgetGrid } from "@/features/customer-ecosystem/components/CustomerWidgetGrid";
 import { CustomerAiInsightList } from "@/features/customer-ecosystem/components/CustomerAiInsightList";
 import { CustomerVehicleCard } from "@/features/customer-ecosystem/components/CustomerVehicleCard";
+import { CustomerEngagementStrip } from "@/features/customer-ecosystem/components/CustomerEngagementStrip";
 import { useCustomerEcosystem } from "@/features/customer-ecosystem/hooks/useCustomerEcosystem";
 import {
   buildProfileChecklist,
@@ -99,7 +100,7 @@ export function CustomerDashboardPage() {
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             {data.vehicles.slice(0, 2).map((v) => (
-              <CustomerVehicleCard key={v.id} vehicle={v} />
+              <CustomerVehicleCard key={v.id} vehicle={v} detailed />
             ))}
           </div>
         </section>
@@ -109,7 +110,12 @@ export function CustomerDashboardPage() {
 
       {recentListings.length > 0 && (
         <section className="space-y-3">
-          <h2 className="cos-section-title cos-section-title--lg">Recently viewed</h2>
+          <div className="cos-section-head">
+            <h2 className="cos-section-title cos-section-title--lg">Recently viewed</h2>
+            <Button variant="ghost" size="sm" className="cos-section-link rounded-lg" asChild>
+              <Link to="/dashboard/customer/recently-viewed">View all</Link>
+            </Button>
+          </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {recentListings.map((v, i) => (
               <VehicleCard key={v.id} vehicle={v} index={i} compact />

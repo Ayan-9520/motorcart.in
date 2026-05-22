@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { User, Shield, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,15 +8,21 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useUser } from "@/hooks/useUser";
 import { useAuth } from "@/hooks/useAuth";
+import { useAuthStore } from "@/store/authStore";
 import { setPageMeta } from "@/utils/seo";
 
 export function ProfilePage() {
   const { user, loading, updateProfile } = useUser();
   const { signOut } = useAuth();
+  const role = useAuthStore((s) => s.user?.role);
 
   useEffect(() => {
     setPageMeta({ title: "My Profile" });
   }, []);
+
+  if (role === "customer") {
+    return <Navigate to="/dashboard/customer/profile" replace />;
+  }
 
   if (!user) {
     return (

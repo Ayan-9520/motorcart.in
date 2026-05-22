@@ -1,24 +1,19 @@
-import { Bell, Car, Gavel, Home, Search, User } from "lucide-react";
+import { Bell, Gavel, Heart, Home, Search, Sparkles, Star, User } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
 const CAR_IMG =
   "https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=800";
 
-function PhoneFrame({
-  children,
-  className,
-  size = "lg",
-}: {
-  children: React.ReactNode;
-  className?: string;
-  size?: "lg" | "sm";
-}) {
+function PhoneFrame({ children }: { children: React.ReactNode }) {
   return (
-    <div className={`app-phone-frame app-phone-frame-${size} ${className ?? ""}`}>
-      <div className="app-phone-bezel">
-        <div className="app-phone-island" />
-        <div className="app-phone-screen">{children}</div>
-        <div className="app-phone-home-indicator" />
+    <div className="app-phone-frame app-phone-frame--premium app-phone-frame-single">
+      <div className="app-phone-bezel app-phone-bezel--premium">
+        <div className="app-phone-island app-phone-island--premium" />
+        <div className="app-phone-screen app-phone-screen--premium">
+          <div className="app-phone-screen-shine" aria-hidden />
+          {children}
+        </div>
+        <div className="app-phone-home-indicator app-phone-home-indicator--premium" />
       </div>
     </div>
   );
@@ -26,80 +21,85 @@ function PhoneFrame({
 
 function AppHomeScreen() {
   return (
-    <div className="app-screen app-screen-home">
-      <div className="app-status-bar">
+    <div className="app-screen app-screen-home app-screen-home--premium">
+      <div className="app-status-bar app-status-bar--premium">
         <span>9:41</span>
-        <span className="app-status-icons">●●●</span>
+        <span className="app-status-icons">5G ▮▮▮</span>
       </div>
-      <div className="app-header">
-        <span className="app-logo-mark">M</span>
-        <span className="app-logo-text">Motorcart</span>
-        <Bell className="app-header-icon" />
+      <div className="app-header app-header--premium">
+        <span className="app-logo-mark app-logo-mark--premium">M</span>
+        <div className="min-w-0 flex-1">
+          <span className="app-logo-text">Motorcart</span>
+          <span className="app-logo-sub">India&apos;s auto super-app</span>
+        </div>
+        <span className="app-header-notif">
+          <Bell className="h-3 w-3" />
+          <span className="app-header-notif-dot" />
+        </span>
       </div>
-      <div className="app-search-pill">
-        <Search className="h-3 w-3 shrink-0" />
+      <div className="app-search-pill app-search-pill--premium">
+        <Search className="h-3 w-3 shrink-0 text-primary" />
         <span>Creta, Swift, Mumbai…</span>
       </div>
-      <div className="app-tabs">
+      <div className="app-tabs app-tabs--premium">
         <span className="app-tab active">Cars</span>
         <span className="app-tab">Pre-Owned</span>
         <span className="app-tab">Auctions</span>
       </div>
-      <div className="app-vehicle-card">
+      <div className="app-vehicle-card app-vehicle-card--premium">
         <div className="app-vehicle-img-wrap">
           <img src={CAR_IMG} alt="" className="app-vehicle-img" loading="lazy" />
-          <span className="app-badge-verified">Verified</span>
+          <div className="app-vehicle-img-overlay" />
+          <span className="app-badge-verified">
+            <Sparkles className="mr-0.5 inline h-2 w-2" />
+            Verified
+          </span>
+          <span className="app-badge-rating">
+            <Star className="h-2 w-2 fill-amber-400 text-amber-400" />
+            4.9
+          </span>
         </div>
-        <p className="app-vehicle-title">2024 Hyundai Creta SX(O)</p>
-        <p className="app-vehicle-price">{formatCurrency(1485000)}</p>
-        <p className="app-vehicle-meta">EMI {formatCurrency(24500)}/mo · Mumbai</p>
+        <div className="app-vehicle-body">
+          <p className="app-vehicle-title">2024 Hyundai Creta SX(O)</p>
+          <p className="app-vehicle-price">{formatCurrency(1485000)}</p>
+          <div className="app-vehicle-pills">
+            <span className="app-pill">EMI {formatCurrency(24500)}/mo</span>
+            <span className="app-pill app-pill--muted">Mumbai</span>
+          </div>
+        </div>
       </div>
-      <div className="app-bottom-nav">
-        <Home className="h-3.5 w-3.5 text-primary" />
-        <Search className="h-3.5 w-3.5" />
-        <Car className="h-3.5 w-3.5" />
-        <Gavel className="h-3.5 w-3.5" />
-        <User className="h-3.5 w-3.5" />
+      <div className="app-bottom-nav app-bottom-nav--premium">
+        <span className="app-nav-item active">
+          <Home className="h-3.5 w-3.5" />
+          <span>Home</span>
+        </span>
+        <span className="app-nav-item">
+          <Search className="h-3.5 w-3.5" />
+          <span>Search</span>
+        </span>
+        <span className="app-nav-item">
+          <Gavel className="h-3.5 w-3.5" />
+          <span>Bid</span>
+        </span>
+        <span className="app-nav-item">
+          <Heart className="h-3.5 w-3.5" />
+          <span>Saved</span>
+        </span>
+        <span className="app-nav-item">
+          <User className="h-3.5 w-3.5" />
+          <span>You</span>
+        </span>
       </div>
-    </div>
-  );
-}
-
-function AppAuctionScreen() {
-  return (
-    <div className="app-screen app-screen-auction">
-      <div className="app-status-bar">
-        <span>9:41</span>
-        <span className="app-status-icons">●●●</span>
-      </div>
-      <div className="app-auction-live">
-        <span className="app-live-dot" />
-        LIVE AUCTION
-      </div>
-      <p className="app-auction-title">2019 Honda City VX</p>
-      <p className="app-auction-bid">{formatCurrency(782000)}</p>
-      <p className="app-auction-meta">34 bids · 04:22:18 left</p>
-      <div className="app-bid-bar">
-        <div className="app-bid-fill" style={{ width: "68%" }} />
-      </div>
-      <button type="button" className="app-bid-btn">
-        Place bid
-      </button>
-      <p className="app-auction-foot">Bank repo · Mumbai</p>
     </div>
   );
 }
 
 export function AppPhoneMockup() {
   return (
-    <div className="app-phone-mockup" aria-hidden>
-      <PhoneFrame size="sm" className="app-phone-back">
-        <AppAuctionScreen />
-      </PhoneFrame>
-      <PhoneFrame size="lg" className="app-phone-front">
+    <div className="app-phone-mockup app-phone-mockup--premium app-phone-mockup--single" aria-hidden>
+      <PhoneFrame>
         <AppHomeScreen />
       </PhoneFrame>
-      <div className="app-phone-glow" />
     </div>
   );
 }

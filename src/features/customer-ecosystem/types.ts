@@ -38,6 +38,39 @@ export type CustomerVehicle = {
   serviceDueDays?: number;
   emiDueAmount?: number;
   emiDueDate?: string;
+  pucDaysLeft?: number;
+  loanLender?: string;
+  aiScore?: number;
+};
+
+export type OwnershipTimelineEvent = {
+  id: string;
+  date: string;
+  title: string;
+  description?: string;
+  type: "purchase" | "insurance" | "service" | "document" | "finance" | "milestone";
+  vehicleLabel?: string;
+};
+
+export type InsuranceClaim = {
+  id: string;
+  vehicleLabel: string;
+  insurerName: string;
+  claimId: string;
+  amount: number;
+  status: "settled" | "processing" | "rejected";
+  filedAt: string;
+};
+
+export type EngagementCampaign = {
+  id: string;
+  type: "birthday" | "anniversary" | "insurance" | "service" | "upgrade" | "loyalty";
+  title: string;
+  message: string;
+  ctaLabel: string;
+  ctaUrl: string;
+  scheduledFor?: string;
+  icon?: "gift" | "heart" | "shield" | "wrench" | "sparkles" | "award";
 };
 
 export type VehicleDocument = {
@@ -124,10 +157,13 @@ export type CustomerEcosystemSnapshot = {
   vehicles: CustomerVehicle[];
   documents: VehicleDocument[];
   insurance: InsuranceWalletEntry[];
+  insuranceClaims: InsuranceClaim[];
   serviceRecords: ServiceRecord[];
   notifications: CustomerNotification[];
   insights: AiInsight[];
   preferences: CustomerPreferences;
   widgets: DashboardWidget[];
+  timeline: OwnershipTimelineEvent[];
+  campaigns: EngagementCampaign[];
   unreadNotifications: number;
 };

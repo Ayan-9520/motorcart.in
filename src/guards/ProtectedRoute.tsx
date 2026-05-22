@@ -3,7 +3,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import type { UserRole } from "@/lib/constants";
 import type { AppRole } from "@/types/database";
-import { userHasAnyRole } from "@/permissions/role-matching";
+import { userCanAccessRoles } from "@/auth/workspace-role";
 import {
   isAccountPendingApproval,
   isPendingApprovalAllowedPath,
@@ -44,7 +44,7 @@ export function ProtectedRoute({ children, roles }: ProtectedRouteProps) {
     return <Navigate to="/account-suspended" replace />;
   }
 
-  if (roles && user && !userHasAnyRole(user.role as AppRole, roles as AppRole[])) {
+  if (roles && user && !userCanAccessRoles(user, roles as AppRole[])) {
     return <Navigate to="/unauthorized" replace />;
   }
 

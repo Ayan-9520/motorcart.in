@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { BusinessSignupForm } from "@/auth/business-signup-types";
 import { isDealerRole } from "@/permissions/role-matching";
+import { resolveBusinessSignupRole } from "@/auth/resolve-business-signup-role";
 import type { AppRole } from "@/types/database";
 
 function slugifyCompany(name: string): string {
@@ -28,9 +29,12 @@ export async function persistBusinessSignupProfile(
     submitted_at: new Date().toISOString(),
   };
 
+  const resolvedRole = resolveBusinessSignupRole(form.role, form.businessCategory);
+
   const { error: userError } = await supabase
     .from("users")
     .update({
+      role: resolvedRole,
       full_name: form.ownerName.trim(),
       company_name: form.companyName.trim(),
       city: form.city.trim(),
@@ -51,7 +55,7 @@ export async function persistBusinessSignupProfile(
     return { ok: false, error: userError.message };
   }
 
-  if (isDealerRole(form.role)) {
+  if (isDealerRole(resolvedRole)) {
     const { data: existing } = await supabase
       .from("dealers")
       .select("id")
@@ -64,7 +68,7 @@ export async function persistBusinessSignupProfile(
         owner_id: userId,
         name: form.companyName.trim(),
         slug,
-        dealer_type: form.role,
+        dealer_type: resolvedRole,
         city: form.city.trim(),
         state: form.state.trim(),
         phone: phone || null,

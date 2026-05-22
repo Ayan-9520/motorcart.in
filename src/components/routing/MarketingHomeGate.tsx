@@ -25,7 +25,7 @@ export function MarketingHomeGate({ children }: MarketingHomeGateProps) {
   }
 
   if (user) {
-    return <Navigate to={getRoleDashboardPath(user.role as AppRole)} replace />;
+    return <Navigate to={getRoleDashboardPath(user)} replace />;
   }
 
   return <>{children}</>;

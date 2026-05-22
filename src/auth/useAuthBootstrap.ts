@@ -8,6 +8,7 @@ import type { User } from "@/types";
 import toast from "react-hot-toast";
 import { getIntentionalSignOut, setIntentionalSignOut } from "@/lib/auth-session-flag";
 import { logAuthActivity, registerDeviceTouch } from "@/services/auth-telemetry.service";
+import { enrichUserWithDealerContext } from "@/auth/enrich-user-dealer";
 
 function userFromAuthSession(authUser: {
   id: string;
@@ -62,12 +63,11 @@ export function useAuthBootstrap() {
     ) => {
       if (!mounted) return;
 
-      const applySessionUser = (profile: Awaited<ReturnType<typeof ensureUserProfile>>) => {
-        if (profile) {
-          setUser(mapDbUserToAppUser(profile));
-        } else {
-          setUser(userFromAuthSession(authUser));
-        }
+      const applySessionUser = async (profile: Awaited<ReturnType<typeof ensureUserProfile>>) => {
+        const base = profile ? mapDbUserToAppUser(profile) : userFromAuthSession(authUser);
+        const enriched = await enrichUserWithDealerContext(base);
+        if (!mounted) return;
+        setUser(enriched);
         setProfileHydrated(true);
       };
 
@@ -78,18 +78,20 @@ export function useAuthBootstrap() {
             new Promise<null>((resolve) => window.setTimeout(() => resolve(null), 8000)),
           ]);
           if (!mounted) return;
-          applySessionUser(profile);
+          await applySessionUser(profile);
           return;
         }
 
-        applySessionUser(null);
-        void ensureUserProfile(authUser).then((profile) => {
+        await applySessionUser(null);
+        void ensureUserProfile(authUser).then(async (profile) => {
           if (!mounted || !profile) return;
-          setUser(mapDbUserToAppUser(profile));
+          const enriched = await enrichUserWithDealerContext(mapDbUserToAppUser(profile));
+          if (!mounted) return;
+          setUser(enriched);
         });
       } catch {
         if (!mounted) return;
-        applySessionUser(null);
+        await applySessionUser(null);
       }
     };
 

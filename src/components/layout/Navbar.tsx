@@ -41,7 +41,7 @@ export function Navbar() {
     useUIStore();
   const { isAuthenticated } = useAuth();
   const user = useAuthStore((s) => s.user);
-  const workspaceHref = user ? getRoleDashboardPath(user.role as AppRole) : "/";
+  const workspaceHref = user ? getRoleDashboardPath(user) : "/";
   const cartCount = usePartsCartStore((s) => s.itemCount());
   const wishlistCount = useVehicleMarketStore((s) => s.wishlist.length);
 

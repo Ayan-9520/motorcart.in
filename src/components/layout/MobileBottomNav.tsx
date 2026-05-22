@@ -7,7 +7,7 @@ import type { AppRole } from "@/types/database";
 
 export function MobileBottomNav() {
   const user = useAuthStore((s) => s.user);
-  const homeTo = user ? getRoleDashboardPath(user.role as AppRole) : "/";
+  const homeTo = user ? getRoleDashboardPath(user) : "/";
   const HomeIcon = user ? LayoutDashboard : Home;
   const homeLabel = user ? "Workspace" : "Home";
 

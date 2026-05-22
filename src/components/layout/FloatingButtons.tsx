@@ -1,7 +1,16 @@
 import { useState } from "react";
-import { MessageCircle, Bot } from "lucide-react";
+import { Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/ui/WhatsAppIcon";
 import { SupportChatWidget } from "@/ai/components/SupportChatWidget";
+import { SITE_NAME } from "@/lib/constants";
+
+const WHATSAPP_PHONE = import.meta.env.VITE_WHATSAPP_PHONE ?? "919876543210";
+
+function whatsAppSupportUrl() {
+  const text = encodeURIComponent(`Hi ${SITE_NAME}, I need help with vehicles / services on the website.`);
+  return `https://wa.me/${WHATSAPP_PHONE.replace(/\D/g, "")}?text=${text}`;
+}
 
 export function FloatingButtons() {
   const [aiOpen, setAiOpen] = useState(false);
@@ -9,18 +18,22 @@ export function FloatingButtons() {
   return (
     <>
       <a
-        href="https://wa.me/911800123456"
+        href={whatsAppSupportUrl()}
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-24 right-4 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 md:bottom-8"
-        aria-label="WhatsApp"
+        className="wa-fab group"
+        aria-label="Chat on WhatsApp"
       >
-        <MessageCircle className="h-6 w-6" />
+        <span className="wa-fab__pulse" aria-hidden />
+        <span className="wa-fab__btn">
+          <WhatsAppIcon className="h-7 w-7 text-white" />
+        </span>
+        <span className="wa-fab__label">WhatsApp</span>
       </a>
       <Button
         size="icon"
         variant="default"
-        className="fixed bottom-40 right-4 z-50 h-12 w-12 rounded-full shadow-lg md:bottom-24"
+        className="ai-fab fixed bottom-6 right-4 z-50 h-14 w-14 rounded-full bg-primary shadow-lg hover:bg-primary/90 md:bottom-8"
         onClick={() => setAiOpen(!aiOpen)}
         aria-label="AI Assistant"
       >

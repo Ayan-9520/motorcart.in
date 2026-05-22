@@ -26,6 +26,8 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 import { UnauthorizedPage } from "@/pages/UnauthorizedPage";
 import { AccountSuspendedPage } from "@/pages/AccountSuspendedPage";
 import { RoleDashboardRedirect } from "@/components/routing/RoleDashboardRedirect";
+import { DealerAliasRedirect } from "@/components/routing/DealerAliasRedirect";
+import { DealerHomeGate } from "@/components/routing/DealerHomeGate";
 import { CustomerDashboardPage } from "@/pages/dashboard/CustomerDashboardPage";
 import {
   CustomerGaragePage,
@@ -39,6 +41,7 @@ import {
   CustomerFastagPage,
   CustomerServiceRecordsPage,
   CustomerVehicleHealthPage,
+  CustomerRecentlyViewedPage,
 } from "@/features/customer-ecosystem";
 import { VehicleListingPage } from "@/features/vehicles/pages/VehicleListingPage";
 import { BuyHubPage } from "@/features/marketplace/pages/BuyHubPage";
@@ -54,6 +57,29 @@ import { NewCarsListingPage } from "@/features/new-cars/pages/NewCarsListingPage
 import { PreownedCarsHubPage } from "@/features/preowned-cars/pages/PreownedCarsHubPage";
 import { PreownedCarsListingPage } from "@/features/preowned-cars/pages/PreownedCarsListingPage";
 import { DealerDashboardLayout } from "@/layouts/DealerDashboardLayout";
+import { NewCarDealerLayout } from "@/layouts/NewCarDealerLayout";
+import {
+  NewCarOverviewPage,
+  NewCarInventoryPage,
+  NewCarLeadsPage,
+  NewCarLeadDetailPage,
+  NewCarBookingsPage,
+  NewCarDeliveriesPage,
+  NewCarTeamPage,
+  NewCarFinancePage,
+  NewCarInsurancePage,
+  NewCarTestDrivesPage,
+  NewCarRtoPage,
+  NewCarCustomersPage,
+  NewCarWhatsAppPage,
+  NewCarAnalyticsPage,
+  NewCarMarketingPage,
+  NewCarExchangePage,
+  NewCarAiPage,
+  NewCarStorefrontPage,
+  NewCarAccessoriesPage,
+} from "@/features/new-car-dealer";
+import { NewCarSettingsPage } from "@/features/new-car-dealer/pages/NewCarSettingsPage";
 import {
   DealerOverviewPage,
   DealerInventoryCRMPage,
@@ -111,10 +137,7 @@ import { PartsOrdersListPage } from "@/features/parts/pages/PartsOrdersListPage"
 import { PartsOrderDetailPage } from "@/features/parts/pages/PartsOrderDetailPage";
 import { PartInvoicePage } from "@/features/parts/pages/PartInvoicePage";
 import { PartsSupplierLayout } from "@/layouts/PartsSupplierLayout";
-import { PartsSupplierOverviewPage } from "@/features/parts/pages/PartsSupplierOverviewPage";
-import { PartsSupplierInventoryPage } from "@/features/parts/pages/PartsSupplierInventoryPage";
-import { PartsSupplierOrdersPage } from "@/features/parts/pages/PartsSupplierOrdersPage";
-import { PartsSupplierUploadPage } from "@/features/parts/pages/PartsSupplierUploadPage";
+import * as PartsSupplier from "@/features/parts-supplier";
 import { ServicesHubPage } from "@/features/service-booking/pages/ServicesHubPage";
 import { ServiceMarketplacePage } from "@/features/service-booking/pages/ServiceMarketplacePage";
 import { ServiceCenterDetailPage } from "@/features/service-booking/pages/ServiceCenterDetailPage";
@@ -122,10 +145,7 @@ import { ServiceBookingFlowPage } from "@/features/service-booking/pages/Service
 import { MyServiceBookingsPage } from "@/features/service-booking/pages/MyServiceBookingsPage";
 import { ServiceBookingDetailPage } from "@/features/service-booking/pages/ServiceBookingDetailPage";
 import { ServiceHubLayout } from "@/layouts/ServiceHubLayout";
-import { ServiceHubOverviewPage } from "@/features/service-booking/pages/ServiceHubOverviewPage";
-import { ServiceHubBookingsPage } from "@/features/service-booking/pages/ServiceHubBookingsPage";
-import { ServiceHubAnalyticsPage } from "@/features/service-booking/pages/ServiceHubAnalyticsPage";
-import { ServiceWorkshopPage } from "@/features/service-booking/pages/ServiceWorkshopPage";
+import * as ServicePartner from "@/features/service-partner";
 import { CustomerServiceHistoryPage } from "@/features/service-booking/pages/CustomerServiceHistoryPage";
 import { TechnicianDashboardLayout } from "@/layouts/TechnicianDashboardLayout";
 import { TechnicianJobsPage } from "@/features/service-booking/pages/TechnicianJobsPage";
@@ -343,12 +363,22 @@ export const router = createBrowserRouter([
   },
   {
     element: (
-      <ProtectedRoute roles={["dealer", "used_car_dealer", "new_car_dealer", "bike_dealer", "truck_dealer", "admin"]}>
+      <ProtectedRoute
+        roles={[
+          "dealer",
+          "used_car_dealer",
+          "new_car_dealer",
+          "bike_dealer",
+          "truck_dealer",
+          "admin",
+          "super_admin",
+        ]}
+      >
         <DealerDashboardLayout />
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard/dealer", element: <DealerOverviewPage /> },
+      { path: "dashboard/dealer", element: <DealerHomeGate /> },
       { path: "dashboard/dealer/inventory", element: <DealerInventoryCRMPage /> },
       { path: "dashboard/dealer/inventory/excel", element: <DealerBulkUploadPage /> },
       { path: "dashboard/dealer/finance", element: <DealerFinancePage /> },
@@ -367,29 +397,186 @@ export const router = createBrowserRouter([
   },
   {
     element: (
-      <ProtectedRoute roles={["parts_seller", "admin"]}>
-        <PartsSupplierLayout />
+      <ProtectedRoute roles={["new_car_dealer", "admin", "super_admin"]}>
+        <NewCarDealerLayout />
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard/parts", element: <PartsSupplierOverviewPage /> },
-      { path: "dashboard/parts/inventory", element: <PartsSupplierInventoryPage /> },
-      { path: "dashboard/parts/upload", element: <PartsSupplierUploadPage /> },
-      { path: "dashboard/parts/orders", element: <PartsSupplierOrdersPage /> },
+      { path: "dashboard/new-car", element: <NewCarOverviewPage /> },
+      { path: "dashboard/new-car/inventory", element: <NewCarInventoryPage /> },
+      { path: "dashboard/new-car/leads", element: <NewCarLeadsPage /> },
+      { path: "dashboard/new-car/leads/:id", element: <NewCarLeadDetailPage /> },
+      { path: "dashboard/new-car/test-drives", element: <NewCarTestDrivesPage /> },
+      { path: "dashboard/new-car/bookings", element: <NewCarBookingsPage /> },
+      { path: "dashboard/new-car/finance", element: <NewCarFinancePage /> },
+      { path: "dashboard/new-car/insurance", element: <NewCarInsurancePage /> },
+      { path: "dashboard/new-car/deliveries", element: <NewCarDeliveriesPage /> },
+      { path: "dashboard/new-car/rto", element: <NewCarRtoPage /> },
+      { path: "dashboard/new-car/accessories", element: <NewCarAccessoriesPage /> },
+      { path: "dashboard/new-car/customers", element: <NewCarCustomersPage /> },
+      { path: "dashboard/new-car/whatsapp", element: <NewCarWhatsAppPage /> },
+      { path: "dashboard/new-car/team", element: <NewCarTeamPage /> },
+      { path: "dashboard/new-car/analytics", element: <NewCarAnalyticsPage /> },
+      { path: "dashboard/new-car/marketing", element: <NewCarMarketingPage /> },
+      { path: "dashboard/new-car/exchange", element: <NewCarExchangePage /> },
+      { path: "dashboard/new-car/ai", element: <NewCarAiPage /> },
+      { path: "dashboard/new-car/storefront", element: <NewCarStorefrontPage /> },
+      { path: "dashboard/new-car/settings", element: <NewCarSettingsPage /> },
     ],
   },
   {
     element: (
-      <ProtectedRoute roles={["service_center", "admin"]}>
+      <ProtectedRoute roles={["parts_seller", "admin", "super_admin"]}>
+        <PartsSupplierLayout />
+      </ProtectedRoute>
+    ),
+    children: [
+      { path: "dashboard/parts", element: <PartsSupplier.PartsSupplierOverviewPage /> },
+      { path: "dashboard/parts/ai", element: <PartsSupplier.PartsSupplierAiPage /> },
+      { path: "dashboard/parts/alerts", element: <PartsSupplier.PartsSupplierAlertsPage /> },
+      { path: "dashboard/parts/catalog", element: <PartsSupplier.PartsSupplierCatalogPage /> },
+      { path: "dashboard/parts/inventory", element: <PartsSupplier.PartsSupplierInventoryPage /> },
+      { path: "dashboard/parts/upload", element: <PartsSupplier.PartsSupplierUploadPage /> },
+      { path: "dashboard/parts/bulk-upload", element: <PartsSupplier.PartsSupplierBulkUploadPage /> },
+      { path: "dashboard/parts/categories", element: <PartsSupplier.PartsSupplierCategoriesPage /> },
+      { path: "dashboard/parts/brands", element: <PartsSupplier.PartsSupplierBrandsPage /> },
+      { path: "dashboard/parts/variants", element: <PartsSupplier.PartsSupplierVariantsPage /> },
+      { path: "dashboard/parts/oem-mapping", element: <PartsSupplier.PartsSupplierOemMappingPage /> },
+      { path: "dashboard/parts/compatibility", element: <PartsSupplier.PartsSupplierCompatibilityPage /> },
+      { path: "dashboard/parts/warehouses", element: <PartsSupplier.PartsSupplierWarehousesPage /> },
+      { path: "dashboard/parts/racks", element: <PartsSupplier.PartsSupplierRacksPage /> },
+      { path: "dashboard/parts/low-stock", element: <PartsSupplier.PartsSupplierLowStockPage /> },
+      { path: "dashboard/parts/dead-stock", element: <PartsSupplier.PartsSupplierDeadStockPage /> },
+      { path: "dashboard/parts/incoming", element: <PartsSupplier.PartsSupplierIncomingPage /> },
+      { path: "dashboard/parts/transfers", element: <PartsSupplier.PartsSupplierTransfersPage /> },
+      { path: "dashboard/parts/orders", element: <PartsSupplier.PartsSupplierOrdersPage /> },
+      { path: "dashboard/parts/orders/new", element: <PartsSupplier.PartsSupplierOrdersFilteredPage /> },
+      { path: "dashboard/parts/orders/processing", element: <PartsSupplier.PartsSupplierOrdersFilteredPage /> },
+      { path: "dashboard/parts/orders/packed", element: <PartsSupplier.PartsSupplierOrdersPackedPage /> },
+      { path: "dashboard/parts/orders/dispatched", element: <PartsSupplier.PartsSupplierOrdersDispatchedPage /> },
+      { path: "dashboard/parts/orders/delivered", element: <PartsSupplier.PartsSupplierOrdersDeliveredPage /> },
+      { path: "dashboard/parts/orders/returns", element: <PartsSupplier.PartsSupplierOrdersFilteredPage /> },
+      { path: "dashboard/parts/orders/cancelled", element: <PartsSupplier.PartsSupplierOrdersCancelledPage /> },
+      { path: "dashboard/parts/orders/:id", element: <PartsSupplier.PartsSupplierOrderDetailPage /> },
+      { path: "dashboard/parts/crm/dealers", element: <PartsSupplier.PartsSupplierCrmDealersPage /> },
+      { path: "dashboard/parts/crm/garages", element: <PartsSupplier.PartsSupplierCrmGaragesPage /> },
+      { path: "dashboard/parts/crm/workshops", element: <PartsSupplier.PartsSupplierCrmWorkshopsPage /> },
+      { path: "dashboard/parts/crm/repeat", element: <PartsSupplier.PartsSupplierCrmRepeatPage /> },
+      { path: "dashboard/parts/crm/negotiations", element: <PartsSupplier.PartsSupplierCrmNegotiationsPage /> },
+      { path: "dashboard/parts/crm/pipeline", element: <PartsSupplier.PartsSupplierCrmPipelinePage /> },
+      { path: "dashboard/parts/crm/rfq", element: <PartsSupplier.PartsSupplierRfqPage /> },
+      { path: "dashboard/parts/pricing/retail", element: <PartsSupplier.PartsSupplierPricingRetailPage /> },
+      { path: "dashboard/parts/pricing/dealer", element: <PartsSupplier.PartsSupplierPricingDealerPage /> },
+      { path: "dashboard/parts/pricing/wholesale", element: <PartsSupplier.PartsSupplierPricingWholesalePage /> },
+      { path: "dashboard/parts/pricing/bulk", element: <PartsSupplier.PartsSupplierPricingBulkPage /> },
+      { path: "dashboard/parts/pricing/dynamic", element: <PartsSupplier.PartsSupplierPricingDynamicPage /> },
+      { path: "dashboard/parts/pricing/offers", element: <PartsSupplier.PartsSupplierOffersPage /> },
+      { path: "dashboard/parts/logistics/dispatch", element: <PartsSupplier.PartsSupplierDispatchPage /> },
+      { path: "dashboard/parts/logistics/couriers", element: <PartsSupplier.PartsSupplierCouriersPage /> },
+      { path: "dashboard/parts/logistics/tracking", element: <PartsSupplier.PartsSupplierTrackingPage /> },
+      { path: "dashboard/parts/logistics/sla", element: <PartsSupplier.PartsSupplierLogisticsSlaPage /> },
+      { path: "dashboard/parts/logistics/labels", element: <PartsSupplier.PartsSupplierLogisticsLabelsPage /> },
+      { path: "dashboard/parts/procurement/po", element: <PartsSupplier.PartsSupplierPoPage /> },
+      { path: "dashboard/parts/procurement/vendors", element: <PartsSupplier.PartsSupplierVendorsPage /> },
+      { path: "dashboard/parts/procurement/bills", element: <PartsSupplier.PartsSupplierProcurementBillsPage /> },
+      { path: "dashboard/parts/procurement/incoming", element: <PartsSupplier.PartsSupplierProcurementIncomingPage /> },
+      { path: "dashboard/parts/finance/revenue", element: <PartsSupplier.PartsSupplierAnalyticsRevenuePage /> },
+      { path: "dashboard/parts/finance/invoices", element: <PartsSupplier.PartsSupplierInvoicesPage /> },
+      { path: "dashboard/parts/finance/payouts", element: <PartsSupplier.PartsSupplierFinancePayoutsPage /> },
+      { path: "dashboard/parts/finance/settlements", element: <PartsSupplier.PartsSupplierSettlementsPage /> },
+      { path: "dashboard/parts/finance/credit-notes", element: <PartsSupplier.PartsSupplierFinanceCreditNotesPage /> },
+      { path: "dashboard/parts/finance/profit", element: <PartsSupplier.PartsSupplierFinanceProfitPage /> },
+      { path: "dashboard/parts/marketing", element: <PartsSupplier.PartsSupplierMarketingPage /> },
+      { path: "dashboard/parts/marketing/whatsapp", element: <PartsSupplier.PartsSupplierMarketingWhatsappPage /> },
+      { path: "dashboard/parts/marketing/sms", element: <PartsSupplier.PartsSupplierMarketingSmsPage /> },
+      { path: "dashboard/parts/marketing/email", element: <PartsSupplier.PartsSupplierMarketingEmailPage /> },
+      { path: "dashboard/parts/marketing/catalogue", element: <PartsSupplier.PartsSupplierMarketingCataloguePage /> },
+      { path: "dashboard/parts/whatsapp", element: <PartsSupplier.PartsSupplierWhatsAppPage /> },
+      { path: "dashboard/parts/analytics", element: <PartsSupplier.PartsSupplierAnalyticsHubPage /> },
+      { path: "dashboard/parts/analytics/revenue", element: <PartsSupplier.PartsSupplierAnalyticsRevenuePage /> },
+      { path: "dashboard/parts/analytics/products", element: <PartsSupplier.PartsSupplierAnalyticsProductsPage /> },
+      { path: "dashboard/parts/analytics/warehouse", element: <PartsSupplier.PartsSupplierAnalyticsWarehousePage /> },
+      { path: "dashboard/parts/analytics/customers", element: <PartsSupplier.PartsSupplierAnalyticsCustomersPage /> },
+      { path: "dashboard/parts/analytics/sku", element: <PartsSupplier.PartsSupplierAnalyticsSkuPage /> },
+      { path: "dashboard/parts/storefront", element: <PartsSupplier.PartsSupplierStorefrontPage /> },
+      { path: "dashboard/parts/profile", element: <PartsSupplier.PartsSupplierProfilePage /> },
+      { path: "dashboard/parts/kyc", element: <PartsSupplier.PartsSupplierKycPage /> },
+      { path: "dashboard/parts/staff", element: <PartsSupplier.PartsSupplierStaffPage /> },
+      { path: "dashboard/parts/notifications", element: <PartsSupplier.PartsSupplierNotificationsPage /> },
+      { path: "dashboard/parts/automation", element: <PartsSupplier.PartsSupplierAutomationPage /> },
+      { path: "dashboard/parts/barcode", element: <PartsSupplier.PartsSupplierBarcodePage /> },
+    ],
+  },
+  {
+    element: (
+      <ProtectedRoute roles={["service_center", "admin", "super_admin"]}>
         <ServiceHubLayout />
       </ProtectedRoute>
     ),
     children: [
-      { path: "dashboard/service", element: <ServiceHubOverviewPage /> },
-      { path: "dashboard/service/calendar", element: <ServiceWorkshopPage /> },
-      { path: "dashboard/service/bookings", element: <ServiceHubBookingsPage /> },
-      { path: "dashboard/service/analytics", element: <ServiceHubAnalyticsPage /> },
-      { path: "dashboard/service/settings", element: ph("Service hub settings", "Integrations, bays & notifications") },
+      { path: "dashboard/service", element: <ServicePartner.ShOverviewPage /> },
+      { path: "dashboard/service/ai", element: <ServicePartner.ShAiPage /> },
+      { path: "dashboard/service/notifications", element: <ServicePartner.ShNotificationsPage /> },
+      { path: "dashboard/service/operations/live", element: <ServicePartner.ShLiveOpsPage /> },
+      { path: "dashboard/service/bookings", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/new", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/upcoming", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/in-progress", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/pickup", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/emergency", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/completed", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/bookings/cancelled", element: <ServicePartner.ShBookingsPage /> },
+      { path: "dashboard/service/workshop/job-cards", element: <ServicePartner.ShJobCardsPage /> },
+      { path: "dashboard/service/workshop/job-cards/:id", element: <ServicePartner.ShJobCardDetailPage /> },
+      { path: "dashboard/service/workshop/inspection", element: <ServicePartner.ShInspectionPage /> },
+      { path: "dashboard/service/workshop/bays", element: <ServicePartner.ShBaysPage /> },
+      { path: "dashboard/service/workshop/technicians", element: <ServicePartner.ShTechniciansPage /> },
+      { path: "dashboard/service/workshop/kanban", element: <ServicePartner.ShKanbanPage /> },
+      { path: "dashboard/service/calendar", element: <ServicePartner.ShCalendarPage /> },
+      { path: "dashboard/service/customers", element: <ServicePartner.ShCrmPage /> },
+      { path: "dashboard/service/customers/vehicles", element: <ServicePartner.ShCrmVehiclesPage /> },
+      { path: "dashboard/service/customers/repeat", element: <ServicePartner.ShCrmRepeatPage /> },
+      { path: "dashboard/service/customers/loyalty", element: <ServicePartner.ShCrmLoyaltyPage /> },
+      { path: "dashboard/service/customers/reviews", element: <ServicePartner.ShCrmReviewsPage /> },
+      { path: "dashboard/service/services/periodic", element: <ServicePartner.ShServicesCatalogPage title="Periodic service" slug="periodic" /> },
+      { path: "dashboard/service/services/ac", element: <ServicePartner.ShServicesCatalogPage title="AC service" slug="ac" /> },
+      { path: "dashboard/service/services/body", element: <ServicePartner.ShServicesCatalogPage title="Denting & painting" slug="denting" /> },
+      { path: "dashboard/service/services/detailing", element: <ServicePartner.ShServicesCatalogPage title="Detailing" slug="detailing" /> },
+      { path: "dashboard/service/services/ceramic", element: <ServicePartner.ShServicesCatalogPage title="Ceramic coating" slug="ceramic" /> },
+      { path: "dashboard/service/services/battery", element: <ServicePartner.ShServicesCatalogPage title="Battery replacement" slug="battery" /> },
+      { path: "dashboard/service/services/tyre", element: <ServicePartner.ShServicesCatalogPage title="Tyre service" slug="tyre" /> },
+      { path: "dashboard/service/services/ev", element: <ServicePartner.ShServicesCatalogPage title="EV diagnostics" slug="ev" /> },
+      { path: "dashboard/service/parts/inventory", element: <ServicePartner.ShPartsInventoryPage /> },
+      { path: "dashboard/service/parts/low-stock", element: <ServicePartner.ShPartsLowStockPage /> },
+      { path: "dashboard/service/parts/vendors", element: <ServicePartner.ShPartsVendorsPage /> },
+      { path: "dashboard/service/parts/po", element: <ServicePartner.ShPartsPoPage /> },
+      { path: "dashboard/service/parts/billing", element: <ServicePartner.ShPartsBillingPage /> },
+      { path: "dashboard/service/operations/pickup", element: <ServicePartner.ShPickupPage /> },
+      { path: "dashboard/service/operations/drivers", element: <ServicePartner.ShDriversPage /> },
+      { path: "dashboard/service/operations/routes", element: <ServicePartner.ShRoutesPage /> },
+      { path: "dashboard/service/operations/rsa", element: <ServicePartner.ShRsaPage /> },
+      { path: "dashboard/service/finance/revenue", element: <ServicePartner.ShFinanceRevenuePage /> },
+      { path: "dashboard/service/finance/invoices", element: <ServicePartner.ShFinanceInvoicesPage /> },
+      { path: "dashboard/service/finance/claims", element: <ServicePartner.ShInsuranceClaimsPage /> },
+      { path: "dashboard/service/finance/payments", element: <ServicePartner.ShFinancePaymentsPage /> },
+      { path: "dashboard/service/finance/expenses", element: <ServicePartner.ShFinanceExpensesPage /> },
+      { path: "dashboard/service/finance/profit", element: <ServicePartner.ShFinanceProfitPage /> },
+      { path: "dashboard/service/marketing/whatsapp", element: <ServicePartner.ShWhatsAppPage /> },
+      { path: "dashboard/service/marketing/sms", element: <ServicePartner.ShMarketingSmsPage /> },
+      { path: "dashboard/service/marketing/reminders", element: <ServicePartner.ShMarketingRemindersPage /> },
+      { path: "dashboard/service/marketing/offers", element: <ServicePartner.ShMarketingOffersPage /> },
+      { path: "dashboard/service/analytics", element: <ServicePartner.ShAnalyticsHubPage /> },
+      { path: "dashboard/service/analytics/revenue", element: <ServicePartner.ShAnalyticsRevenuePage /> },
+      { path: "dashboard/service/analytics/technicians", element: <ServicePartner.ShAnalyticsTechniciansPage /> },
+      { path: "dashboard/service/analytics/workshop", element: <ServicePartner.ShAnalyticsWorkshopPage /> },
+      { path: "dashboard/service/analytics/retention", element: <ServicePartner.ShAnalyticsRetentionPage /> },
+      { path: "dashboard/service/analytics/branches", element: <ServicePartner.ShAnalyticsBranchesPage /> },
+      { path: "dashboard/service/profile", element: <ServicePartner.ShProfilePage /> },
+      { path: "dashboard/service/kyc", element: <ServicePartner.ShKycPage /> },
+      { path: "dashboard/service/settings/gst", element: <ServicePartner.ShGstSettingsPage /> },
+      { path: "dashboard/service/settings/team", element: <ServicePartner.ShTeamPage /> },
+      { path: "dashboard/service/settings/hours", element: <ServicePartner.ShHoursPage /> },
+      { path: "dashboard/service/settings", element: <ServicePartner.ShSettingsPage /> },
     ],
   },
   {
@@ -505,6 +692,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
             <CustomerProfileCenterPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "dashboard/customer/recently-viewed",
+        element: (
+          <ProtectedRoute roles={["customer", "admin", "super_admin"]}>
+            <CustomerRecentlyViewedPage />
           </ProtectedRoute>
         ),
       },
@@ -768,9 +963,17 @@ export const router = createBrowserRouter([
     path: "dealer",
     element: (
       <ProtectedRoute
-        roles={["dealer", "used_car_dealer", "new_car_dealer", "bike_dealer", "truck_dealer", "admin"]}
+        roles={[
+          "dealer",
+          "used_car_dealer",
+          "new_car_dealer",
+          "bike_dealer",
+          "truck_dealer",
+          "admin",
+          "super_admin",
+        ]}
       >
-        <Navigate to="/dashboard/dealer" replace />
+        <DealerAliasRedirect />
       </ProtectedRoute>
     ),
   },
@@ -786,7 +989,7 @@ export const router = createBrowserRouter([
     path: "dashboard/newcar-dealer",
     element: (
       <ProtectedRoute roles={["new_car_dealer", "admin", "super_admin"]}>
-        <Navigate to="/dashboard/dealer" replace />
+        <Navigate to="/dashboard/new-car" replace />
       </ProtectedRoute>
     ),
   },
@@ -794,9 +997,17 @@ export const router = createBrowserRouter([
     path: "dealer/dashboard",
     element: (
       <ProtectedRoute
-        roles={["dealer", "used_car_dealer", "new_car_dealer", "bike_dealer", "truck_dealer", "admin"]}
+        roles={[
+          "dealer",
+          "used_car_dealer",
+          "new_car_dealer",
+          "bike_dealer",
+          "truck_dealer",
+          "admin",
+          "super_admin",
+        ]}
       >
-        <Navigate to="/dashboard/dealer" replace />
+        <DealerAliasRedirect />
       </ProtectedRoute>
     ),
   },

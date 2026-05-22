@@ -2,7 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuthStore } from "@/store/authStore";
 import type { UserRole } from "@/lib/constants";
 import type { AppRole } from "@/types/database";
-import { userHasAnyRole } from "@/permissions/role-matching";
+import { userCanAccessRoles } from "@/auth/workspace-role";
 
 type RoleGuardProps = {
   /** Allowed roles (super_admin always passes). */
@@ -27,7 +27,7 @@ export function RoleGuard({ allow, children, redirect = true }: RoleGuardProps) 
     return redirect ? <Navigate to="/account-suspended" replace /> : null;
   }
 
-  if (!userHasAnyRole(user.role as AppRole, list)) {
+  if (!userCanAccessRoles(user, list)) {
     return redirect ? <Navigate to="/unauthorized" replace /> : null;
   }
 

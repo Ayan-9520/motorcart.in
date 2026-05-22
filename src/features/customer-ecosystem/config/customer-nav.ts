@@ -74,7 +74,7 @@ export const CUSTOMER_ECOSYSTEM_NAV: CustomerNavGroup[] = [
     label: "Marketplace",
     items: [
       { to: "/wishlist", label: "Saved Vehicles", icon: Heart },
-      { to: "/search", label: "Recently Viewed", icon: Search },
+      { to: "/dashboard/customer/recently-viewed", label: "Recently Viewed", icon: Search },
       { to: "/vehicles/compare", label: "Compare Vehicles", icon: Car },
       { to: "/auctions/browse", label: "Auctions & Bids", icon: Gavel },
     ],

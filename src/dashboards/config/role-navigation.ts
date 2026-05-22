@@ -62,6 +62,18 @@ export function getRoleNavContext(role: AppRole): RoleNavContext {
     };
   }
 
+  if (role === "new_car_dealer") {
+    return {
+      title: "New Car OS",
+      subtitle: "Showroom",
+      items: [
+        { to: "/dashboard/new-car", label: "Showroom home", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/new-car/inventory", label: "Inventory", icon: Car },
+        { to: "/dashboard/new-car/leads", label: "Lead CRM", icon: Users },
+      ],
+    };
+  }
+
   if (isDealerRole(role)) {
     return {
       title: "Dealer OS",
@@ -141,13 +153,13 @@ export function getRoleNavContext(role: AppRole): RoleNavContext {
 
   if (role === "parts_seller") {
     return {
-      title: "Parts seller",
-      subtitle: "Catalog & orders",
+      title: "Parts Supplier OS",
+      subtitle: "B2B ERP",
       items: [
-        { to: "/dashboard/parts", label: "Overview", icon: LayoutDashboard, end: true },
-        { to: "/dashboard/parts/inventory", label: "Inventory", icon: Package },
-        { to: "/dashboard/parts/upload", label: "Upload parts", icon: FileSpreadsheet },
+        { to: "/dashboard/parts", label: "Dashboard", icon: LayoutDashboard, end: true },
+        { to: "/dashboard/parts/catalog", label: "Catalog", icon: Package },
         { to: "/dashboard/parts/orders", label: "Orders", icon: ClipboardList },
+        { to: "/dashboard/parts/analytics", label: "Analytics", icon: BarChart3 },
       ],
     };
   }

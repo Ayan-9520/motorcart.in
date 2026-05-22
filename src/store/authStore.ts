@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { User } from "@/types";
 import type { UserRole } from "@/lib/constants";
 import type { AppRole } from "@/types/database";
-import { userHasAnyRole } from "@/permissions/role-matching";
+import { userCanAccessRoles } from "@/auth/workspace-role";
 
 interface AuthState {
   user: User | null;
@@ -30,6 +30,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const user = get().user;
     if (!user) return false;
     const list = (Array.isArray(roles) ? roles : [roles]) as AppRole[];
-    return userHasAnyRole(user.role as AppRole, list);
+    return userCanAccessRoles(user, list);
   },
 }));

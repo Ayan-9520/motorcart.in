@@ -34,6 +34,9 @@ export function buildMockCustomerSnapshot(): CustomerEcosystemSnapshot {
       serviceDueDays: 12,
       emiDueAmount: 18420,
       emiDueDate: "2026-05-28",
+      pucDaysLeft: 118,
+      loanLender: "HDFC Bank",
+      aiScore: 88,
     },
     {
       id: "mv-honda-activa",
@@ -58,7 +61,36 @@ export function buildMockCustomerSnapshot(): CustomerEcosystemSnapshot {
       insuranceDaysLeft: 142,
       rcStatus: "verified" as const,
       serviceDueDays: 45,
+      pucDaysLeft: 135,
+      aiScore: 91,
     },
+  ];
+
+  const insuranceClaims = [
+    {
+      id: "clm-1",
+      vehicleLabel: "Honda Activa 6G",
+      insurerName: "Digit",
+      claimId: "DIG/CLM/2024/8821",
+      amount: 4200,
+      status: "settled" as const,
+      filedAt: "2024-09-12",
+    },
+  ];
+
+  const timeline = [
+    { id: "tl-1", date: "2022-08-14", title: "Vehicle purchased", description: "Hyundai Creta SX(O) registered in Pune", type: "purchase" as const, vehicleLabel: "Hyundai Creta" },
+    { id: "tl-2", date: "2022-08-20", title: "HDFC loan disbursed", description: "₹12.8L auto loan · 60 months", type: "finance" as const, vehicleLabel: "Hyundai Creta" },
+    { id: "tl-3", date: "2025-05-28", title: "Insurance renewed", description: "ACKO comprehensive + zero dep", type: "insurance" as const, vehicleLabel: "Hyundai Creta" },
+    { id: "tl-4", date: "2025-11-18", title: "Periodic service", description: "25,000 km service at Hyundai Arena", type: "service" as const, vehicleLabel: "Hyundai Creta" },
+    { id: "tl-5", date: "2021-03-02", title: "Activa added", description: "Honda Activa 6G for city commute", type: "purchase" as const, vehicleLabel: "Honda Activa 6G" },
+  ];
+
+  const campaigns = [
+    { id: "cmp-ins", type: "insurance" as const, title: "Renew before expiry", message: "Save up to ₹1,200 on ACKO renewal with zero-dep retained.", ctaLabel: "Renew now", ctaUrl: "/insurance/quote", icon: "shield" as const },
+    { id: "cmp-svc", type: "service" as const, title: "Service slot open", message: "Weekend slots filling fast in Pune — book Creta service early.", ctaLabel: "Book garage", ctaUrl: "/services/book", icon: "wrench" as const },
+    { id: "cmp-ann", type: "anniversary" as const, title: "Motorcart anniversary", message: "Celebrate your membership — 500 bonus points on next service.", ctaLabel: "Claim offer", ctaUrl: "/dashboard/customer/rewards", icon: "gift" as const },
+    { id: "cmp-upg", type: "upgrade" as const, title: "Upgrade offer", message: "Pre-owned SUVs with 1-year warranty — curated for Hyundai owners.", ctaLabel: "Browse SUVs", ctaUrl: "/buy/cars/used", icon: "sparkles" as const },
   ];
 
   const documents = [
@@ -144,11 +176,14 @@ export function buildMockCustomerSnapshot(): CustomerEcosystemSnapshot {
     vehicles,
     documents,
     insurance,
+    insuranceClaims,
     serviceRecords,
     notifications,
     insights,
     preferences,
     widgets,
+    timeline,
+    campaigns,
     unreadNotifications: notifications.filter((n) => !n.read).length,
   };
 }
