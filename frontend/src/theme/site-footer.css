@@ -1,0 +1,100 @@
+/* Premium site footer — imported from global.css */
+.site-footer {
+  @apply relative mt-auto border-t border-border/60 bg-gradient-to-b from-muted/40 via-background to-background pt-14 pb-8 md:pt-16 md:pb-10;
+}
+
+.site-footer__glow {
+  @apply pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent;
+}
+
+.site-footer__main {
+  @apply grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1.85fr)] lg:gap-12 xl:gap-16;
+}
+
+.site-footer__brand {
+  @apply flex flex-col gap-4;
+}
+
+.site-footer__logo {
+  @apply inline-flex items-center gap-2.5 text-lg font-bold tracking-tight text-foreground no-underline transition-opacity hover:opacity-90;
+}
+
+.site-footer__logo-mark {
+  @apply flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm;
+}
+
+.site-footer__tagline {
+  @apply max-w-sm text-sm leading-relaxed text-muted-foreground;
+}
+
+.site-footer__contact-card {
+  @apply rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm backdrop-blur-sm;
+}
+
+.site-footer__contact-title {
+  @apply mb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground;
+}
+
+.site-footer__address {
+  @apply text-sm leading-relaxed text-foreground;
+}
+
+.site-footer__contact-list {
+  @apply mt-3 space-y-2 text-sm;
+}
+
+.site-footer__contact-list li {
+  @apply flex items-center gap-2;
+}
+
+.site-footer__contact-list a {
+  @apply font-medium text-foreground no-underline transition-colors hover:text-primary;
+}
+
+.site-footer__hours {
+  @apply mt-3 text-xs text-muted-foreground;
+}
+
+.site-footer__social {
+  @apply flex flex-wrap gap-2;
+}
+
+.site-footer__social-btn {
+  @apply flex h-9 w-9 items-center justify-center rounded-lg border border-border/70 bg-card text-muted-foreground transition hover:border-primary/30 hover:text-primary;
+}
+
+.site-footer__columns {
+  @apply grid grid-cols-2 gap-8 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-6;
+}
+
+.site-footer__col-title {
+  @apply mb-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-foreground;
+}
+
+.site-footer__col-links {
+  @apply space-y-2 text-sm;
+}
+
+.site-footer__col-links a {
+  @apply text-muted-foreground no-underline transition-colors hover:text-primary;
+}
+
+.site-footer__bottom {
+  @apply mt-10 flex flex-col gap-4 border-t border-border/60 pt-6 md:mt-12 md:flex-row md:items-center md:justify-between md:gap-6;
+}
+
+.site-footer__copy {
+  @apply text-center text-xs text-muted-foreground md:text-left;
+}
+
+.site-footer__legal {
+  @apply flex flex-wrap items-center justify-center gap-2 md:justify-end;
+}
+
+.site-footer__legal-pill {
+  @apply rounded-full border border-border/80 bg-card px-3.5 py-1.5 text-xs font-medium text-foreground no-underline shadow-sm transition hover:border-primary/35 hover:bg-primary/5 hover:text-primary;
+}
+
+.site-contact-chip--address {
+  @apply max-w-md items-start text-left leading-snug;
+}

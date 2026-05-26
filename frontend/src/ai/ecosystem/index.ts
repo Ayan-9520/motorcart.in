@@ -1,0 +1,10 @@
+export { parseAIIntent } from "./ai-intent";
+export { buildCompareAIInsights } from "./ai-compare-insights";
+export { AIPanel } from "./components/AIPanel";
+export { AIInsightList } from "./components/AIInsightList";
+export { AICompareInsights } from "./components/AICompareInsights";
+export { AILeadScore } from "./components/AILeadScore";
+export { AIDealerAssistant } from "./components/AIDealerAssistant";
+export { AIPricingInsight } from "./components/AIPricingInsight";
+export { AIInventoryTips } from "./components/AIInventoryTips";
+export { AIRecommendationsStrip } from "./components/AIRecommendationsStrip";
